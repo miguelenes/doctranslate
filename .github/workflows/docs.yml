@@ -49,4 +49,5 @@ jobs:
         run: uv sync --group dev
 
       - name: Deploy to GitHub Pages (gh-pages branch)
-        run: uv run mkdocs gh-deploy --force --strict -m "docs: deploy ${GITHUB_SHA}"
+        run: |
+          uv run mkdocs gh-deploy --force --strict -m "docs: deploy ${GITHUB_SHA}"
