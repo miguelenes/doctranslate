@@ -12,13 +12,13 @@
         <meta name="author" content="Miguel Enes & DocTranslater contributors">
       
       
-        <link rel="canonical" href="https://miguelenes.github.io/doctranslate/benchmarks/">
+        <link rel="canonical" href="https://miguelenes.github.io/doctranslate/http-api/">
       
       
-        <link rel="prev" href="../docker-profiles/">
+        <link rel="prev" href="../library-api/">
       
       
-        <link rel="next" href="../translation-memory/">
+        <link rel="next" href="../public-api-policy/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Benchmarks and performance - DocTranslater</title>
+        <title>HTTP API (container service) - DocTranslater</title>
       
     
     
@@ -87,7 +87,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#benchmarks-and-performance" class="md-skip">
+        <a href="#http-api-container-service" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Benchmarks and performance
+              HTTP API (container service)
             
           </span>
         </div>
@@ -295,11 +295,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="././" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../benchmarks/" class="md-tabs__link">
         
   
   Benchmarks
@@ -361,10 +359,12 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../library-api/" class="md-tabs__link">
           
   
@@ -710,37 +710,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Benchmarks
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="././" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../benchmarks/" class="md-nav__link">
         
   
   
@@ -756,82 +729,6 @@
   
 
       </a>
-      
-        
-
-
-<nav class="md-nav md-nav--secondary" aria-label="On this page">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      On this page
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#what-affects-runtime" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What affects runtime
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#manual-end-to-end-timing-local-llm" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Manual end-to-end timing (local LLM)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hosted-api-runs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hosted API runs
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#profiling-contributors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Profiling (contributors)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#automation-in-ci" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Automation in CI
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -921,8 +818,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -938,19 +837,22 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" checked>
         
           
-          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
             
   
   
@@ -968,7 +870,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_10">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1011,10 +913,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../http-api/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1030,6 +959,104 @@
   
 
       </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#install" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run locally
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpoints-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endpoints (v1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#asgi-import" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ASGI import
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2072,10 +2099,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-affects-runtime" class="md-nav__link">
+  <a href="#install" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What affects runtime
+        Install
       
     </span>
   </a>
@@ -2083,10 +2110,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#manual-end-to-end-timing-local-llm" class="md-nav__link">
+  <a href="#run-locally" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Manual end-to-end timing (local LLM)
+        Run locally
       
     </span>
   </a>
@@ -2094,10 +2121,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#hosted-api-runs" class="md-nav__link">
+  <a href="#docker" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Hosted API runs
+        Docker
       
     </span>
   </a>
@@ -2105,10 +2132,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#profiling-contributors" class="md-nav__link">
+  <a href="#endpoints-v1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Profiling (contributors)
+        Endpoints (v1)
       
     </span>
   </a>
@@ -2116,10 +2143,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#automation-in-ci" class="md-nav__link">
+  <a href="#environment-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Automation in CI
+        Environment variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#asgi-import" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ASGI import
       
     </span>
   </a>
@@ -2141,7 +2190,7 @@
                 
                   
   
-    <a href="https://github.com/miguelenes/doctranslate/edit/main/docs/benchmarks.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/miguelenes/doctranslate/edit/main/docs/http-api.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-pen" viewBox="0 0 24 24"><path d="M12.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v9.34"/><path d="M14 2v5a1 1 0 0 0 1 1h5M10.378 12.622a1 1 0 0 1 3 3.003L8.36 20.637a2 2 0 0 1-.854.506l-2.867.837a.5.5 0 0 1-.62-.62l.836-2.869a2 2 0 0 1 .506-.853z"/></svg>
     </a>
@@ -2150,40 +2199,198 @@
     
       
     
-    <a href="https://github.com/miguelenes/doctranslate/raw/main/docs/benchmarks.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/miguelenes/doctranslate/raw/main/docs/http-api.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-code-2" viewBox="0 0 24 24"><path d="M4 12.15V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3.35"/><path d="M14 2v5a1 1 0 0 0 1 1h5M5 16l-3 3 3 3M9 22l3-3-3-3"/></svg>
     </a>
   
 
 
-<h1 id="benchmarks-and-performance">Benchmarks and performance</h1>
-<p>DocTranslater performance depends on <strong>PDF complexity</strong>, <strong>layout model</strong> cost, <strong>LLM latency and pricing</strong>, and <strong>hardware</strong>. The project does <strong>not</strong> publish CI-enforced throughput SLAs; numbers here describe <strong>how to measure</strong> and what to expect at a high level.</p>
-<h2 id="what-affects-runtime">What affects runtime</h2>
-<ul>
-<li><strong>Pages and text volume</strong> — more IL paragraphs mean more LLM round-trips.</li>
-<li><strong>Router / model</strong> — hosted APIs vs local servers change latency profiles entirely.</li>
-<li><strong>OCR</strong> — <code>--ocr-mode</code> other than <code>off</code> adds RapidOCR and image work (optional extra <code>ocr</code>).</li>
-<li><strong>Translation memory</strong> — SQLite and fuzzy tiers add lookup cost but can skip LLM calls.</li>
-<li><strong>Assets</strong> — first run may download layout models; use <code>doctranslate assets warmup</code> and optional offline packs (see <a href="../configuration/">Configuration</a>).</li>
-</ul>
-<h2 id="manual-end-to-end-timing-local-llm">Manual end-to-end timing (local LLM)</h2>
-<p>Use the helper script (requires a <strong>running</strong> local server and a sample PDF):</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>scripts/bench_local_translation.py<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--pdf<span class="w"> </span>examples/ci/test.pdf<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>--lang-in<span class="w"> </span>en<span class="w"> </span>--lang-out<span class="w"> </span>zh<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span>--backend<span class="w"> </span>ollama<span class="w"> </span>--model<span class="w"> </span>qwen2.5:7b
+<h1 id="http-api-container-service">HTTP API (container service)</h1>
+<p>DocTranslater ships an <strong>optional</strong> HTTP API for running the engine inside a container and driving it from other systems. It wraps the stable Python surface (<code>doctranslate.api</code>, <code>doctranslate.schemas</code>) and does <strong>not</strong> shell out to the CLI.</p>
+<h2 id="install">Install</h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;DocTranslater[full,api]&quot;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="c1"># or minimal API stack on top of an existing PDF install:</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;DocTranslater[pdf,cli,llm,tm,vision,api]&quot;</span>
 </span></code></pre></div>
-<p>The script prints JSON with <code>elapsed_seconds</code> for the full <code>translate</code> subprocess. Compare runs on the same machine only.</p>
-<h2 id="hosted-api-runs">Hosted API runs</h2>
-<p>For OpenAI or router mode, wall time is dominated by <strong>tokens × model speed × rate limits</strong>. Rough indicative tables for GPT-class models may appear in the root <a href="https://github.com/miguelenes/doctranslate/blob/main/README.md#performance-indicative">README</a>; treat them as <strong>examples</strong>, not guarantees.</p>
-<h2 id="profiling-contributors">Profiling (contributors)</h2>
+<p>Development lockfile (this repo):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>sync<span class="w"> </span>--locked<span class="w"> </span>--group<span class="w"> </span>dev<span class="w"> </span>--extra<span class="w"> </span>full
+</span></code></pre></div>
+<p>(<code>fastapi</code> / <code>uvicorn</code> are included in the <code>dev</code> group for tests.)</p>
+<h2 id="run-locally">Run locally</h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>uv<span class="w"> </span>run<span class="w"> </span>doctranslate<span class="w"> </span>serve<span class="w"> </span>--host<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+</span></code></pre></div>
 <ul>
-<li><strong>Memray</strong> — optional extra <code>DocTranslater[memray]</code>; see <a href="../CONTRIBUTING/#profile-memory-usage">Contributing — Profile memory usage</a>.</li>
-<li><strong>py-spy</strong> — listed in the dev dependency group for sampling profiles of running processes.</li>
+<li>OpenAPI UI: <code>http://127.0.0.1:8000/docs</code></li>
+<li>OpenAPI JSON: <code>http://127.0.0.1:8000/openapi.json</code></li>
 </ul>
-<h2 id="automation-in-ci">Automation in CI</h2>
-<p>The test workflow runs a <strong>warn-only</strong> import/parser timing check so large accidental regressions in CLI startup are visible in logs. It does <strong>not</strong> fail the build on threshold alone (see <code>scripts/check_cli_import_time.py</code>).</p>
+<h2 id="docker">Docker</h2>
+<p>Build the API image (extends the CPU translate stack + <code>api</code> extra):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>runtime-api<span class="w"> </span>-t<span class="w"> </span>doctranslater:api<span class="w"> </span>.
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-p<span class="w"> </span><span class="m">8000</span>:8000<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>-e<span class="w"> </span>OPENAI_API_KEY<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span>-v<span class="w"> </span>doctranslate-cache:/home/doctranslater/.cache/doctranslate<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">/examples/ci:/in:ro&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span>doctranslater:api
+</span></code></pre></div>
+<p>Then create a job (mounted PDF under <code>/work</code> — default allow-prefix):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>curl<span class="w"> </span>-sS<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s1">&#39;http://127.0.0.1:8000/v1/jobs&#39;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>-F<span class="w"> </span><span class="s1">&#39;translation_request={&quot;schema_version&quot;:&quot;1&quot;,&quot;input_pdf&quot;:&quot;/work/test.pdf&quot;,&quot;lang_in&quot;:&quot;en&quot;,&quot;lang_out&quot;:&quot;zh&quot;,&quot;translator&quot;:{&quot;mode&quot;:&quot;openai&quot;,&quot;openai&quot;:{&quot;model&quot;:&quot;gpt-4o-mini&quot;}},&quot;options&quot;:{&quot;skip_translation&quot;:true}}&#39;</span>
+</span></code></pre></div>
+<p>Multipart upload variant:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>curl<span class="w"> </span>-sS<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s1">&#39;http://127.0.0.1:8000/v1/jobs&#39;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>-F<span class="w"> </span><span class="s1">&#39;translation_request={&quot;schema_version&quot;:&quot;1&quot;,&quot;lang_in&quot;:&quot;en&quot;,&quot;lang_out&quot;:&quot;zh&quot;,&quot;translator&quot;:{&quot;mode&quot;:&quot;openai&quot;,&quot;openai&quot;:{&quot;model&quot;:&quot;gpt-4o-mini&quot;}},&quot;options&quot;:{&quot;skip_translation&quot;:true}}&#39;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;input_pdf=@examples/ci/test.pdf;type=application/pdf&quot;</span>
+</span></code></pre></div>
+<p>Poll status and fetch the result:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nv">JOB_ID</span><span class="o">=</span>...
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>curl<span class="w"> </span>-sS<span class="w"> </span><span class="s2">&quot;http://127.0.0.1:8000/v1/jobs/</span><span class="nv">$JOB_ID</span><span class="s2">&quot;</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>curl<span class="w"> </span>-sS<span class="w"> </span><span class="s2">&quot;http://127.0.0.1:8000/v1/jobs/</span><span class="nv">$JOB_ID</span><span class="s2">/result&quot;</span>
+</span></code></pre></div>
+<h2 id="endpoints-v1">Endpoints (v1)</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/health/live</code></td>
+<td>Liveness</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/health/ready</code></td>
+<td>Readiness (dirs, optional assets, job capacity)</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/runtime</code></td>
+<td>Version and schema versions</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/assets/status</code></td>
+<td>Font/model cache presence</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/assets/warmup</code></td>
+<td>Async warmup job (<code>202</code> + job id)</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/config/validate</code></td>
+<td>Validate <code>TranslationRequest</code> JSON and/or router/local TOML</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/inspect</code></td>
+<td>PDF inspection (<code>inspect_input</code>)</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/jobs</code></td>
+<td>Create translation job (<code>202</code>, multipart or mounted path)</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/jobs/{id}</code></td>
+<td>Job status / last progress event</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/jobs/{id}/cancel</code></td>
+<td>Best-effort cancel</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/jobs/{id}/result</code></td>
+<td>Result + artifact URLs</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/jobs/{id}/artifacts/{kind}</code></td>
+<td>Download one artifact</td>
+</tr>
+</tbody>
+</table>
+<h2 id="environment-variables">Environment variables</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DOCTRANSLATE_API_DATA_ROOT</code></td>
+<td>system temp + <code>/doctranslate-api</code></td>
+<td>Job workspaces and metadata</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_TMP_ROOT</code></td>
+<td><em>(unset)</em></td>
+<td>Optional separate temp root</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_MOUNT_ALLOW_PREFIXES</code></td>
+<td><code>/work,/in,/data</code></td>
+<td>Allowed path prefixes for <code>input_pdf</code> without upload</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_ALLOW_MOUNTED_PATHS</code></td>
+<td><code>true</code></td>
+<td>Disable mounted paths when <code>false</code></td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_MAX_UPLOAD_BYTES</code></td>
+<td><code>256000000</code></td>
+<td>Multipart upload limit</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_MAX_CONCURRENT_JOBS</code></td>
+<td><code>2</code></td>
+<td>Semaphore for running jobs</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_MAX_QUEUED_JOBS</code></td>
+<td><code>32</code></td>
+<td>Max jobs in <code>queued</code>+<code>running</code></td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_JOB_TIMEOUT_SECONDS</code></td>
+<td><code>0</code></td>
+<td>Per-job wall clock (<code>0</code> = off)</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_REQUIRE_ASSETS_READY</code></td>
+<td><code>false</code></td>
+<td>If <code>true</code>, readiness requires warmed assets</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_WARMUP_ON_STARTUP</code></td>
+<td><code>none</code></td>
+<td><code>none</code> | <code>lazy</code> | <code>eager</code> (only <code>eager</code> is implemented: run <code>assets.warmup</code> at startup)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="production-notes">Production notes</h2>
+<ul>
+<li>Prefer <strong>horizontal scaling</strong> (several single-worker replicas) over many Uvicorn workers per replica: the layout ONNX model and PDF work are memory-heavy.</li>
+<li>Put <code>DOCTRANSLATE_API_DATA_ROOT</code> on a writable volume; mount <code>~/.cache/doctranslate</code> for persistent fonts/models/TM.</li>
+<li>Configure reverse-proxy <code>client_max_body_size</code> to match <code>DOCTRANSLATE_API_MAX_UPLOAD_BYTES</code>.</li>
+</ul>
+<h2 id="asgi-import">ASGI import</h2>
+<p>Uvicorn can load the pre-built app:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>uvicorn<span class="w"> </span>doctranslate.http_api.app:app<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+</span></code></pre></div>
 
 
 
@@ -2221,7 +2428,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../docker-profiles/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Image profiles">
+          <a href="../library-api/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Stable library API">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
@@ -2231,20 +2438,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Image profiles
+                Stable library API
               </div>
             </div>
           </a>
         
         
           
-          <a href="../translation-memory/" class="md-footer__link md-footer__link--next" aria-label="Next: Translation memory">
+          <a href="../public-api-policy/" class="md-footer__link md-footer__link--next" aria-label="Next: Public API policy">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Translation memory
+                Public API policy
               </div>
             </div>
             <div class="md-footer__button md-icon">

@@ -1042,6 +1042,8 @@
       
         
       
+        
+      
     
     
     
@@ -1102,6 +1104,34 @@
     
   
     Stable library API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
   
 
     
@@ -2376,6 +2406,11 @@
 <td>Full optional stack (OCR, Hyperscan glossary path, …)</td>
 </tr>
 <tr>
+<td><code>ghcr.io/OWNER/doctranslater-api</code></td>
+<td><code>runtime-api</code></td>
+<td>HTTP API (<code>serve</code> on port 8000); see <a href="../http-api/">HTTP API</a>.</td>
+</tr>
+<tr>
 <td><code>ghcr.io/OWNER/doctranslater-dev</code></td>
 <td><code>runtime-dev</code></td>
 <td>Development / CI parity</td>
@@ -2413,6 +2448,10 @@
 <tr>
 <td><code>runtime-cpu-warm</code></td>
 <td>Same as <code>runtime-cpu</code> with fonts/models/cmaps pre-populated under <code>/home/doctranslater/.cache/doctranslate</code>.</td>
+</tr>
+<tr>
+<td><code>runtime-api</code></td>
+<td>Same Python extras as <code>runtime-cpu</code> plus <strong><code>api</code></strong> (FastAPI/Uvicorn); default <code>CMD</code> is <code>serve</code> on port <strong>8000</strong>. See <a href="../http-api/">HTTP API</a>.</td>
 </tr>
 <tr>
 <td><code>runtime-vision</code></td>
@@ -2468,7 +2507,7 @@
 <p>Air-gapped or pinned asset trees: use <code>doctranslate assets pack-offline</code> / <code>restore-offline</code> (see <a href="../ai/verification/">Verification</a> and CI in <code>.github/workflows/test.yml</code>).</p>
 <h2 id="entrypoint-and-signals">Entrypoint and signals</h2>
 <p>The image entrypoint runs <a href="https://github.com/krallin/tini"><code>tini</code></a> so PID 1 forwards <code>SIGTERM</code>/<code>SIGINT</code> to the CLI. Override the command after the image name as usual.</p>
-<p>There is <strong>no</strong> HTTP API server in the OSS package; embed with <code>doctranslate.api</code> from your own process or wrap the CLI.</p>
+<p>An <strong>optional</strong> HTTP API is included (<code>DocTranslater[api]</code>); see <a href="../http-api/">HTTP API</a> and the <code>runtime-api</code> image target. You can still embed with <code>doctranslate.api</code> from your own process or wrap the CLI.</p>
 <h2 id="health-checks">Health checks</h2>
 <p>Images declare <code>HEALTHCHECK</code> using <code>doctranslate --version</code>. For readiness that includes downloaded assets, use a warm target or mount a populated cache volume.</p>
 <h2 id="security">Security</h2>

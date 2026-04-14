@@ -829,6 +829,8 @@
       
         
       
+        
+      
     
     
     
@@ -889,6 +891,34 @@
     
   
     Stable library API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../http-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
   
 
     
@@ -2285,6 +2315,10 @@
 <tr>
 <td>CLI parses</td>
 <td><code>uv run doctranslate --help</code> and <code>uv run doc-translate --help</code></td>
+</tr>
+<tr>
+<td>HTTP API (if touched)</td>
+<td><code>uv sync --locked --group dev --extra full</code> then <code>uv run pytest tests/test_http_api_*.py -q</code></td>
 </tr>
 <tr>
 <td>Assets (if touching models/assets)</td>

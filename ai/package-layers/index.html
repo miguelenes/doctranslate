@@ -829,6 +829,8 @@
       
         
       
+        
+      
     
     
     
@@ -889,6 +891,34 @@
     
   
     Stable library API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../http-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
   
 
     
@@ -2177,6 +2207,11 @@
 <td><code>full</code></td>
 </tr>
 <tr>
+<td><code>doctranslate.http_api</code></td>
+<td>Optional ASGI app (<code>create_app</code>, <code>serve</code>); not imported by default CLI</td>
+<td><code>api</code> (+ same extras as your translate install)</td>
+</tr>
+<tr>
 <td><code>doctranslate.engine</code></td>
 <td>Deprecated shim: pipeline entrypoints + <code>init</code> — prefer <code>doctranslate.api</code></td>
 <td><code>full</code></td>
@@ -2271,6 +2306,10 @@
 <tr>
 <td><code>full</code></td>
 <td>Meta-extra listing everything needed for the default CLI translate path</td>
+</tr>
+<tr>
+<td><code>api</code></td>
+<td>FastAPI, Uvicorn, <code>python-multipart</code> for the optional HTTP service (<code>doctranslate serve</code>)</td>
 </tr>
 <tr>
 <td><code>tm_semantic</code></td>
