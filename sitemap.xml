@@ -1,99 +1,115 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/CODE_OF_CONDUCT/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/CODE_OF_CONDUCT/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/CONTRIBUTING/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/CONTRIBUTING/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/CONTRIBUTOR_REWARD/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/CONTRIBUTOR_REWARD/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/configuration/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/configuration/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/intro-to-pdf-object/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/github-pages/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/local-translation/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/il-spec-notes/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/multi-translator/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/intro-to-pdf-object/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/supported_languages/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/local-translation/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ImplementationDetails/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/migration/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ImplementationDetails/AsyncTranslate/AsyncTranslate/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/multi-translator/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ImplementationDetails/ILTranslator/ILTranslator/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/supported_languages/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ImplementationDetails/PDFCreation/PDFCreation/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/translation-memory/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ImplementationDetails/PDFParsing/PDFParsing/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/ImplementationDetails/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ImplementationDetails/ParagraphFinding/ParagraphFinding/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/ImplementationDetails/AsyncTranslate/AsyncTranslate/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ImplementationDetails/StylesAndFormulas/StylesAndFormulas/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/ImplementationDetails/ILTranslator/ILTranslator/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ImplementationDetails/Typesetting/Typesetting/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/ImplementationDetails/PDFCreation/PDFCreation/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ai/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/ImplementationDetails/PDFParsing/PDFParsing/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ai/mcp-suggestions/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/ImplementationDetails/ParagraphFinding/ParagraphFinding/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ai/pdf-pipeline/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/ImplementationDetails/StylesAndFormulas/StylesAndFormulas/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ai/phase2-skills/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/ImplementationDetails/Typesetting/Typesetting/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ai/project-map/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/ai/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ai/translator-stack/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/ai/mcp-suggestions/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
     <url>
-         <loc>https://squidfunk.github.io/mkdocs-material/ai/verification/</loc>
+         <loc>https://miguelenes.github.io/doctranslate/ai/pdf-pipeline/</loc>
+         <lastmod>2026-04-14</lastmod>
+    </url>
+    <url>
+         <loc>https://miguelenes.github.io/doctranslate/ai/phase2-skills/</loc>
+         <lastmod>2026-04-14</lastmod>
+    </url>
+    <url>
+         <loc>https://miguelenes.github.io/doctranslate/ai/project-map/</loc>
+         <lastmod>2026-04-14</lastmod>
+    </url>
+    <url>
+         <loc>https://miguelenes.github.io/doctranslate/ai/translator-stack/</loc>
+         <lastmod>2026-04-14</lastmod>
+    </url>
+    <url>
+         <loc>https://miguelenes.github.io/doctranslate/ai/verification/</loc>
          <lastmod>2026-04-14</lastmod>
     </url>
 </urlset>
