@@ -1,0 +1,98 @@
+# LICENSE ADDITIONS & MODIFICATIONS
+
+## Original Work
+**BabelDOC** (v0.5.24 and earlier) is maintained by **funstory-ai Limited** under the GNU Affero General Public License v3.0 (AGPL-3.0).
+
+- **Original Repository:** https://github.com/funstory-ai/BabelDOC
+- **Original Copyright:** Copyright (C) 2024 funstory-ai Limited
+- **Original License:** AGPL-3.0 (see `LICENSE` file)
+
+---
+
+## Derivative Work
+**DocTranslate** is a derivative fork based on BabelDOC, created by **Miguel Enes** in 2025.
+
+### What Changed
+
+#### Architecture & Features
+1. **Multi-Translator Orchestration Engine** (`doctranslate/translator/router.py`)
+   - Adds `TranslatorRouter` class supporting multiple translation backends (OpenAI, Anthropic, etc.)
+   - Implements routing strategies: failover, round-robin, least-loaded, cost-aware
+   - Per-backend metrics tracking (cost, latency, success rate)
+   - Dynamic quality scoring via back-translation similarity
+
+2. **Rebranding**
+   - User-facing CLI command renamed: `babeldoc` → `doctranslate`
+   - Package directory: `babeldoc/` → `doctranslate/`
+   - Configuration section: `[babeldoc]` → `[doctranslate]`
+   - Cache folder: `~/.cache/babeldoc` → `~/.cache/doctranslate`
+   - Project name: BabelDOC → DocTranslate
+   - Documentation rewritten with new branding and examples
+
+3. **Preserved Components** (unchanged from BabelDOC)
+   - Core IL (Intermediate Language) pipeline: `frontend/`, `midend/`, `backend/`
+   - YOLO-based document layout detection (`docvision/`)
+   - PDF parsing and rendering (`babelpdf/`, `pdfminer/`)
+   - Glossary system (`glossary.py`)
+   - Translation cache (`translator/cache.py`)
+   - All other utility modules
+
+### Attribution
+This project includes and builds upon the excellent work of the BabelDOC team. The core document translation pipeline remains substantially the same, with architectural enhancements and rebranding.
+
+If you use DocTranslate as a service (AGPL §13), you must provide source code access to users.
+
+---
+
+## Copyright Notices
+
+### Files with New Copyright
+Files significantly modified for DocTranslate include new copyright headers:
+```python
+# Copyright (C) 2024 funstory-ai Limited
+# Copyright (C) 2025 Miguel Enes — Modified: [description]
+# License: GNU Affero General Public License v3.0 (see LICENSE)
+```
+
+### Files with Original Copyright
+All other files retain their original funstory-ai copyright and are unchanged from BabelDOC.
+
+---
+
+## License
+This derivative work is distributed under the same **GNU Affero General Public License v3.0 (AGPL-3.0)** as the original BabelDOC project.
+
+You are free to:
+- Use this software (including commercially)
+- Modify the source code
+- Distribute modified versions
+
+Under the conditions that you:
+- License your derivative works under AGPL-3.0
+- Include this license and attribution
+- Provide source code to users if you run this as a service
+- Preserve original copyright notices
+
+For full license terms, see the `LICENSE` file.
+
+---
+
+## How to Comply
+
+If you create further derivatives:
+1. Keep both `LICENSE` (original) and `LICENSE.ADDITIONS` (this file)
+2. Add copyright headers to files you modify:
+   ```python
+   # Copyright (C) 2024 funstory-ai Limited
+   # Copyright (C) 2025 Miguel Enes — [previous modifications]
+   # Copyright (C) [YEAR] [YOUR NAME] — [your modifications]
+   # License: GNU Affero General Public License v3.0
+   ```
+3. Update `LICENSE.ADDITIONS` to document your changes
+4. Link to the original BabelDOC project in your README
+5. If you run this as a service, provide source code to users
+
+---
+
+**Last Updated:** 2025-04-14
+**Created by:** Miguel Enes

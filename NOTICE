@@ -1,0 +1,51 @@
+DocTranslate
+Copyright (C) 2025 Miguel Enes
+
+This software is derived from BabelDOC, an open-source document translation project.
+
+================================================================================
+
+ORIGINAL WORK:
+  BabelDOC v0.5.24
+  Copyright (C) 2024 funstory-ai Limited
+  https://github.com/funstory-ai/BabelDOC
+
+================================================================================
+
+This product includes software developed by funstory-ai Limited as part of
+the BabelDOC project. The BabelDOC project was originally licensed under the
+GNU Affero General Public License v3.0.
+
+DocTranslate maintains the original BabelDOC license (AGPL-3.0) and builds upon
+the following components from BabelDOC:
+
+- Core IL (Intermediate Language) pipeline for PDF document translation
+- YOLO-based document layout detection system
+- PDF parsing, rendering, and manipulation utilities
+- Translation caching system
+- Glossary matching and management
+
+Modifications in DocTranslate:
+- Multi-translator orchestration engine (new feature)
+- User-facing rebranding (CLI, configuration, documentation)
+- Documentation updates
+
+For full license terms, see the LICENSE and LICENSE.ADDITIONS files.
+
+================================================================================
+
+OPEN SOURCE LICENSES
+This product may include other open-source components subject to their
+respective licenses. Refer to individual source files for detailed copyright
+and license information.
+
+Key open-source dependencies:
+- pdfminer: For PDF parsing (vendored/modified)
+- pymupdf/fitz: For PDF rendering
+- openai: For OpenAI API access
+- numpy, hyperscan: For document processing
+- pytest: For testing
+
+For a complete list of dependencies, see pyproject.toml.
+
+================================================================================
