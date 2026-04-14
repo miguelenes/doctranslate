@@ -18,7 +18,7 @@
         <link rel="prev" href="../translator-stack/">
       
       
-        <link rel="next" href="../mcp-suggestions/">
+        <link rel="next" href="../package-layers/">
       
       
         
@@ -1355,6 +1355,8 @@
       
         
       
+        
+      
     
     
     
@@ -1656,6 +1658,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../package-layers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package layers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../mcp-suggestions/" class="md-nav__link">
         
   
@@ -1863,8 +1893,9 @@
 <h1 id="verification-checklist">Verification checklist</h1>
 <p>Run the smallest set that covers your change. CI reference: <code>.github/workflows/test.yml</code>, <code>.github/workflows/lint.yml</code>.</p>
 <h2 id="environment">Environment</h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv<span class="w"> </span>sync<span class="w"> </span>--locked<span class="w"> </span>--group<span class="w"> </span>dev
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv<span class="w"> </span>sync<span class="w"> </span>--locked<span class="w"> </span>--group<span class="w"> </span>dev<span class="w"> </span>--extra<span class="w"> </span>full
 </span></code></pre></div>
+<p>For a <strong>minimal</strong> environment (schemas types only), <code>uv sync --locked --group dev</code> is enough; see <a href="../package-layers/">Package layers</a>.</p>
 <p>If you change <code>pyproject.toml</code> dependencies, run <strong><code>uv lock</code></strong> and commit <strong><code>uv.lock</code></strong> so CI (<code>uv sync --locked</code>) stays in sync.</p>
 <h2 id="always-safe-for-local-iteration">Always safe for local iteration</h2>
 <table>
@@ -1971,13 +2002,13 @@
         
         
           
-          <a href="../mcp-suggestions/" class="md-footer__link md-footer__link--next" aria-label="Next: MCP suggestions">
+          <a href="../package-layers/" class="md-footer__link md-footer__link--next" aria-label="Next: Package layers">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                MCP suggestions
+                Package layers
               </div>
             </div>
             <div class="md-footer__button md-icon">

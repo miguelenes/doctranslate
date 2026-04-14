@@ -1456,6 +1456,8 @@
       
         
       
+        
+      
     
     
     
@@ -1609,6 +1611,34 @@
     
   
     Verification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ai/package-layers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package layers
   
 
     
@@ -1903,7 +1933,7 @@
 <p>After <strong>automatic term extraction</strong> finalizes a glossary, the translator cache context is refreshed so TM safety matches the prompts.</p>
 <h2 id="optional-semantic-mode-l3">Optional semantic mode (L3)</h2>
 <p>Install optional dependencies (large download; CPU OK for small models):</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>tm_semantic
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv<span class="w"> </span>sync<span class="w"> </span>--group<span class="w"> </span>dev<span class="w"> </span>--extra<span class="w"> </span>full<span class="w"> </span>--extra<span class="w"> </span>tm_semantic
 </span></code></pre></div>
 <p>If <code>sentence-transformers</code> / <code>torch</code> are missing, <code>--tm-mode=semantic</code> behaves like <code>fuzzy</code> (L3 is skipped when the backend is unavailable).</p>
 <h2 id="legacy-cachev1db-import">Legacy <code>cache.v1.db</code> import</h2>
