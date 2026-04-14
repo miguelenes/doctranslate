@@ -28,7 +28,7 @@ uv sync --group dev
 
 ## Docs changes
 
-- After editing `docs/` or `mkdocs.yml`: `uv run mkdocs build --strict` (if available in dev group) or `mkdocs build --strict` from an env with dev deps.
+- After editing `docs/` or `mkdocs.yml`: `uv run mkdocs build --strict` from an env with dev deps. **Note:** git metadata plugins may warn on `--strict` for **brand-new, uncommitted** Markdown files; commit them or run `uv run mkdocs build` (non-strict) for a quick smoke check.
 
 ## PDF / IL changes
 

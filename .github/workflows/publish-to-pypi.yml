@@ -16,7 +16,7 @@ jobs:
     name: Check if running in main repository
     runs-on: ubuntu-latest
     outputs:
-      is_main_repo: ${{ github.repository == 'funstory-ai/DocTranslate' }}
+      is_main_repo: ${{ github.repository == 'miguelenes/doctranslate' || github.repository == 'funstory-ai/DocTranslate' }}
     steps:
       - run: echo "Running repository check"
 

@@ -20,20 +20,20 @@
 
 # Project information
 site_name: DocTranslate
-site_url: https://squidfunk.github.io/mkdocs-material/
-site_author: funstory.ai
+site_url: https://miguelenes.github.io/doctranslate/
+site_author: Miguel Enes & DocTranslate contributors
 site_description: >-
-  Write your documentation in Markdown and create a professional static site in
-  minutes – searchable, customizable, in 60+ languages, for all devices
+  DocTranslate — PDF translation with layout preservation, multi-provider LLM routing,
+  and local OpenAI-compatible backends (fork of funstory-ai/DocTranslate, AGPL-3.0).
 
 # Repository
-repo_name: funstory-ai/DocTranslate
-repo_url: https://github.com/funstory-ai/DocTranslate
+repo_name: miguelenes/doctranslate
+repo_url: https://github.com/miguelenes/doctranslate
 edit_uri: edit/main/docs/
 docs_dir: docs
 
 # Copyright
-copyright: Copyright &copy; 2025 funstory.ai
+copyright: Copyright &copy; 2025 Miguel Enes. Upstream &copy; funstory-ai Limited.
 
 # Configuration
 theme:
@@ -74,24 +74,23 @@ theme:
         name: Switch to light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: white
-      accent: indigo
+      primary: indigo
+      accent: deep-purple
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: black
-      accent: indigo
+      primary: indigo
+      accent: deep-purple
       toggle:
         icon: material/brightness-4
         name: Switch to system preference
   font:
-    text: Roboto
-    code: Roboto Mono
-  # favicon: assets/favicon.png
-  favicon: images/babeldoc-small-logo-with-transparent-background.svg
-  logo: images/babeldoc-small-logo-with-transparent-background.svg
+    text: Inter
+    code: JetBrains Mono
+  favicon: images/doctranslate-mark.svg
+  logo: images/doctranslate-mark.svg
 
 # Plugins
 plugins:
@@ -109,9 +108,12 @@ extra:
     deprecated: Deprecated
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/funstory-ai/DocTranslate
+      link: https://github.com/miguelenes/doctranslate
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/DocTranslate/
+
+extra_css:
+  - stylesheets/extra.css
 
 # Extensions
 markdown_extensions:
@@ -127,6 +129,7 @@ markdown_extensions:
   - def_list
   - pymdownx.tasklist:
       custom_checkbox: true
+  - md_in_html
 not_in_nav: |
   /tutorials/**/*.md
 
@@ -135,23 +138,27 @@ nav:
   - Home: index.md
   - Supported Languages: supported_languages.md
   - Configuration: configuration.md
+  - Translation memory: translation-memory.md
   - Multi-Provider Routing: multi-translator.md
   - Local translation: local-translation.md
   - API:
     - Async Translation API: ImplementationDetails/AsyncTranslate/AsyncTranslate.md
   - Implementation Details:
+    - IL schema notes: il-spec-notes.md
     - ImplementationDetails/README.md
     - PDF Parsing: ImplementationDetails/PDFParsing/PDFParsing.md
-    - Layout Parser(.py): https://github.com/funstory-ai/DocTranslate/blob/main/doctranslate/document_il/midend/layout_parser.py
+    - Layout Parser(.py): https://github.com/miguelenes/doctranslate/blob/main/doctranslate/format/pdf/document_il/midend/layout_parser.py
     - Paragraph Finding: ImplementationDetails/ParagraphFinding/ParagraphFinding.md
     - Styles and Formulas: ImplementationDetails/StylesAndFormulas/StylesAndFormulas.md
     - IL Translator: ImplementationDetails/ILTranslator/ILTranslator.md
     - Typesetting: ImplementationDetails/Typesetting/Typesetting.md
-    - Font Mapper(.py): https://github.com/funstory-ai/DocTranslate/blob/main/doctranslate/document_il/utils/fontmap.py
+    - Font Mapper(.py): https://github.com/miguelenes/doctranslate/blob/main/doctranslate/format/pdf/document_il/utils/fontmap.py
     - PDF Creation: ImplementationDetails/PDFCreation/PDFCreation.md
     - Intro To PDF Object: intro-to-pdf-object.md
   - Community:
     - Code of Conduct: CODE_OF_CONDUCT.md
+    - GitHub Pages: github-pages.md
+    - Migration: migration.md
     - Contributing:
       - Contributing: CONTRIBUTING.md
       - Contributor Reward: CONTRIBUTOR_REWARD.md

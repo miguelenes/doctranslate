@@ -29,6 +29,8 @@ DocTranslate’s PDF pipeline still expects an **LLM** that can follow structure
      --local-backend ollama --local-model qwen2.5:7b
    ```
 
+Optional **translation memory** flags (`--tm-mode`, …) apply the same way in local mode as for the router; see [Translation memory](translation-memory.md).
+
 ## Backends
 
 | Preset | What it uses | When to use |

@@ -25,7 +25,7 @@ try:
     if git_path is None:
         raise FileNotFoundError("git executable not found")
     two_parent = Path(__file__).resolve().parent.parent
-    md_ = two_parent / "docs" / "README.md"
+    md_ = two_parent / "docs" / "index.md"
     if two_parent.name == "site-packages" or not md_.exists():
         raise FileNotFoundError("not in git repo")
     WATERMARK_VERSION = (

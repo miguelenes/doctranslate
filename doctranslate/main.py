@@ -88,7 +88,9 @@ def _cli_router_override_dict(args: Any) -> dict[str, Any]:
 
 def create_parser():
     parser = configargparse.ArgParser(
-        config_file_parser_class=configargparse.TomlConfigParser(["doctranslate"]),
+        config_file_parser_class=configargparse.TomlConfigParser(
+            ["babeldoc", "doctranslate"],
+        ),
     )
     parser.add_argument(
         "-c",
@@ -213,6 +215,63 @@ def create_parser():
         "--ignore-cache",
         action="store_true",
         help="Ignore translation cache.",
+    )
+    translation_group.add_argument(
+        "--tm-mode",
+        choices=["off", "exact", "fuzzy", "semantic"],
+        default="off",
+        help=(
+            "Translation memory: off=SQLite exact cache only; exact=+normalized TM keys; "
+            "fuzzy=+RapidFuzz similarity; semantic=+optional embeddings (install sentence-transformers)."
+        ),
+    )
+    translation_group.add_argument(
+        "--tm-scope",
+        choices=["document", "project", "global"],
+        default="document",
+        help="TM row visibility: document (default), project, or global pool.",
+    )
+    translation_group.add_argument(
+        "--tm-min-segment-chars",
+        type=int,
+        default=12,
+        help="Minimum source length for fuzzy/semantic TM reuse (default: 12).",
+    )
+    translation_group.add_argument(
+        "--tm-fuzzy-min-score",
+        type=float,
+        default=92.0,
+        help="RapidFuzz WRatio minimum for fuzzy TM hits (0-100, default: 92).",
+    )
+    translation_group.add_argument(
+        "--tm-semantic-min-similarity",
+        type=float,
+        default=0.90,
+        help="Minimum cosine similarity for semantic TM (default: 0.90).",
+    )
+    translation_group.add_argument(
+        "--tm-project-id",
+        default="",
+        help="Optional project id for TM scope=project/global clustering.",
+    )
+    translation_group.add_argument(
+        "--tm-embedding-model",
+        default="sentence-transformers/all-MiniLM-L6-v2",
+        help="SentenceTransformer model id when --tm-mode=semantic.",
+    )
+    translation_group.add_argument(
+        "--tm-import",
+        dest="tm_import_path",
+        default=None,
+        metavar="PATH",
+        help="NDJSON file to import into TM before translating.",
+    )
+    translation_group.add_argument(
+        "--tm-export",
+        dest="tm_export_path",
+        default=None,
+        metavar="PATH",
+        help="Write TM NDJSON after each file (if PATH is a directory, uses <stem>.tm.ndjson).",
     )
     translation_group.add_argument(
         "--no-dual",
@@ -699,7 +758,10 @@ async def main():
         args.openai_api_key = api_key
     elif args.translator == "router":
         if not args.config:
-            parser.error("Router mode requires --config with [doctranslate] providers and profiles")
+            parser.error(
+                "Router mode requires --config with [doctranslate] (or legacy [babeldoc]) "
+                "providers and profiles",
+            )
     elif args.translator == "local":
         nested_chk = load_nested_translator_config(
             Path(args.config) if args.config else None,
@@ -977,6 +1039,15 @@ async def main():
             llm_term_extraction_batch_max_paragraphs=llm_batch_kwargs[
                 "llm_term_extraction_batch_max_paragraphs"
             ],
+            tm_mode=args.tm_mode,
+            tm_scope=args.tm_scope,
+            tm_min_segment_chars=args.tm_min_segment_chars,
+            tm_fuzzy_min_score=args.tm_fuzzy_min_score,
+            tm_semantic_min_similarity=args.tm_semantic_min_similarity,
+            tm_project_id=args.tm_project_id,
+            tm_embedding_model=args.tm_embedding_model,
+            tm_import_path=args.tm_import_path,
+            tm_export_path=args.tm_export_path,
         )
 
         def nop(_x):
@@ -1000,6 +1071,7 @@ async def main():
                 if event["type"] == "finish":
                     result = event["translate_result"]
                     logger.info(str(result))
+                    config.run_tm_export_if_configured()
                     break
         usage = config.term_extraction_token_usage
         total_term_extraction_total_tokens += usage["total_tokens"]

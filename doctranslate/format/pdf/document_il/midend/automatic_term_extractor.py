@@ -349,6 +349,7 @@ class AutomaticTermExtractor:
                     self.process_page(page, executor, pbar, tracker.new_page())
 
         self.shared_context.finalize_auto_extracted_glossary()
+        self.translation_config.refresh_translation_memory_glossary_context()
         end_total, end_prompt, end_completion, end_cache_hit_prompt = (
             self._snapshot_token_usage()
         )

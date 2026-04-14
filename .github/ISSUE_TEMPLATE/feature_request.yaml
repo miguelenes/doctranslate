@@ -14,7 +14,7 @@ body:
       options:
         - label: I have searched existing issues
           required: true
-        - label: I have fully read and understood the [README](https://github.com/funstory-ai/DocTranslate/blob/main/README.md)
+        - label: I have fully read and understood the [README](https://github.com/miguelenes/doctranslate/blob/main/README.md)
           required: true
         - label: This feature is not related to DocTranslate CLI. The CLI is only used for debugging purposes, we do not accept any feature requests related to the CLI.
           required: true

@@ -832,7 +832,7 @@ class Typesetting:
         self.lang_code = self.translation_config.lang_out.upper()
         self.is_cjk = (
             # Why zh-CN/zh-HK/zh-TW here but not zh-Hans and so on?
-            # See https://funstory-ai.github.io/DocTranslate/supported_languages/
+            # See https://miguelenes.github.io/doctranslate/supported_languages/
             ("ZH" in self.lang_code)  # C
             or ("JA" in self.lang_code)
             or ("JP" in self.lang_code)  # J
@@ -1205,7 +1205,11 @@ class Typesetting:
             font_size=6,
             graphic_state=il_version_1.GraphicState(),
         )
-        text = f"本文档由 funstory.ai 的开源 PDF 翻译库 DocTranslate {WATERMARK_VERSION} (http://yadt.io) 翻译，本仓库正在积极的建设当中，欢迎 star 和关注。"
+        text = (
+            f"Translated with DocTranslate {WATERMARK_VERSION} — "
+            "https://github.com/miguelenes/doctranslate (AGPL-3.0). "
+            "AI-generated translation; please verify critical content."
+        )
         if self.translation_config.debug:
             text += "\n 当前为 DEBUG 模式，将显示更多辅助信息。请注意，部分框的位置对应原文，但在译文中可能不正确。"
         page.pdf_paragraph.append(

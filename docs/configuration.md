@@ -1,13 +1,15 @@
 # Configuration
 
-DocTranslate reads CLI flags first (via `configargparse`), and can merge a TOML file passed with `-c` / `--config`. For **multi-provider routing**, nested tables under `[doctranslate]` define providers and route profiles.
+DocTranslate reads CLI flags first (via `configargparse`), and can merge a TOML file passed with `-c` / `--config`. For **multi-provider routing**, nested tables under **`[doctranslate]`** define providers and route profiles. Legacy configs may use **`[babeldoc]`** with the same nested shape; prefer `[doctranslate]` for new files (see [Migration](migration.md)).
 
 ## Merge order (router / nested TOML)
 
 1. **Defaults** in code (`NestedTranslatorConfig`).
-2. **TOML** `[doctranslate]` section (and nested `profiles` / `providers`).
+2. **TOML** `[doctranslate]` section (and nested `profiles` / `providers`). Nested router config loading also accepts `[babeldoc]` when `[doctranslate]` is absent.
 3. **Environment** for API keys referenced by `api_key_env` on each provider.
 4. **CLI overrides** for router-only flags (see below).
+
+When both `[babeldoc]` and `[doctranslate]` appear in the same file, CLI defaults loaded from TOML merge **`babeldoc` first, then `doctranslate`** (later values win for duplicate keys).
 
 Legacy **OpenAI-only** mode (`--translator openai`) does not require nested TOML; it uses `--openai*` flags and `OPENAI_*` environment variables.
 
@@ -30,6 +32,22 @@ These apply when `--translator local` (see [Local translation](local-translation
 | `--local-term-batch-tokens` / `--local-term-batch-paragraphs` | Term extraction batching (defaults 600 / 12). |
 
 With `--validate-translators`, use `--translator local` to run configuration validation plus a quick reachability check (Ollama `/api/tags` or OpenAI-compatible `/v1/models`).
+
+## Translation memory (TM)
+
+Reuse policy for SQLite-backed translation cache: normalized keys, optional fuzzy and semantic layers. See **[Translation memory](translation-memory.md)** for modes, safety rules, and optional `tm_semantic` extras.
+
+| Flag | Description |
+|------|-------------|
+| `--tm-mode` | `off` (default), `exact`, `fuzzy`, or `semantic`. |
+| `--tm-scope` | `document`, `project`, or `global`. |
+| `--tm-min-segment-chars` | Minimum source length for fuzzy/semantic reuse. |
+| `--tm-fuzzy-min-score` | RapidFuzz `WRatio` threshold (0–100). |
+| `--tm-semantic-min-similarity` | Cosine similarity floor for semantic reuse. |
+| `--tm-project-id` | Optional project scope id. |
+| `--tm-embedding-model` | Embedding model id when `--tm-mode=semantic`. |
+| `--tm-import` | NDJSON path to merge into TM before translating. |
+| `--tm-export` | NDJSON path or directory to export TM after each finished PDF. |
 
 ## Router CLI flags
 

@@ -21,6 +21,8 @@ Requirements:
 
 Legacy workflows keep using `--translator openai` (default) with `--openai` and related flags.
 
+**Translation memory** (`--tm-mode`, etc.) applies to any translator mode once enabled; cache keys still include the router fingerprint (profile, strategy, per-provider fields). See [Translation memory](translation-memory.md).
+
 ## Strategies
 
 | Strategy | Behavior (simplified) |

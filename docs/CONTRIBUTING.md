@@ -10,18 +10,18 @@
 
 ### **Did you find a bug?**
 
-- **Ensure the bug was not already reported** by searching on GitHub under [Issues](https://github.com/funstory-ai/DocTranslate/issues).
+- **Ensure the bug was not already reported** by searching on GitHub under [Issues](https://github.com/miguelenes/doctranslate/issues).
 
 Please pay special attention to:
 
-1. Known compatibility issues with pdf2zh - see [#20](https://github.com/funstory-ai/DocTranslate/issues/20) for details
-2. Reported edge cases and limitations from downstream applications - see [#23](https://github.com/funstory-ai/DocTranslate/issues/23) for discussion
+1. Known compatibility issues with pdf2zh - see [#20](https://github.com/miguelenes/doctranslate/issues/20) for details
+2. Reported edge cases and limitations from downstream applications - see [#23](https://github.com/miguelenes/doctranslate/issues/23) for discussion
 
-- If you're unable to find an open issue addressing the problem, [open a new one](https://github.com/funstory-ai/DocTranslate/issues/new?template=bug_report.md). Be sure to include a **title and clear description**, as much relevant information as possible.
+- If you're unable to find an open issue addressing the problem, [open a new one](https://github.com/miguelenes/doctranslate/issues/new?template=bug_report.md). Be sure to include a **title and clear description**, as much relevant information as possible.
 
 ### **If you wish to request changes or new features**
 
-- Suggest your change in the [Issues](https://github.com/funstory-ai/DocTranslate/issues/new?template=feature_request.md) section.
+- Suggest your change in the [Issues](https://github.com/miguelenes/doctranslate/issues/new?template=feature_request.md) section.
 
 ### **If you wish to add more translators**
 
@@ -32,7 +32,7 @@ Please pay special attention to:
 
 - This project only plans to support various accelerators through onnxruntime. Please submit your accelerator support directly to onnxruntime.
 
-- Additionally, [translation_config.py](https://github.com/funstory-ai/DocTranslate/blob/9e5be3a05c15ecae98024ba695e4a2db1412c062/doctranslate/translation_config.py#L41) shows that the layout model implementation actually used in this project is passed in from outside. You can implement a layout model class according to the relevant interface, and then pass it through this parameter at runtime.
+- Additionally, [translation_config.py](https://github.com/miguelenes/doctranslate/blob/main/doctranslate/format/pdf/translation_config.py) shows that the layout model implementation actually used in this project is passed in from outside. You can implement a layout model class according to the relevant interface, and then pass it through this parameter at runtime.
 
 ### **If you wish to contribute to DocTranslate**
 
@@ -40,7 +40,7 @@ Please pay special attention to:
 >
 > If you have any questions about the source code or related matters, please contact the maintainer at aw@funstory.ai .
 > 
-> You can also raise questions in [Issues](https://github.com/funstory-ai/DocTranslate/issues).
+> You can also raise questions in [Issues](https://github.com/miguelenes/doctranslate/issues).
 > 
 > You can contact the maintainers in the pdf2zh discussion group.
 > 
@@ -52,7 +52,7 @@ Please pay special attention to:
 > 3. PRs that do not comply with this specification.
 > 4. Other PRs that maintainers deem inappropriate.
 >
-> **This project cannot accept all PRs. We recommend that you discuss with the maintainers via [Issue](https://github.com/funstory-ai/DocTranslate/issues) before submitting a PR.**
+> **This project cannot accept all PRs. We recommend that you discuss with the maintainers via [Issue](https://github.com/miguelenes/doctranslate/issues) before submitting a PR.**
 
 [//]: # (> We welcome pull requests and will review your contributions.)
 
@@ -175,7 +175,7 @@ The existing codebase does not comply with the above specifications in some aspe
 
 #### How to modify the intermediate representation
 
-The intermediate representation is described by [il_version_1.rnc](https://github.com/funstory-ai/DocTranslate/blob/main/DocTranslate/format/pdf/document_il/il_version_1.rnc). Corresponding Python data classes are generated using [xsdata](https://xsdata.readthedocs.io/en/latest/). The files `il_version_1.rng`, `il_version_1.xsd`, and `il_version_1.py` are auto-generated and must not be manually modified.
+The intermediate representation is described by [il_version_1.rnc](https://github.com/miguelenes/doctranslate/blob/main/doctranslate/format/pdf/document_il/il_version_1.rnc). Corresponding Python data classes are generated using [xsdata](https://xsdata.readthedocs.io/en/latest/). The files `il_version_1.rng`, `il_version_1.xsd`, and `il_version_1.py` are auto-generated and must not be manually modified.
 
 ##### Format RNC file
 
@@ -199,5 +199,5 @@ xsdata generate doctranslate/format/pdf/document_il/il_version_1.xsd --package d
 ##### Profile memory usage
 
 ```bash
-uv run memray run --native --aggregate doctranslate/main.py -c yadt.toml
+uv run memray run --native --aggregate doctranslate/main.py -c doctranslate.toml
 ```

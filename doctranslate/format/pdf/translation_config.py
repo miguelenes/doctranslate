@@ -1,4 +1,5 @@
 import enum
+import hashlib
 import logging
 import shutil
 import tempfile
@@ -12,6 +13,9 @@ from doctranslate.format.pdf.split_manager import PageCountStrategy
 from doctranslate.glossary import Glossary
 from doctranslate.glossary import GlossaryEntry
 from doctranslate.progress_monitor import ProgressMonitor
+from doctranslate.translator.cache import flatten_glossary_entries_from_config
+from doctranslate.translator.cache import glossary_signature_from_pairs
+from doctranslate.translator.tm_policy import TMRuntimeConfig
 from doctranslate.translator.translator import BaseTranslator
 
 logger = logging.getLogger(__name__)
@@ -204,6 +208,15 @@ class TranslationConfig:
         llm_translation_batch_max_paragraphs: int | None = None,
         llm_term_extraction_batch_max_tokens: int | None = None,
         llm_term_extraction_batch_max_paragraphs: int | None = None,
+        tm_mode: str = "off",
+        tm_scope: str = "document",
+        tm_min_segment_chars: int = 12,
+        tm_fuzzy_min_score: float = 92.0,
+        tm_semantic_min_similarity: float = 0.90,
+        tm_project_id: str = "",
+        tm_embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
+        tm_import_path: str | None = None,
+        tm_export_path: str | None = None,
     ):
         self.translator = translator
         self.term_extraction_translator = term_extraction_translator or translator
@@ -384,6 +397,72 @@ class TranslationConfig:
 
         if self.ocr_workaround:
             self.remove_non_formula_lines = False
+
+        self.tm_mode = tm_mode
+        self.tm_scope = tm_scope
+        self.tm_min_segment_chars = tm_min_segment_chars
+        self.tm_fuzzy_min_score = tm_fuzzy_min_score
+        self.tm_semantic_min_similarity = tm_semantic_min_similarity
+        self.tm_project_id = tm_project_id or ""
+        self.tm_embedding_model = tm_embedding_model
+        self.tm_import_path = tm_import_path
+        self.tm_export_path = tm_export_path
+
+        self._apply_translation_memory_to_translators()
+
+    def _tm_document_scope(self) -> str:
+        try:
+            p = Path(self.input_file).resolve()
+        except OSError:
+            p = Path(str(self.input_file))
+        digest = hashlib.sha256(str(p).encode("utf-8", errors="replace")).hexdigest()
+        return digest[:24]
+
+    def _apply_translation_memory_to_translators(self) -> None:
+        pairs = flatten_glossary_entries_from_config(self)
+        gsig = glossary_signature_from_pairs(pairs)
+        rt = TMRuntimeConfig(
+            mode=TMRuntimeConfig.parse_mode(self.tm_mode),
+            scope=TMRuntimeConfig.parse_scope(self.tm_scope),
+            min_segment_chars=self.tm_min_segment_chars,
+            fuzzy_min_score=self.tm_fuzzy_min_score,
+            semantic_min_similarity=self.tm_semantic_min_similarity,
+            embedding_model=self.tm_embedding_model,
+        )
+        doc_scope = self._tm_document_scope()
+        proj_scope = (self.tm_project_id or "")[:512]
+        for tr in (self.translator, self.term_extraction_translator):
+            cache = getattr(tr, "cache", None)
+            if cache is None:
+                continue
+            if self.tm_import_path:
+                ip = Path(self.tm_import_path)
+                if ip.is_file():
+                    cache.import_tm_ndjson(ip)
+            cache.configure_tm_runtime(
+                tm_runtime=rt,
+                document_scope=doc_scope,
+                project_scope=proj_scope,
+                glossary_signature=gsig,
+                glossary_pairs=pairs,
+            )
+
+    def refresh_translation_memory_glossary_context(self) -> None:
+        """Call after auto-extracted glossary is finalized so TM safety matches prompts."""
+        self._apply_translation_memory_to_translators()
+
+    def run_tm_export_if_configured(self) -> None:
+        """Write TM NDJSON for the main translator fingerprint (after a job)."""
+        if not self.tm_export_path:
+            return
+        outp = Path(self.tm_export_path)
+        cache = getattr(self.translator, "cache", None)
+        if cache is None:
+            return
+        if outp.is_dir():
+            stem = Path(str(self.input_file)).stem
+            outp = outp / f"{stem}.tm.ndjson"
+        cache.export_tm_ndjson(outp)
 
     def parse_pages(self, pages_str: str | None) -> list[tuple[int, int]] | None:
         """解析页码字符串，返回页码范围列表

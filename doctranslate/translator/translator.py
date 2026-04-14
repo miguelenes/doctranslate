@@ -148,10 +148,12 @@ class BaseTranslator(ABC):
         self.translate_call_count += 1
         if not (self.ignore_cache or ignore_cache):
             try:
-                cache = self.cache.get(text)
-                if cache is not None:
+                res = self.cache.lookup(text)
+                if res.translation is not None:
                     self.translate_cache_call_count += 1
-                    return cache
+                    if res.layer != "legacy_exact":
+                        self.cache.promote_to_legacy_exact(text, res.translation)
+                    return res.translation
             except Exception as e:
                 logger.debug(f"try get cache failed, ignore it: {e}")
         _translate_rate_limiter.wait()
@@ -169,10 +171,12 @@ class BaseTranslator(ABC):
         self.translate_call_count += 1
         if not (self.ignore_cache or ignore_cache):
             try:
-                cache = self.cache.get(text)
-                if cache is not None:
+                res = self.cache.lookup(text)
+                if res.translation is not None:
                     self.translate_cache_call_count += 1
-                    return cache
+                    if res.layer != "legacy_exact":
+                        self.cache.promote_to_legacy_exact(text, res.translation)
+                    return res.translation
             except Exception as e:
                 logger.debug(f"try get cache failed, ignore it: {e}")
         _translate_rate_limiter.wait()

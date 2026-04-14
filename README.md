@@ -2,7 +2,7 @@
 
 **A powerful, extensible document translation engine with multi-translator orchestration and advanced PDF handling.**
 
-> **Note:** This is a customized fork of [DocTranslate](https://github.com/funstory-ai/DocTranslate) by funstory-ai. It builds upon DocTranslate's core translation pipeline and adds new architectural features. See [Attribution](#attribution) below for details.
+> **This repository:** [miguelenes/doctranslate](https://github.com/miguelenes/doctranslate) — a maintained fork of upstream [DocTranslate](https://github.com/funstory-ai/DocTranslate) (funstory-ai). See [Attribution](#attribution) for lineage and license.
 
 ---
 
@@ -18,6 +18,7 @@ DocTranslate is a specialized document translation system designed for **high-qu
 - **Glossary System**: Automatic term extraction and custom glossary management
 - **Parallel Processing**: Split large documents and process pages in parallel
 - **Cost Optimization**: Track per-translator costs and route to cheapest available backend
+- **Translation memory** (optional): normalized, fuzzy, or semantic reuse of prior segments — see [docs/translation-memory.md](docs/translation-memory.md)
 - **Extensible Architecture**: Easy to add custom translators, post-processors, and quality scorers
 
 ### Typical Use Cases
@@ -33,7 +34,7 @@ DocTranslate is a specialized document translation system designed for **high-qu
 
 ### Requirements
 - Python 3.10+
-- pip or conda
+- [uv](https://docs.astral.sh/uv/) (recommended) or pip
 
 ### Quick Start
 
@@ -41,11 +42,13 @@ DocTranslate is a specialized document translation system designed for **high-qu
 # Clone and install
 git clone https://github.com/miguelenes/doctranslate.git
 cd doctranslate
-pip install -e .
+uv sync --group dev
 
 # Verify installation
-doctranslate --version
-doctranslate --help
+uv run doctranslate --version
+uv run doctranslate --help
+# Optional kebab-case entry point (same CLI)
+uv run doc-translate --help
 ```
 
 ---
@@ -179,7 +182,7 @@ PDF Output (single/dual-language, watermarked)
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/doctranslate.git
+git clone https://github.com/miguelenes/doctranslate.git
 cd doctranslate
 
 # Create virtual environment
@@ -192,8 +195,11 @@ uv sync --group dev
 # Run tests
 uv run pytest tests/ -v
 
-# Build docs
-mkdocs serve  # http://localhost:8000
+# Build docs locally
+uv run mkdocs serve  # http://127.0.0.1:8000
+
+# Publishing to GitHub Pages (see docs/github-pages.md for one-time repo settings)
+# uv run mkdocs gh-deploy --force
 ```
 
 ### Running Tests
@@ -228,7 +234,7 @@ pytest --cov=doctranslate tests/
 - **Architecture Improvements**: Enhanced configuration, better extensibility
 
 ### License Compliance
-Both DocTranslate and DocTranslate are licensed under **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+This fork and upstream DocTranslate are licensed under **GNU Affero General Public License v3.0 (AGPL-3.0)**.
 
 If you run DocTranslate as a service, you must provide source code to users (AGPL §13). See `LICENSE` and `LICENSE.ADDITIONS` for full terms.
 
@@ -314,5 +320,4 @@ See `LICENSE` and `LICENSE.ADDITIONS` for full details.
 
 ---
 
-**Questions?** Open an issue or check the [documentation](docs/).
-# doctranslate
+**Questions?** Open an issue on [GitHub](https://github.com/miguelenes/doctranslate/issues) or browse the [documentation](docs/).

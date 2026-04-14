@@ -1,7 +1,7 @@
 [project]
 name = "DocTranslate"
 version = "0.5.24"
-description = "Yet Another Document Translator"
+description = "DocTranslate — PDF translation with layout preservation and multi-provider LLM routing"
 license = "AGPL-3.0"
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
@@ -23,7 +23,9 @@ dependencies = [
     "huggingface-hub>=0.27.0",
     "numpy>=2.0.2",
     "onnx>=1.18.0",
-    "onnxruntime>=1.16.1",
+    # ORT 1.24.1+ no longer publishes cp310 wheels; keep 3.10 installs on 1.23.x.
+    "onnxruntime>=1.16.1,<1.24; python_version < '3.11'",
+    "onnxruntime>=1.16.1; python_version >= '3.11'",
     "openai>=1.59.3",
     "orjson>=3.10.14",
     "charset-normalizer >= 2.0.0",
@@ -53,19 +55,32 @@ dependencies = [
     "scipy>=1.15.3",
     "uharfbuzz>=0.50.2",
     "scikit-learn>=1.7.1",
+    "rapidfuzz>=3.9.0",
 ]
 
 [project.optional-dependencies]
-directml = ["onnxruntime-directml>=1.16.1"]
-cuda = ["onnxruntime-gpu>=1.16.1"]
+directml = [
+    "onnxruntime-directml>=1.16.1,<1.24; python_version < '3.11'",
+    "onnxruntime-directml>=1.16.1; python_version >= '3.11'",
+]
+cuda = [
+    "onnxruntime-gpu>=1.16.1,<1.24; python_version < '3.11'",
+    "onnxruntime-gpu>=1.16.1; python_version >= '3.11'",
+]
 memray = ["memray>=1.17.1"]
+tm_semantic = [
+    "sentence-transformers>=3.3.0",
+    "torch>=2.2.0",
+]
 
 [project.urls]
-Homepage = "https://github.com/funstory-ai/DocTranslate"
-Issues = "https://github.com/funstory-ai/DocTranslate/issues"
+Homepage = "https://github.com/miguelenes/doctranslate"
+Documentation = "https://miguelenes.github.io/doctranslate/"
+Issues = "https://github.com/miguelenes/doctranslate/issues"
 
 [project.scripts]
 doctranslate = "doctranslate.main:cli"
+doc-translate = "doctranslate.main:cli"
 
 [build-system]
 requires = ["hatchling"]
@@ -181,9 +196,6 @@ version_pattern = "MAJOR.MINOR.PATCH[.PYTAGNUM]"
 "doctranslate/const.py" = [
     '__version__ = "{version}"'
 ]
-
-[tool.uv.sources]
-yadt = { path = ".", editable = true }
 
 [tool.pyright]
 pythonVersion = "3.10"

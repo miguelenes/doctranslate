@@ -48,6 +48,30 @@ def test_validate_router_rejects_unknown_provider():
         validate_router_config(bad)
 
 
+def test_load_nested_accepts_legacy_babeldoc_section(tmp_path: Path):
+    p = tmp_path / "legacy.toml"
+    p.write_text(
+        """
+[babeldoc]
+translator = "router"
+routing_profile = "translate"
+
+[babeldoc.profiles.translate]
+providers = ["a"]
+strategy = "failover"
+
+[babeldoc.providers.a]
+provider = "openai"
+model = "gpt-4o-mini"
+api_key = "sk-test"
+""",
+        encoding="utf-8",
+    )
+    nested = load_nested_translator_config(p)
+    assert nested.translator == "router"
+    assert "translate" in nested.profiles
+
+
 def test_validate_json_requirement():
     from doctranslate.translator.config import ProviderConfigModel
     from doctranslate.translator.config import RouteProfileConfig

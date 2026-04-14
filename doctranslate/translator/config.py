@@ -103,7 +103,7 @@ class ProviderConfigModel(BaseModel):
 
 
 class NestedTranslatorConfig(BaseModel):
-    """Subset of ``[doctranslate]`` for translator routing (loaded from raw TOML)."""
+    """Subset of ``[doctranslate]`` (or legacy ``[babeldoc]``) for translator routing."""
 
     model_config = ConfigDict(extra="ignore")
 
@@ -141,11 +141,18 @@ class NestedTranslatorConfig(BaseModel):
 
 
 def load_nested_translator_config(config_path: Path | None) -> NestedTranslatorConfig:
-    """Load ``[doctranslate]`` nested ``profiles`` / ``providers`` from a TOML file."""
+    """Load nested ``profiles`` / ``providers`` from a TOML file.
+
+    Reads ``[doctranslate]`` first. If missing, falls back to legacy ``[babeldoc]``
+    with the same nested shape (compatibility for older configs).
+    """
     if not config_path or not Path(config_path).exists():
         return NestedTranslatorConfig()
     data = toml.load(Path(config_path))
     dt = data.get("doctranslate")
+    if not isinstance(dt, dict):
+        legacy = data.get("babeldoc")
+        dt = legacy if isinstance(legacy, dict) else None
     if not isinstance(dt, dict):
         return NestedTranslatorConfig()
     return NestedTranslatorConfig.model_validate(_coerce_doctranslate_table(dt))
