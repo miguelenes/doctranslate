@@ -727,6 +727,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#prebuilt-images-github-container-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prebuilt images (GitHub Container Registry)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#build-targets" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2152,6 +2163,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#prebuilt-images-github-container-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prebuilt images (GitHub Container Registry)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#build-targets" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2327,6 +2349,50 @@
 <li>Docker 23+ with BuildKit (<code>DOCKER_BUILDKIT=1</code>).</li>
 <li>Linux <code>amd64</code> or <code>arm64</code> (buildx for multi-arch: <code>docker buildx build --platform linux/amd64,linux/arm64 …</code>).</li>
 </ul>
+<h2 id="prebuilt-images-github-container-registry">Prebuilt images (GitHub Container Registry)</h2>
+<p>On push to <code>main</code>, <a href="https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/docker.yml"><code>.github/workflows/docker.yml</code></a> builds and pushes <strong>amd64</strong> images to <strong>GitHub Packages</strong> (<code>ghcr.io</code>). Use your GitHub username or organization name in <strong>lowercase</strong> as <code>OWNER</code> (GHCR requires a lowercase owner in the image path).</p>
+<table>
+<thead>
+<tr>
+<th>Image</th>
+<th>Dockerfile target</th>
+<th>Typical use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ghcr.io/OWNER/doctranslater-base</code></td>
+<td><code>runtime-base</code></td>
+<td>Schemas / minimal CLI</td>
+</tr>
+<tr>
+<td><code>ghcr.io/OWNER/doctranslater-cpu</code></td>
+<td><code>runtime-cpu</code></td>
+<td>Default translate path (PDF + LLM + layout ONNX)</td>
+</tr>
+<tr>
+<td><code>ghcr.io/OWNER/doctranslater-vision</code></td>
+<td><code>runtime-vision</code></td>
+<td>Full optional stack (OCR, Hyperscan glossary path, …)</td>
+</tr>
+<tr>
+<td><code>ghcr.io/OWNER/doctranslater-dev</code></td>
+<td><code>runtime-dev</code></td>
+<td>Development / CI parity</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tags</strong></p>
+<ul>
+<li><code>main</code> — tip of the default branch when the workflow ran.</li>
+<li><code>sha-&lt;short&gt;</code> — commit SHA for reproducible pulls.</li>
+<li><code>latest</code> — only on <strong><code>doctranslater-cpu</code></strong> (the default runtime profile).</li>
+</ul>
+<p><strong>Pull and run</strong> (example for this fork; replace <code>OWNER</code> if you use a fork):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker<span class="w"> </span>pull<span class="w"> </span>ghcr.io/miguelenes/doctranslater-cpu:main
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>ghcr.io/miguelenes/doctranslater-cpu:main<span class="w"> </span>--help
+</span></code></pre></div>
+<p>Private packages require <code>docker login ghcr.io</code> (PAT with <code>read:packages</code>, or <code>GITHUB_TOKEN</code> in CI). For anonymous pulls, keep the package visibility <strong>public</strong> in the repo’s Packages settings.</p>
 <h2 id="build-targets">Build targets</h2>
 <table>
 <thead>
@@ -2366,38 +2432,38 @@
 <p><strong>OCR-heavy workloads:</strong> use <code>runtime-vision</code> (includes <code>ocr</code>) or rebuild <code>runtime-cpu</code> with <code>--build-arg INCLUDE_OCR=1</code> and extend system packages if needed.</p>
 <h2 id="quick-start">Quick start</h2>
 <p>Build the CPU image:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>runtime-cpu<span class="w"> </span>-t<span class="w"> </span>doctranslater:cpu<span class="w"> </span>.
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docker<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>runtime-cpu<span class="w"> </span>-t<span class="w"> </span>doctranslater:cpu<span class="w"> </span>.
 </span></code></pre></div>
 <p>Show CLI help (default command):</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>doctranslater:cpu
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>doctranslater:cpu
 </span></code></pre></div>
 <p>Translate a PDF (mount input/output and pass secrets at runtime, not in the image):</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>-e<span class="w"> </span>OPENAI_API_KEY<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">/examples/ci:/in:ro&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">/out:/out&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span>doctranslater:cpu<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span>translate<span class="w"> </span>/in/test.pdf<span class="w"> </span>--provider<span class="w"> </span>openai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span>--source-lang<span class="w"> </span>en<span class="w"> </span>--target-lang<span class="w"> </span>zh<span class="w"> </span>-o<span class="w"> </span>/out
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>-e<span class="w"> </span>OPENAI_API_KEY<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">/examples/ci:/in:ro&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">/out:/out&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span>doctranslater:cpu<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span>translate<span class="w"> </span>/in/test.pdf<span class="w"> </span>--provider<span class="w"> </span>openai<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span>--source-lang<span class="w"> </span>en<span class="w"> </span>--target-lang<span class="w"> </span>zh<span class="w"> </span>-o<span class="w"> </span>/out
 </span></code></pre></div>
 <p>Router or local mode with TOML on the host:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">:/work&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>-w<span class="w"> </span>/work<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span>doctranslater:cpu<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span>translate<span class="w"> </span>./doc.pdf<span class="w"> </span>--translator<span class="w"> </span>router<span class="w"> </span>-c<span class="w"> </span>./doctranslate.toml<span class="w"> </span>-o<span class="w"> </span>./out
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">:/work&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>-w<span class="w"> </span>/work<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span>doctranslater:cpu<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span>translate<span class="w"> </span>./doc.pdf<span class="w"> </span>--translator<span class="w"> </span>router<span class="w"> </span>-c<span class="w"> </span>./doctranslate.toml<span class="w"> </span>-o<span class="w"> </span>./out
 </span></code></pre></div>
 <p>Mount a persistent cache (models, fonts, TM SQLite, tiktoken cache):</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>-v<span class="w"> </span>doctranslate-cache:/home/doctranslater/.cache/doctranslate<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>doctranslater:cpu-warm<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span>translate<span class="w"> </span>/in/doc.pdf<span class="w"> </span>--provider<span class="w"> </span>openai<span class="w"> </span>--source-lang<span class="w"> </span>en<span class="w"> </span>--target-lang<span class="w"> </span>zh<span class="w"> </span>-o<span class="w"> </span>/out
-</span></code></pre></div>
-<p>Warm assets at runtime (slim images):</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>-v<span class="w"> </span>doctranslate-cache:/home/doctranslater/.cache/doctranslate<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>doctranslater:vision<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span>assets<span class="w"> </span>warmup
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>doctranslater:cpu-warm<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span>translate<span class="w"> </span>/in/doc.pdf<span class="w"> </span>--provider<span class="w"> </span>openai<span class="w"> </span>--source-lang<span class="w"> </span>en<span class="w"> </span>--target-lang<span class="w"> </span>zh<span class="w"> </span>-o<span class="w"> </span>/out
+</span></code></pre></div>
+<p>Warm assets at runtime (slim images):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>-v<span class="w"> </span>doctranslate-cache:/home/doctranslater/.cache/doctranslate<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>doctranslater:vision<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span>assets<span class="w"> </span>warmup
 </span></code></pre></div>
 <p>Air-gapped or pinned asset trees: use <code>doctranslate assets pack-offline</code> / <code>restore-offline</code> (see <a href="../ai/verification/">Verification</a> and CI in <code>.github/workflows/test.yml</code>).</p>
 <h2 id="entrypoint-and-signals">Entrypoint and signals</h2>
