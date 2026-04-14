@@ -7,6 +7,18 @@ Run DocTranslater in Linux containers for local use, CI, or deployment. Images a
 - Docker 23+ with BuildKit (`DOCKER_BUILDKIT=1`).
 - Linux `amd64` or `arm64` (buildx for multi-arch: `docker buildx build --platform linux/amd64,linux/arm64 …`).
 
+## Serverless containers
+
+For **Cloud Run**, **ECS Fargate**, **App Runner**, **Modal**, **Runpod**, and related patterns (image choice, warm assets, ephemeral disk, worker vs HTTP service), see:
+
+- [Serverless containers](serverless-containers.md) — platform matrix and architecture
+- [Serverless runtime & image reference](serverless-runtime-reference.md) — env vars and workload ↔ image matrix
+- [Deploy on Cloud Run](deploy-cloud-run.md) — primary reference
+- [Deploy on Fargate and App Runner](deploy-fargate-app-runner.md)
+- Example manifests: [Deploy samples](deploy-samples/README.md) (`cloud-run-service.sample.yaml`, `ecs-taskdef-api.sample.yaml`)
+
+**Profiles:** use **`runtime-api`** for the optional HTTP service; **`runtime-cpu`** / **`runtime-vision`** for CLI or worker-style batch. Warm variants (`runtime-cpu-warm`, `runtime-vision-warm`) reduce runtime downloads but need **network at image build** time.
+
 ## Prebuilt images (GitHub Container Registry)
 
 On push to `main`, [`.github/workflows/docker.yml`](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/docker.yml) builds and pushes **amd64** images to **GitHub Packages** (`ghcr.io`). Use your GitHub username or organization name in **lowercase** as `OWNER` (GHCR requires a lowercase owner in the image path).

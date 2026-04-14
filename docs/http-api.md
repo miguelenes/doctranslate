@@ -27,6 +27,16 @@ uv run doctranslate serve --host 127.0.0.1 --port 8000
 - OpenAPI UI: `http://127.0.0.1:8000/docs`
 - OpenAPI JSON: `http://127.0.0.1:8000/openapi.json`
 
+## Serverless and multi-instance behavior
+
+The HTTP API uses an **in-process** `JobManager` (bounded concurrency + on-disk `meta.json` per job). That implies:
+
+- **`POST /v1/jobs` returns `202`** with a `job_id`; **`GET /v1/jobs/{id}`** polls state on **that same container instance** unless you add infrastructure that pins the client to the instance (e.g. Cloud Run **session affinity**, ALB **stickiness**).
+- **Horizontal scaling** adds replicas that **do not share** the in-memory queue. For production multi-replica APIs, prefer an **external job queue** and **object storage** for inputs/outputs, or accept single-replica semantics.
+- **Restarts**: completed/failed jobs may still be **readable from disk** if `DOCTRANSLATE_API_DATA_ROOT` persists; **in-flight** tasks do not survive process restart.
+
+For platform guidance, see [Serverless containers](serverless-containers.md) and [Deploy on Cloud Run](deploy-cloud-run.md).
+
 ## Docker
 
 Build the API image (extends the CPU translate stack + `api` extra):
@@ -94,12 +104,23 @@ curl -sS "http://127.0.0.1:8000/v1/jobs/$JOB_ID/result"
 | `DOCTRANSLATE_API_JOB_TIMEOUT_SECONDS` | `0` | Per-job wall clock (`0` = off) |
 | `DOCTRANSLATE_API_REQUIRE_ASSETS_READY` | `false` | If `true`, readiness requires warmed assets |
 | `DOCTRANSLATE_API_WARMUP_ON_STARTUP` | `none` | `none` \| `lazy` \| `eager` (only `eager` is implemented: run `assets.warmup` at startup) |
+| `DOCTRANSLATE_API_ARTIFACT_RETENTION_SECONDS` | `86400` | Reserved for future TTL cleanup of job workspaces — **not enforced** by the HTTP layer today; use external lifecycle rules |
 
 ## Production notes
 
 - Prefer **horizontal scaling** (several single-worker replicas) over many Uvicorn workers per replica: the layout ONNX model and PDF work are memory-heavy.
 - Put `DOCTRANSLATE_API_DATA_ROOT` on a writable volume; mount `~/.cache/doctranslate` for persistent fonts/models/TM.
 - Configure reverse-proxy `client_max_body_size` to match `DOCTRANSLATE_API_MAX_UPLOAD_BYTES`.
+
+### Serverless deployment (short checklist)
+
+1. Choose image **`runtime-api`** and container port **8000** (see [Docker image profiles](docker-profiles.md)).
+2. Set **`DOCTRANSLATE_API_DATA_ROOT`** (and optionally **`DOCTRANSLATE_API_TMP_ROOT`**) on **fast writable** storage.
+3. Decide warmup strategy: baked **warm** image, `DOCTRANSLATE_API_WARMUP_ON_STARTUP=eager`, or `POST /v1/assets/warmup` after deploy.
+4. Set **`DOCTRANSLATE_API_JOB_TIMEOUT_SECONDS`** when the platform needs a hard wall-clock bound.
+5. For multi-replica services, read [Serverless and multi-instance behavior](#serverless-and-multi-instance-behavior) and enable **session affinity** only as a best-effort mitigation.
+
+Full matrix and image tags: [Serverless runtime & image reference](serverless-runtime-reference.md).
 
 ## ASGI import
 

@@ -12,6 +12,17 @@ Build from the repository root with `-f Dockerfile`. The [`Dockerfile`](https://
 | `runtime-vision-warm` | same as `runtime-vision` | Warm asset cache baked in |
 | `runtime-dev` | `full` + `[dependency-groups] dev` | Pytest, Ruff, MkDocs in container |
 
+## Serverless / deployment role mapping
+
+Use this table when choosing a **service** vs **worker** image for managed platforms ([Serverless containers](serverless-containers.md)).
+
+| Deployment role | Dockerfile target | Notes |
+|-----------------|--------------------|-------|
+| HTTP API (FastAPI / Uvicorn) | `runtime-api` | Default `CMD` is `serve` on port **8000** |
+| Batch / queue worker (CLI) | `runtime-cpu` or `runtime-vision` | Run `doctranslate translate …` or embed `doctranslate.api` |
+| Lowest cold-start (CPU stack) | `runtime-cpu-warm` | Pre-populated `~/.cache/doctranslate` in the image |
+| Full stack + lowest cold-start | `runtime-vision-warm` | CI-parity extras + baked cache |
+
 ## Build arguments
 
 | ARG | Default | Stages | Meaning |

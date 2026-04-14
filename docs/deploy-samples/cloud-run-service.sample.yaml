@@ -1,0 +1,25 @@
+# Sample Knative Service for Google Cloud Run (shape only — validate against your org's policies).
+# Image: build runtime-api or use ghcr.io/<owner>/doctranslater-api:main
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: doctranslater-api
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+    spec:
+      containerConcurrency: 8
+      timeoutSeconds: 3600
+      containers:
+        - image: ghcr.io/OWNER/doctranslater-api:main
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DOCTRANSLATE_API_MAX_CONCURRENT_JOBS
+              value: "1"
+            # Optional: eager asset warmup at startup (slower boot, faster first job)
+            # - name: DOCTRANSLATE_API_WARMUP_ON_STARTUP
+            #   value: eager

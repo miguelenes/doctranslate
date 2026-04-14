@@ -35,6 +35,7 @@ uv run doctranslate translate input.pdf --provider openai \
 | [HTTP API](http-api.md) | Optional container service (`serve`, OpenAPI) |
 | [Configuration](configuration.md) | CLI flags, TOML `[doctranslate]`, env vars, cache |
 | [Docker](docker.md) | Container images, volumes, warm vs slim builds |
+| [Serverless containers](serverless-containers.md) | Cloud Run, Fargate, App Runner, Modal, Runpod deployment patterns |
 | [Troubleshooting](troubleshooting.md) | Common install and runtime failures |
 | [Benchmarks](benchmarks.md) | How to measure performance (no CI SLAs) |
 | [Multi-provider routing](multi-translator.md) | Router profiles, failover, metrics |

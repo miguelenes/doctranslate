@@ -23,6 +23,8 @@ docker build --target runtime-dev -t doctranslater:dev .
 
 Smoke examples: [Docker](../docker.md).
 
+Serverless / container deploy docs: [Serverless containers](../serverless-containers.md), [Deploy on Cloud Run](../deploy-cloud-run.md), [Deploy samples](../deploy-samples/README.md). CI exercises API boot + a **skip-translation** job in [`.github/workflows/docker.yml`](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/docker.yml).
+
 If you change `pyproject.toml` dependencies, run **`uv lock`** and commit **`uv.lock`** so CI (`uv sync --locked`) stays in sync.
 
 ## CI lanes (what runs where)

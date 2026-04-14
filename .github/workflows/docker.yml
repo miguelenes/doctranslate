@@ -12,6 +12,13 @@ on:
       - doctranslate/**
       - docs/docker.md
       - docs/docker-profiles.md
+      - docs/serverless-containers.md
+      - docs/deploy-cloud-run.md
+      - docs/deploy-fargate-app-runner.md
+      - docs/deploy-modal-runpod.md
+      - docs/serverless-runtime-reference.md
+      - docs/http-api.md
+      - docs/deploy-samples/**
       - .github/workflows/docker.yml
   pull_request:
     branches: ["main"]
@@ -24,6 +31,13 @@ on:
       - doctranslate/**
       - docs/docker.md
       - docs/docker-profiles.md
+      - docs/serverless-containers.md
+      - docs/deploy-cloud-run.md
+      - docs/deploy-fargate-app-runner.md
+      - docs/deploy-modal-runpod.md
+      - docs/serverless-runtime-reference.md
+      - docs/http-api.md
+      - docs/deploy-samples/**
       - .github/workflows/docker.yml
   workflow_dispatch:
 
@@ -142,6 +156,15 @@ jobs:
             -v "${{ github.workspace }}/examples/ci:/in:ro" \
             "$IMAGE" \
             inspect /in/test.pdf
+          OUTDIR="$(mktemp -d)"
+          chmod a+rwx "$OUTDIR"
+          docker run --rm \
+            -e OPENAI_API_KEY=ci-smoke-skip-translation \
+            -v "${{ github.workspace }}/examples/ci:/in:ro" \
+            -v "$OUTDIR:/out" \
+            "$IMAGE" \
+            translate /in/test.pdf --provider openai --skip-translation -o /out
+          test "$(find "$OUTDIR" -type f | wc -l)" -gt 0
 
       - name: Smoke (vision)
         if: matrix.smoke == 'vision'
@@ -157,6 +180,7 @@ jobs:
       - name: Smoke (api)
         if: matrix.smoke == 'api'
         run: |
+          set -euo pipefail
           if [ "$GITHUB_REF" = "refs/heads/main" ]; then
             IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
           else
@@ -164,6 +188,81 @@ jobs:
           fi
           docker run --rm --entrypoint "" "$IMAGE" \
             /opt/venv/bin/python -c "from doctranslate.http_api.app import app; assert app.title"
+          docker rm -f dt-api-ci-smoke 2>/dev/null || true
+          docker run -d --name dt-api-ci-smoke \
+            -p 18000:8000 \
+            -e OPENAI_API_KEY=ci-smoke-placeholder \
+            -e DOCTRANSLATE_API_DATA_ROOT=/tmp/dt-api-ci \
+            "$IMAGE"
+          cleanup() { docker rm -f dt-api-ci-smoke 2>/dev/null || true; }
+          trap cleanup EXIT
+          for i in $(seq 1 60); do
+            if curl -sf "http://127.0.0.1:18000/v1/health/live" >/dev/null; then
+              break
+            fi
+            if [ "$i" -eq 60 ]; then
+              echo "::error::health/live timeout"
+              docker logs dt-api-ci-smoke 2>&1 || true
+              exit 1
+            fi
+            sleep 2
+          done
+          python3 <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+          import time
+          import urllib.error
+          import urllib.request
+
+          base = "http://127.0.0.1:18000"
+          ws = os.environ["GITHUB_WORKSPACE"]
+          pdf = os.path.join(ws, "examples", "ci", "test.pdf")
+          try:
+              out = subprocess.check_output(
+                  [
+                      "curl",
+                      "-sS",
+                      "-X",
+                      "POST",
+                      f"{base}/v1/jobs",
+                      "-F",
+                      (
+                          "translation_request="
+                          '{"schema_version":"1","lang_in":"en","lang_out":"zh",'
+                          '"translator":{"mode":"openai","openai":{"model":"gpt-4o-mini"}},'
+                          '"options":{"skip_translation":true}}'
+                      ),
+                      "-F",
+                      f"input_pdf=@{pdf};type=application/pdf",
+                  ],
+                  text=True,
+              )
+          except subprocess.CalledProcessError as e:
+              print("curl create job failed", e, flush=True)
+              sys.exit(1)
+          print(out, flush=True)
+          job_id = json.loads(out)["job_id"]
+          for _ in range(180):
+              try:
+                  with urllib.request.urlopen(f"{base}/v1/jobs/{job_id}", timeout=60) as r:
+                      d = json.load(r)
+              except urllib.error.URLError as e:
+                  print("poll error", e, flush=True)
+                  time.sleep(2)
+                  continue
+              st = d.get("state")
+              if st == "succeeded":
+                  print("job succeeded", flush=True)
+                  sys.exit(0)
+              if st == "failed":
+                  print("job failed", d, flush=True)
+                  sys.exit(1)
+              time.sleep(2)
+          print("timeout waiting for job", flush=True)
+          sys.exit(2)
+          PY
 
       - name: Smoke (dev)
         if: matrix.smoke == 'dev'

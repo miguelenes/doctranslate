@@ -142,6 +142,12 @@ nav:
   - Docker:
       - Overview: docker.md
       - Image profiles: docker-profiles.md
+      - Serverless overview: serverless-containers.md
+      - Deploy on Cloud Run: deploy-cloud-run.md
+      - Deploy on Fargate / App Runner: deploy-fargate-app-runner.md
+      - Modal / Runpod: deploy-modal-runpod.md
+      - Serverless runtime reference: serverless-runtime-reference.md
+      - Deploy samples: deploy-samples/README.md
   - Benchmarks: benchmarks.md
   - Translation memory: translation-memory.md
   - Multi-Provider Routing: multi-translator.md
