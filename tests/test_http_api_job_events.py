@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from time import monotonic
 
 import pytest
 from doctranslate.http_api.settings import get_settings
@@ -72,7 +71,12 @@ def test_job_events_and_manifest_after_success(api_client: TestClient) -> None:
     if res.json()["state"] == "succeeded":
         man = api_client.get(f"/v1/jobs/{job_id}/manifest")
         assert man.status_code == 200
-        assert man.json()["items"]
+        items = man.json()["items"]
+        assert items
+        kind = items[0]["kind"]
+        h = api_client.head(f"/v1/jobs/{job_id}/artifacts/{kind}")
+        assert h.status_code == 200
+        assert "content-length" in {k.lower() for k in h.headers.keys()}
 
 
 def test_job_sse_stream_smoke(api_client: TestClient) -> None:
@@ -100,39 +104,3 @@ def test_job_sse_stream_smoke(api_client: TestClient) -> None:
             if b"job_completed" in buf or b"progress_" in buf or len(buf) > 5000:
                 break
         assert buf, "expected non-empty SSE body"
-
-
-def test_head_artifact(api_client: TestClient) -> None:
-    pdf = _pdf_path()
-    tr = {
-        "schema_version": "1",
-        "lang_in": "en",
-        "lang_out": "zh",
-        "translator": {"mode": "openai", "openai": {"model": "gpt-4o-mini"}},
-        "options": {"skip_translation": True},
-    }
-    with pdf.open("rb") as fh:
-        r = api_client.post(
-            "/v1/jobs",
-            data={"translation_request": json.dumps(tr)},
-            files={"input_pdf": ("test.pdf", fh, "application/pdf")},
-        )
-    assert r.status_code == 202, r.text
-    job_id = r.json()["job_id"]
-    res = None
-    deadline = monotonic() + 30.0
-    while monotonic() < deadline:
-        res = api_client.get(f"/v1/jobs/{job_id}/result")
-        if res.status_code == 200 and res.json()["state"] == "succeeded":
-            break
-        time.sleep(0.05)
-    else:
-        pytest.skip("job did not complete in time")
-    assert res is not None
-    kinds = {a["kind"] for a in res.json().get("artifacts", [])}
-    if not kinds:
-        pytest.skip("no artifacts")
-    kind = next(iter(kinds))
-    h = api_client.head(f"/v1/jobs/{job_id}/artifacts/{kind}")
-    assert h.status_code == 200
-    assert "content-length" in {k.lower() for k in h.headers.keys()}
