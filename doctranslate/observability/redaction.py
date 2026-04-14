@@ -16,6 +16,7 @@ _REDACT_KEYS = frozenset(
         "openai_api_key",
         "x-api-key",
         "bearer",
+        "webhook_json",
     },
 )
 

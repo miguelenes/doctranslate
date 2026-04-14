@@ -5,6 +5,15 @@ The API is implemented with FastAPI and exposed under the `/v1` prefix.
 
 For full deployment and storage/backend details, see `docs/http-api.md`.
 
+## Authentication
+
+By default the HTTP API accepts requests **without** credentials (`DOCTRANSLATE_API_AUTH_MODE=disabled`). For any network beyond localhost, set **`DOCTRANSLATE_API_AUTH_MODE=required`** and provide a strong **`DOCTRANSLATE_API_AUTH_TOKEN`**, then send either:
+
+- `Authorization: Bearer <DOCTRANSLATE_API_AUTH_TOKEN>`, or
+- `X-API-Key: <DOCTRANSLATE_API_AUTH_TOKEN>` (header name is configurable).
+
+Liveness/readiness (`GET /v1/health/live`, `GET /v1/health/ready`) can stay public for probes; metrics and OpenAPI UI require the same token when auth is required. Full matrix, CORS, Docker, and troubleshooting: **[HTTP API — Authentication](docs/http-api.md#authentication)**.
+
 ## Run the API
 
 ```bash
@@ -26,16 +35,20 @@ uv run doctranslate serve --host 127.0.0.1 --port 8000
 | `POST` | `/v1/config/validate` | Validate `translation_request` and/or translator config |
 | `POST` | `/v1/inspect` | Inspect input PDFs without translation |
 | `POST` | `/v1/jobs` | Create translation job (`202`) using multipart upload or mounted path |
-| `GET` | `/v1/jobs/{job_id}` | Read job status/progress |
+| `GET` | `/v1/jobs/{job_id}` | Read job status/progress (`progress_seq` for event cursor) |
+| `GET` | `/v1/jobs/{job_id}/events` | List progress events after `after_seq` (replay / catch-up) |
+| `GET` | `/v1/jobs/{job_id}/stream` | SSE progress stream (`Last-Event-ID` reconnect; optional `full_events=1`) |
 | `POST` | `/v1/jobs/{job_id}/cancel` | Best-effort job cancellation (`204`) |
 | `GET` | `/v1/jobs/{job_id}/result` | Read result envelope + artifact links |
+| `GET` | `/v1/jobs/{job_id}/manifest` | Artifact manifest with resolved download URLs |
 | `GET` | `/v1/jobs/{job_id}/artifacts/{kind}` | Download/stream one artifact (supports `Range`) |
+| `HEAD` | `/v1/jobs/{job_id}/artifacts/{kind}` | Artifact metadata (`Content-Length`) without body |
 
 ## Typical Job Flow
 
-1. `POST /v1/jobs` to enqueue work.
-2. Poll `GET /v1/jobs/{job_id}` until terminal state (`succeeded`, `failed`, `canceled`).
-3. `GET /v1/jobs/{job_id}/result` to get result details and artifact URLs.
+1. `POST /v1/jobs` to enqueue work (optional `webhook` multipart field for terminal callbacks).
+2. Poll `GET /v1/jobs/{job_id}` until terminal state (`succeeded`, `failed`, `canceled`), or subscribe to `GET /v1/jobs/{job_id}/stream` (SSE).
+3. `GET /v1/jobs/{job_id}/result` to get result details and artifact URLs (or `GET .../manifest`).
 4. Optionally download specific files via `/v1/jobs/{job_id}/artifacts/{kind}`.
 
 ## Create a Translation Job
@@ -87,6 +100,7 @@ Common statuses include:
 - `413` upload exceeds configured max size
 - `422` validation failure
 - `503` queue at capacity / service busy
+- `401` missing or invalid HTTP API authentication (when `DOCTRANSLATE_API_AUTH_MODE=required`)
 
 ## Important Notes
 

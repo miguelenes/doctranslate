@@ -2,6 +2,8 @@
 
 When `DOCTRANSLATE_API_QUEUE_BACKEND=arq`, the API process **only enqueues** jobs to Redis; a separate **worker** process runs translations and asset warmups. Job metadata stays in SQLite (`DOCTRANSLATE_API_METADATA_SQLITE_PATH` or default under `DOCTRANSLATE_API_DATA_ROOT`); artifacts use the same [HTTP API storage](http-api-storage-backends.md) settings as the API.
 
+**Live progress:** `GET /v1/jobs/{id}/stream` (SSE) and `GET /v1/jobs/{id}/events` read from the shared SQLite `job_events` table written by workers. There is no in-process fan-out across replicas—any API instance can serve the stream by polling metadata.
+
 ## Requirements
 
 - `DocTranslater[api]` (includes `arq` and `redis`).

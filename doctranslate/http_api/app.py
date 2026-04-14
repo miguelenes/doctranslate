@@ -13,7 +13,10 @@ from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from doctranslate.http_api.auth import OperatorPathsAuthMiddleware
+from doctranslate.http_api.auth import install_openapi_auth_extension
 from doctranslate.http_api.job_manager import JobManager
+from doctranslate.http_api.job_progress_hub import JobProgressHub
 from doctranslate.http_api.job_service import HttpJobService
 from doctranslate.http_api.observability_setup import install_observability
 from doctranslate.http_api.queue_backends.arq_backend import ArqQueueBackend
@@ -53,6 +56,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         )
         await arq_backend.ping()
     app.state.arq_pool = arq_pool
+    progress_hub = JobProgressHub()
+    app.state.job_progress_hub = progress_hub
     job_manager = JobManager(
         artifact_store=artifact_store,
         metadata_store=metadata_store,
@@ -64,6 +69,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         dual_write_json_meta=settings.dual_write_json_meta,
         read_json_meta_fallback=settings.read_json_meta_fallback,
         artifact_retention_seconds=settings.artifact_retention_seconds,
+        progress_hub=progress_hub,
     )
     app.state.job_manager = job_manager
     app.state.job_service = HttpJobService(
@@ -90,6 +96,28 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                     logger.exception("TTL cleanup sweep failed")
 
     ttl_task = asyncio.create_task(_ttl_sweep(), name="http-api-ttl")
+    stop_wh = asyncio.Event()
+
+    async def _webhook_sweep() -> None:
+        from doctranslate.http_api.webhook_delivery import run_webhook_delivery_sweep
+
+        while not stop_wh.is_set():
+            try:
+                await asyncio.wait_for(
+                    stop_wh.wait(),
+                    timeout=settings.webhook_sweep_interval_seconds,
+                )
+                break
+            except asyncio.TimeoutError:
+                try:
+                    await run_webhook_delivery_sweep(
+                        metadata_store=metadata_store,
+                        settings=settings,
+                    )
+                except Exception:
+                    logger.exception("Webhook delivery sweep failed")
+
+    wh_task = asyncio.create_task(_webhook_sweep(), name="http-api-webhooks")
     if settings.warmup_on_startup == "eager":
         from doctranslate.assets import assets as assets_mod
 
@@ -104,6 +132,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             await ttl_task
         except asyncio.CancelledError:
             pass
+        stop_wh.set()
+        wh_task.cancel()
+        try:
+            await wh_task
+        except asyncio.CancelledError:
+            pass
         metadata_store.close()
         if arq_pool is not None:
             await arq_pool.close(close_connection_pool=True)
@@ -111,17 +145,26 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 def create_app() -> FastAPI:
     """Build the HTTP API application (ASGI callable)."""
+    settings = get_settings()
+    docs_kwargs: dict = {}
+    if not settings.docs_enabled:
+        docs_kwargs = {
+            "docs_url": None,
+            "redoc_url": None,
+            "openapi_url": None,
+        }
     app = FastAPI(
         title="DocTranslater HTTP API",
         version="1",
         lifespan=lifespan,
+        **docs_kwargs,
     )
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=False,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_origins=settings.cors_allow_origins,
+        allow_credentials=settings.cors_allow_credentials,
+        allow_methods=settings.cors_allow_methods,
+        allow_headers=settings.cors_allow_headers,
     )
 
     @app.exception_handler(HTTPException)
@@ -143,6 +186,8 @@ def create_app() -> FastAPI:
     app.include_router(inspect_routes.router)
     app.include_router(jobs_routes.router)
     install_observability(app)
+    app.add_middleware(OperatorPathsAuthMiddleware)
+    install_openapi_auth_extension(app)
     return app
 
 

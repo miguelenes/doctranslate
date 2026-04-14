@@ -15,6 +15,7 @@ from doctranslate.http_api.artifact_store import ArtifactStore
 from doctranslate.http_api.metadata_store.sqlite import SqliteJobMetadataStore
 from doctranslate.http_api.storage import utcnow
 from doctranslate.http_api.storage import write_meta
+from doctranslate.http_api.webhook_delivery import maybe_enqueue_terminal_webhook
 from doctranslate.schemas.enums import PublicErrorCode
 from doctranslate.schemas.public_api import TranslationErrorPayload
 from doctranslate.schemas.public_api import TranslationResult
@@ -77,7 +78,17 @@ def persist_job_row(
     request_json: str | None = None,
     cancel_requested_at: datetime | None = None,
     worker_heartbeat_at: datetime | None = None,
+    log_progress_event: bool = False,
 ) -> None:
+    raw = metadata_store.get_job_raw(job_id)
+    webhook_json = raw.get("webhook_json") if raw else None
+    current_seq = int(raw.get("progress_seq") or 0) if raw else 0
+    if log_progress_event and progress is not None:
+        use_seq = current_seq + 1
+        do_log = True
+    else:
+        use_seq = current_seq
+        do_log = False
     retention = _retention_deadline(state, artifact_retention_seconds)
     metadata_store.upsert_job(
         job_id=job_id,
@@ -93,6 +104,9 @@ def persist_job_row(
         request_json=request_json,
         cancel_requested_at=cancel_requested_at,
         worker_heartbeat_at=worker_heartbeat_at,
+        progress_seq=use_seq,
+        log_progress_event=do_log,
+        webhook_json=webhook_json if isinstance(webhook_json, str) else None,
     )
     if dual_write_json_meta:
         paths = artifact_store.job_paths(job_id)
@@ -103,11 +117,14 @@ def persist_job_row(
             "created_at": created_at,
             "updated_at": updated_at,
             "progress": progress,
+            "progress_seq": use_seq,
             "error": error.model_dump(mode="json") if error else None,
             "result": result.model_dump(mode="json") if result else None,
             "message": message,
         }
         write_meta(paths.meta_path, payload)
+    if state in {"succeeded", "failed", "canceled"}:
+        maybe_enqueue_terminal_webhook(metadata_store, job_id=job_id)
 
 
 async def _consume_translate_events(
@@ -144,6 +161,7 @@ async def _consume_translate_events(
             error=None,
             result=None,
             message=None,
+            log_progress_event=True,
         )
         et = ev.get("type")
         if et == "error":

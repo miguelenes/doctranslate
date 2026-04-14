@@ -52,6 +52,8 @@ def disk_to_memory_record(
         "created_at": parse_dt(disk.get("created_at")),
         "updated_at": parse_dt(disk.get("updated_at")),
         "progress": disk.get("progress"),
+        "progress_seq": int(disk.get("progress_seq") or 0),
+        "webhook_json": disk.get("webhook_json"),
         "error": TranslationErrorPayload.model_validate(err) if err else None,
         "result": TranslationResult.model_validate(res) if res else None,
         "paths": paths,

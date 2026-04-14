@@ -136,6 +136,21 @@ For HTTP services (`runtime-api`), you can also scrape **`/metrics`** and ship J
 - Do not bake API keys into images; use `-e` / secrets and `api_key_env` in TOML ([Configuration](configuration.md)).
 - For read-only root filesystems, mount writable volumes for `HOME/.cache/doctranslate`, job output (`-o`), and optional `--working-dir`.
 
+### HTTP API (`runtime-api`)
+
+The optional HTTP API supports a **shared secret** for inbound requests (separate from LLM provider keys). See [HTTP API — Authentication](http-api.md#authentication).
+
+```bash
+docker run --rm -p 8000:8000 \
+  -e DOCTRANSLATE_API_AUTH_MODE=required \
+  -e DOCTRANSLATE_API_AUTH_TOKEN \
+  -e OPENAI_API_KEY \
+  ghcr.io/OWNER/doctranslater-api:main
+```
+
+- With `DOCTRANSLATE_API_AUTH_MODE=disabled` (default), clients need no `Authorization` header.
+- With `required`, pass **`Authorization: Bearer $DOCTRANSLATE_API_AUTH_TOKEN`** or **`X-API-Key`** on every protected call (see [HTTP API](http-api.md) for probe exceptions and CORS).
+
 ## Local LLM connectivity
 
 Containers cannot reach `localhost` on the host. Point `--local-base-url` (or TOML) at:

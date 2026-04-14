@@ -5,8 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi import APIRouter
+from fastapi import Depends
 from pydantic import ValidationError
 
+from doctranslate.http_api.auth import require_api_operator
 from doctranslate.http_api.models import ConfigValidateRequest
 from doctranslate.http_api.models import ConfigValidateResponse
 from doctranslate.translator.config import load_nested_translator_config
@@ -14,7 +16,10 @@ from doctranslate.translator.config import merge_cli_router_overrides_from_mappi
 from doctranslate.translator.config import validate_router_config
 from doctranslate.translator.providers.local_preflight import LocalPreflightError
 
-router = APIRouter(tags=["config"])
+router = APIRouter(
+    tags=["config"],
+    dependencies=[Depends(require_api_operator)],
+)
 
 
 @router.post("/v1/config/validate", response_model=ConfigValidateResponse)

@@ -6,9 +6,12 @@ import logging
 import sys
 
 from fastapi import APIRouter
+from fastapi import Depends
 
 from doctranslate import __version__ as package_version
 from doctranslate.const import CACHE_FOLDER
+from doctranslate.http_api.auth import require_api_operator
+from doctranslate.http_api.auth import require_api_operator_when_probes_are_protected
 from doctranslate.http_api.deps import JobServiceDep
 from doctranslate.http_api.deps import SettingsDep
 from doctranslate.http_api.models import AssetFileStatus
@@ -22,12 +25,20 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["health"])
 
 
-@router.get("/v1/health/live", response_model=HealthLiveResponse)
+@router.get(
+    "/v1/health/live",
+    response_model=HealthLiveResponse,
+    dependencies=[Depends(require_api_operator_when_probes_are_protected)],
+)
 def health_live() -> HealthLiveResponse:
     return HealthLiveResponse()
 
 
-@router.get("/v1/health/ready", response_model=HealthReadyResponse)
+@router.get(
+    "/v1/health/ready",
+    response_model=HealthReadyResponse,
+    dependencies=[Depends(require_api_operator_when_probes_are_protected)],
+)
 async def health_ready(
     settings: SettingsDep,
     job_service: JobServiceDep,
@@ -110,7 +121,11 @@ async def health_ready(
     )
 
 
-@router.get("/v1/runtime", response_model=RuntimeInfoResponse)
+@router.get(
+    "/v1/runtime",
+    response_model=RuntimeInfoResponse,
+    dependencies=[Depends(require_api_operator)],
+)
 def runtime_info() -> RuntimeInfoResponse:
     return RuntimeInfoResponse(
         package_version=package_version,
@@ -119,7 +134,11 @@ def runtime_info() -> RuntimeInfoResponse:
     )
 
 
-@router.get("/v1/assets/status", response_model=AssetStatusResponse)
+@router.get(
+    "/v1/assets/status",
+    response_model=AssetStatusResponse,
+    dependencies=[Depends(require_api_operator)],
+)
 def assets_status() -> AssetStatusResponse:
     from doctranslate.assets import assets as assets_mod
 

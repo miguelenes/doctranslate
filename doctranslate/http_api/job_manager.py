@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from doctranslate.http_api.artifact_store import ArtifactStore
+from doctranslate.http_api.job_progress_hub import JobProgressHub
 from doctranslate.http_api.job_records import disk_to_memory_record
 from doctranslate.http_api.job_validation import (
     validate_mounted_input as validate_mounted_path,
@@ -22,6 +23,7 @@ from doctranslate.http_api.storage import JobPaths
 from doctranslate.http_api.storage import read_meta
 from doctranslate.http_api.storage import utcnow
 from doctranslate.http_api.storage import write_meta
+from doctranslate.http_api.webhook_delivery import maybe_enqueue_terminal_webhook
 from doctranslate.observability.metrics import record_job_created
 from doctranslate.observability.metrics import record_job_duration
 from doctranslate.observability.metrics import record_job_terminal
@@ -50,9 +52,11 @@ class JobManager:
         dual_write_json_meta: bool,
         read_json_meta_fallback: bool,
         artifact_retention_seconds: float,
+        progress_hub: JobProgressHub | None = None,
     ) -> None:
         self._artifact_store = artifact_store
         self._metadata_store = metadata_store
+        self._progress_hub = progress_hub
         self._sem = asyncio.Semaphore(max(1, max_concurrent))
         self._job_timeout = job_timeout_seconds
         self._mounted_allow_prefixes = mounted_allow_prefixes
@@ -74,6 +78,11 @@ class JobManager:
         """Backward-compatible alias for the artifact store."""
         return self._artifact_store
 
+    def has_active_runner(self, job_id: str) -> bool:
+        """True when this process is actively running the job task (in-process mode)."""
+        task = self._tasks.get(job_id)
+        return task is not None and not task.done()
+
     def accepts_new_jobs(self) -> bool:
         """Return False when queued+running jobs reached the configured ceiling."""
         n = sum(1 for r in self._jobs.values() if r["state"] in ("queued", "running"))
@@ -94,6 +103,7 @@ class JobManager:
             "created_at": rec["created_at"],
             "updated_at": rec["updated_at"],
             "progress": rec.get("progress"),
+            "progress_seq": int(rec.get("progress_seq") or 0),
             "error": rec["error"].model_dump(mode="json") if rec.get("error") else None,
             "result": rec["result"].model_dump(mode="json")
             if rec.get("result")
@@ -101,11 +111,14 @@ class JobManager:
             "message": rec.get("message"),
         }
 
-    def _persist(self, job_id: str) -> None:
+    def _persist(self, job_id: str, *, log_progress_event: bool = False) -> None:
         rec = self._jobs.get(job_id)
         if not rec:
             return
+        if log_progress_event and rec.get("progress") is not None:
+            rec["progress_seq"] = int(rec.get("progress_seq") or 0) + 1
         retention = self._retention_deadline(rec["state"])
+        seq = int(rec.get("progress_seq") or 0)
         self._metadata_store.upsert_job(
             job_id=job_id,
             kind=rec["kind"],
@@ -117,7 +130,20 @@ class JobManager:
             result=rec.get("result"),
             message=rec.get("message"),
             retention_expires_at=retention,
+            progress_seq=seq,
+            log_progress_event=log_progress_event and rec.get("progress") is not None,
+            webhook_json=rec.get("webhook_json"),
         )
+        if (
+            self._progress_hub is not None
+            and log_progress_event
+            and rec.get("progress") is not None
+        ):
+            self._progress_hub.notify(
+                job_id, int(rec.get("progress_seq") or 0), rec["progress"]
+            )
+        if rec["state"] in {"succeeded", "failed", "canceled"}:
+            maybe_enqueue_terminal_webhook(self._metadata_store, job_id=job_id)
         if self._dual_write_json_meta:
             paths: JobPaths = rec["paths"]
             write_meta(paths.meta_path, self._record_payload(job_id, rec))
@@ -168,6 +194,8 @@ class JobManager:
                 "created_at": now,
                 "updated_at": now,
                 "progress": None,
+                "progress_seq": 0,
+                "webhook_json": None,
                 "error": None,
                 "result": None,
                 "paths": paths,
@@ -194,6 +222,7 @@ class JobManager:
         *,
         input_pdf_path: Path,
         job_id: str | None = None,
+        webhook_json: str | None = None,
     ) -> str:
         async with self._lock:
             n_queued = sum(1 for r in self._jobs.values() if r["state"] == "queued")
@@ -222,11 +251,13 @@ class JobManager:
                 "created_at": now,
                 "updated_at": now,
                 "progress": None,
+                "progress_seq": 0,
                 "error": None,
                 "result": None,
                 "paths": paths,
                 "request": req,
                 "message": None,
+                "webhook_json": webhook_json,
             }
             self._persist(jid)
             task = asyncio.create_task(
@@ -315,7 +346,9 @@ class JobManager:
                 retryable=False,
             )
             self._persist(job_id)
-            record_job_terminal(kind="warmup", state="canceled", failure_category="canceled")
+            record_job_terminal(
+                kind="warmup", state="canceled", failure_category="canceled"
+            )
             record_job_duration(
                 kind="warmup",
                 state="canceled",
@@ -371,7 +404,9 @@ class JobManager:
                 details={"timeout_seconds": self._job_timeout},
             )
             self._persist(job_id)
-            record_job_terminal(kind="translation", state="failed", failure_category="timeout")
+            record_job_terminal(
+                kind="translation", state="failed", failure_category="timeout"
+            )
             record_job_duration(
                 kind="translation",
                 state="failed",
@@ -430,7 +465,7 @@ class JobManager:
         async for ev in events:
             rec["progress"] = ev
             rec["updated_at"] = utcnow()
-            self._persist(job_id)
+            self._persist(job_id, log_progress_event=True)
             et = ev.get("type")
             if et == "error":
                 rec["state"] = "failed"

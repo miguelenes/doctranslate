@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import uuid
 from pathlib import Path
@@ -152,12 +153,15 @@ class HttpJobService:
         *,
         input_pdf_path: Path,
         job_id: str | None = None,
+        webhook: dict[str, Any] | None = None,
     ) -> str:
+        wh_json = json.dumps(webhook, separators=(",", ":")) if webhook else None
         if self._settings.queue_backend == "inprocess":
             return await self._job_manager.create_translation_job(
                 request,
                 input_pdf_path=input_pdf_path,
                 job_id=job_id,
+                webhook_json=wh_json,
             )
         async with self._lock:
             cap = max(1, self._settings.max_queued_jobs)
@@ -195,6 +199,7 @@ class HttpJobService:
                 retention_expires_at=None,
                 request_json=req_json,
                 otel_traceparent=tp,
+                webhook_json=wh_json,
             )
             try:
                 assert self._arq_backend is not None
@@ -219,6 +224,7 @@ class HttpJobService:
                     retention_expires_at=None,
                     request_json=req_json,
                     otel_traceparent=tp,
+                    webhook_json=wh_json,
                 )
                 raise
             record_job_created(
@@ -255,6 +261,20 @@ class HttpJobService:
         if disk is None:
             return None
         return disk_to_memory_record(self._artifact_store, job_id, disk)
+
+    def list_job_events(
+        self,
+        job_id: str,
+        *,
+        after_seq: int = 0,
+        limit: int = 500,
+    ) -> list[dict[str, Any]]:
+        """Replayable progress events from SQLite (in-process and ARQ)."""
+        return self._metadata_store.list_job_events(
+            job_id,
+            after_seq=after_seq,
+            limit=limit,
+        )
 
     async def run_ttl_cleanup_once(self) -> None:
         await self._job_manager.run_ttl_cleanup_once()

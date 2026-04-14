@@ -7,11 +7,14 @@ import os
 import tempfile
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 from typing import Literal
 
 from pydantic import AliasChoices
 from pydantic import Field
+from pydantic import SecretStr
 from pydantic import field_validator
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
 
@@ -58,12 +61,82 @@ class ApiSettings(BaseSettings):
     job_timeout_seconds: float = Field(
         default=0.0, description="0 disables per-job timeout."
     )
+    job_sse_poll_interval_seconds: float = Field(
+        default=0.25,
+        ge=0.05,
+        description="Poll interval for job SSE when not using in-process fan-out (ARQ).",
+    )
+    public_base_url: str | None = Field(
+        default=None,
+        description="Optional public origin for webhook/SSE absolute URLs (e.g. https://api.example.com).",
+    )
+    webhook_https_required: bool = Field(
+        default=False,
+        description="When true, reject non-https webhook callback URLs at job creation.",
+    )
+    webhook_allow_hosts: list[str] = Field(
+        default_factory=list,
+        description="Optional host allowlist for webhooks (CSV env WEBHOOK_ALLOW_HOSTS).",
+    )
+    webhook_max_attempts: int = Field(default=10, ge=1, le=64)
+    webhook_delivery_batch: int = Field(default=5, ge=1, le=50)
+    webhook_http_timeout_seconds: float = Field(default=30.0, ge=1.0, le=120.0)
+    webhook_sweep_interval_seconds: float = Field(default=2.0, ge=0.5, le=60.0)
+
+    @field_validator("webhook_allow_hosts", mode="before")
+    @classmethod
+    def _webhook_allow_hosts_csv(cls, v: Any) -> list[str]:
+        if v is None or v == "":
+            return []
+        if isinstance(v, str):
+            return [p.strip() for p in v.split(",") if p.strip()]
+        if isinstance(v, list):
+            return [str(x).strip() for x in v if str(x).strip()]
+        return []
+
     artifact_retention_seconds: float = Field(
         default=86_400.0,
         description="0 disables TTL cleanup.",
     )
     require_assets_ready: bool = Field(default=False)
     warmup_on_startup: Literal["none", "lazy", "eager"] = Field(default="none")
+
+    # --- Authentication (OSS shared secret) ---
+    auth_mode: Literal["disabled", "required"] = Field(
+        default="disabled",
+        description="disabled: no HTTP auth; required: Bearer or API key on protected routes.",
+    )
+    auth_token: SecretStr | None = Field(
+        default=None,
+        description="Shared secret when auth_mode=required.",
+    )
+    auth_header_api_key_name: str = Field(
+        default="X-API-Key",
+        description="Header name for static API key (in addition to Authorization: Bearer).",
+    )
+    auth_allow_unauthenticated_probe_paths: bool = Field(
+        default=True,
+        description="When false, /v1/health/live and /v1/health/ready also require auth.",
+    )
+    docs_enabled: bool = Field(
+        default=True,
+        description="Expose /docs, /redoc, and /openapi.json when true.",
+    )
+
+    # --- CORS ---
+    cors_allow_origins: list[str] = Field(
+        default_factory=lambda: ["*"],
+        description="Allowed origins (CSV env). Use explicit hosts in production.",
+    )
+    cors_allow_credentials: bool = Field(default=False)
+    cors_allow_methods: list[str] = Field(
+        default_factory=lambda: ["*"],
+        validation_alias=AliasChoices("CORS_ALLOW_METHODS", "cors_allow_methods"),
+    )
+    cors_allow_headers: list[str] = Field(
+        default_factory=lambda: ["*"],
+        validation_alias=AliasChoices("CORS_ALLOW_HEADERS", "cors_allow_headers"),
+    )
 
     # --- Pluggable storage / metadata ---
     artifact_storage: Literal["local", "remote"] = Field(
@@ -146,6 +219,47 @@ class ApiSettings(BaseSettings):
         if v is None or v == "":
             return None
         return Path(str(v)).expanduser()
+
+    @field_validator("auth_mode", mode="before")
+    @classmethod
+    def _normalize_auth_mode(cls, v: object) -> str:
+        s = str(v).strip().lower() if v is not None else "disabled"
+        if s not in {"disabled", "required"}:
+            return "disabled"
+        return s
+
+    @field_validator("cors_allow_origins", mode="before")
+    @classmethod
+    def _split_cors_origins(cls, v: object) -> list[str]:
+        if isinstance(v, list):
+            out = [str(x).strip() for x in v if str(x).strip()]
+            return out if out else ["*"]
+        if isinstance(v, str):
+            out = [p.strip() for p in v.split(",") if p.strip()]
+            return out if out else ["*"]
+        return ["*"]
+
+    @field_validator("cors_allow_methods", "cors_allow_headers", mode="before")
+    @classmethod
+    def _split_cors_list(cls, v: object) -> list[str]:
+        if isinstance(v, list):
+            out = [str(x).strip() for x in v if str(x).strip()]
+            return out if out else ["*"]
+        if isinstance(v, str):
+            out = [p.strip() for p in v.split(",") if p.strip()]
+            return out if out else ["*"]
+        return ["*"]
+
+    @model_validator(mode="after")
+    def _validate_auth_token_when_required(self) -> ApiSettings:
+        if self.auth_mode == "required":
+            if self.auth_token is None:
+                msg = "DOCTRANSLATE_API_AUTH_TOKEN must be set when DOCTRANSLATE_API_AUTH_MODE=required"
+                raise ValueError(msg)
+            if not self.auth_token.get_secret_value().strip():
+                msg = "DOCTRANSLATE_API_AUTH_TOKEN must be non-empty when DOCTRANSLATE_API_AUTH_MODE=required"
+                raise ValueError(msg)
+        return self
 
     def resolved_tmp_root(self) -> Path:
         if self.tmp_root is not None:

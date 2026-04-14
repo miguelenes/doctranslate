@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from fastapi import APIRouter
+from fastapi import Depends
 from fastapi import status
 
+from doctranslate.http_api.auth import require_api_operator
 from doctranslate.http_api.deps import JobServiceDep
 from doctranslate.http_api.errors import http_error
 from doctranslate.http_api.models import JobCreateResponse
@@ -12,7 +14,10 @@ from doctranslate.observability.context import get_request_id
 from doctranslate.schemas.enums import PublicErrorCode
 from doctranslate.schemas.public_api import TranslationErrorPayload
 
-router = APIRouter(tags=["assets"])
+router = APIRouter(
+    tags=["assets"],
+    dependencies=[Depends(require_api_operator)],
+)
 
 
 @router.post(

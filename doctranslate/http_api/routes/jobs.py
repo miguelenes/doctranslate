@@ -5,11 +5,13 @@ from __future__ import annotations
 import asyncio
 import json
 import uuid
+from collections.abc import AsyncIterator
 from pathlib import Path
 from typing import Any
 
 import fsspec.core
 from fastapi import APIRouter
+from fastapi import Depends
 from fastapi import File
 from fastapi import Form
 from fastapi import HTTPException
@@ -20,24 +22,37 @@ from fastapi.responses import FileResponse
 from fastapi.responses import RedirectResponse
 from fastapi.responses import Response
 from fastapi.responses import StreamingResponse
+from fastapi.sse import EventSourceResponse
+from fastapi.sse import ServerSentEvent
 from pydantic import ValidationError
 
+from doctranslate.http_api.auth import require_api_operator
 from doctranslate.http_api.deps import JobServiceDep
 from doctranslate.http_api.deps import SettingsDep
 from doctranslate.http_api.errors import http_error
+from doctranslate.http_api.job_progress_hub import JobProgressHub
+from doctranslate.http_api.job_sse import job_progress_sse
 from doctranslate.http_api.models import ArtifactLink
 from doctranslate.http_api.models import JobCreateResponse
+from doctranslate.http_api.models import JobEventItem
+from doctranslate.http_api.models import JobEventsResponse
+from doctranslate.http_api.models import JobManifestItem
+from doctranslate.http_api.models import JobManifestResponse
 from doctranslate.http_api.models import JobResultResponse
 from doctranslate.http_api.models import JobStatusResponse
 from doctranslate.http_api.presign import presign_gcs_url
 from doctranslate.http_api.presign import presign_s3_get_url
 from doctranslate.http_api.range_requests import parse_bytes_range
+from doctranslate.http_api.webhook_delivery import validate_webhook_url
 from doctranslate.observability.context import get_request_id
 from doctranslate.schemas.enums import ArtifactKind
 from doctranslate.schemas.enums import PublicErrorCode
 from doctranslate.schemas.public_api import TranslationErrorPayload
 
-router = APIRouter(tags=["jobs"])
+router = APIRouter(
+    tags=["jobs"],
+    dependencies=[Depends(require_api_operator)],
+)
 
 
 def _record_to_status(job_id: str, rec: dict[str, Any]) -> JobStatusResponse:
@@ -48,6 +63,7 @@ def _record_to_status(job_id: str, rec: dict[str, Any]) -> JobStatusResponse:
         created_at=rec["created_at"],
         updated_at=rec["updated_at"],
         progress=rec.get("progress"),
+        progress_seq=int(rec.get("progress_seq") or 0),
         error=rec.get("error"),
         message=rec.get("message"),
     )
@@ -80,6 +96,35 @@ def _artifact_download_link(
     return f"{base}/v1/jobs/{job_id}/artifacts/{item.kind.value}"
 
 
+def _artifact_filename(kind: ArtifactKind) -> str:
+    if kind == ArtifactKind.AUTO_EXTRACTED_GLOSSARY_CSV:
+        return "glossary.csv"
+    return f"{kind.value}.pdf"
+
+
+def _parse_job_webhook(
+    raw: str | None,
+    settings: Any,
+) -> dict[str, Any] | None:
+    if raw is None or not str(raw).strip():
+        return None
+    try:
+        cfg = json.loads(raw)
+    except json.JSONDecodeError as e:
+        msg = f"Invalid JSON in webhook field: {e}"
+        raise ValueError(msg) from e
+    if not isinstance(cfg, dict):
+        msg = "webhook must be a JSON object"
+        raise TypeError(msg)
+    url = cfg.get("url")
+    if not isinstance(url, str) or not url.strip():
+        msg = "webhook.url is required"
+        raise ValueError(msg)
+    validate_webhook_url(url.strip(), settings=settings)
+    cfg["url"] = url.strip()
+    return cfg
+
+
 @router.post(
     "/v1/jobs",
     response_model=JobCreateResponse,
@@ -94,8 +139,25 @@ async def create_job(
         description="JSON string of TranslationRequest",
     ),
     input_pdf: UploadFile | None = File(default=None),  # noqa: B008
+    webhook: str | None = Form(
+        default=None,
+        description='Optional JSON object: {"url":"https://...","secret":"..."} or secret_env.',
+    ),
 ) -> JobCreateResponse:
     from doctranslate.api import validate_request
+
+    try:
+        wh_cfg = _parse_job_webhook(webhook, settings)
+    except (TypeError, ValueError) as e:
+        raise http_error(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            error=TranslationErrorPayload(
+                code=PublicErrorCode.VALIDATION_ERROR,
+                message=str(e),
+                retryable=False,
+            ),
+            request_id=get_request_id(),
+        ) from e
 
     try:
         data: dict[str, Any] = json.loads(translation_request)
@@ -165,6 +227,7 @@ async def create_job(
                 req,
                 input_pdf_path=dest,
                 job_id=job_id,
+                webhook=wh_cfg,
             )
         except RuntimeError:
             raise http_error(
@@ -215,7 +278,11 @@ async def create_job(
             request_id=get_request_id(),
         ) from e
     try:
-        job_id = await job_service.create_translation_job(req, input_pdf_path=path)
+        job_id = await job_service.create_translation_job(
+            req,
+            input_pdf_path=path,
+            webhook=wh_cfg,
+        )
     except RuntimeError:
         raise http_error(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -240,6 +307,48 @@ async def get_job(job_id: str, job_service: JobServiceDep) -> JobStatusResponse:
     if rec is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
     return _record_to_status(job_id, rec)
+
+
+@router.get("/v1/jobs/{job_id}/events", response_model=JobEventsResponse)
+async def list_job_events(
+    job_id: str,
+    job_service: JobServiceDep,
+    after_seq: int = 0,
+    limit: int = 500,
+) -> JobEventsResponse:
+    rec = await job_service.get_record(job_id)
+    if rec is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
+    rows = job_service.list_job_events(job_id, after_seq=after_seq, limit=limit)
+    return JobEventsResponse(
+        job_id=job_id,
+        items=[JobEventItem(seq=r["seq"], event=r["event"]) for r in rows],
+    )
+
+
+@router.get(
+    "/v1/jobs/{job_id}/stream",
+    response_class=EventSourceResponse,
+    response_model=None,
+)
+async def stream_job_progress(
+    request: Request,
+    job_id: str,
+    job_service: JobServiceDep,
+    settings: SettingsDep,
+    full_events: bool = False,
+) -> AsyncIterator[ServerSentEvent]:
+    raw_hub = getattr(request.app.state, "job_progress_hub", None)
+    hub = raw_hub if isinstance(raw_hub, JobProgressHub) else None
+    async for ev in job_progress_sse(
+        request=request,
+        job_id=job_id,
+        job_service=job_service,
+        settings=settings,
+        hub=hub,
+        full_events=full_events,
+    ):
+        yield ev
 
 
 @router.post("/v1/jobs/{job_id}/cancel", status_code=status.HTTP_204_NO_CONTENT)
@@ -289,10 +398,152 @@ async def get_job_result(
     )
 
 
+@router.get("/v1/jobs/{job_id}/manifest", response_model=JobManifestResponse)
+async def get_job_manifest(
+    request: Request,
+    job_id: str,
+    job_service: JobServiceDep,
+    settings: SettingsDep,
+) -> JobManifestResponse:
+    rec = await job_service.get_record(job_id)
+    if rec is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
+    if rec["state"] != "succeeded":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Job has not succeeded yet",
+        )
+    result = rec.get("result")
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job has no result yet",
+        )
+    items: list[JobManifestItem] = []
+    exp = (
+        int(settings.presign_expires_seconds)
+        if settings.artifact_download_mode == "redirect"
+        else None
+    )
+    for item in result.artifacts.items:
+        url = _artifact_download_link(
+            request=request,
+            job_id=job_id,
+            item=item,
+            settings=settings,
+        )
+        items.append(
+            JobManifestItem(
+                kind=item.kind,
+                download_url=url,
+                path=item.path,
+                sha256=item.sha256,
+                size_bytes=item.size_bytes,
+                media_type=item.media_type,
+                filename=_artifact_filename(item.kind),
+                download_expires_in_seconds=exp,
+            ),
+        )
+    return JobManifestResponse(
+        job_id=job_id,
+        kind=rec["kind"],
+        state=rec["state"],
+        items=items,
+    )
+
+
 def _remote_file_size(url: str, opts: dict[str, Any]) -> int:
     fs, p = fsspec.core.url_to_fs(url, **opts)
     info = fs.info(p)
     return int(info.get("size") or info.get("Size") or 0)
+
+
+@router.head(
+    "/v1/jobs/{job_id}/artifacts/{kind}",
+    response_model=None,
+)
+async def head_artifact(
+    job_id: str,
+    kind: ArtifactKind,
+    job_service: JobServiceDep,
+    settings: SettingsDep,
+) -> Response:
+    rec = await job_service.get_record(job_id)
+    if rec is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
+    result = rec.get("result")
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job has no result yet",
+        )
+    artifact = None
+    media = "application/octet-stream"
+    for item in result.artifacts.items:
+        if item.kind == kind:
+            artifact = item
+            media = item.media_type or media
+            break
+    if artifact is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Artifact not found"
+        )
+    if settings.artifact_download_mode == "redirect":
+        path_str = artifact.path
+        if (
+            path_str.startswith("s3://")
+            or path_str.startswith("gs://")
+            or path_str.startswith("gcs://")
+        ):
+            return Response(
+                status_code=status.HTTP_200_OK,
+                headers={
+                    "Content-Type": media,
+                    "Accept-Ranges": "bytes",
+                },
+            )
+    mode, payload = job_service.artifact_store.resolve_artifact_for_download(
+        job_id,
+        kind,
+        artifact,
+    )
+    if mode == "path":
+        path: Path = payload["path"]
+        if not path.is_file():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Artifact not found"
+            )
+        size = path.stat().st_size
+        return Response(
+            status_code=status.HTTP_200_OK,
+            headers={
+                "Content-Length": str(size),
+                "Content-Type": media,
+                "Accept-Ranges": "bytes",
+            },
+        )
+    if mode == "fsspec":
+        url = payload["url"]
+        opts = job_service.artifact_store.fsspec_read_options()
+        try:
+            fsize = await asyncio.to_thread(_remote_file_size, url, opts)
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Artifact not found",
+            ) from None
+        return Response(
+            status_code=status.HTTP_200_OK,
+            headers={
+                "Content-Length": str(fsize),
+                "Content-Type": media,
+                "Accept-Ranges": "bytes",
+            },
+        )
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Unknown artifact storage mode",
+    )
 
 
 @router.get(

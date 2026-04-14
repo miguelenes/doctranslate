@@ -7,6 +7,8 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi import Request
 
+from doctranslate.http_api.auth import require_api_operator
+from doctranslate.http_api.auth import require_api_operator_when_probes_are_protected
 from doctranslate.http_api.job_manager import JobManager
 from doctranslate.http_api.job_service import HttpJobService
 from doctranslate.http_api.settings import ApiSettings
@@ -26,3 +28,8 @@ def get_job_service(request: Request) -> HttpJobService:
 JobManagerDep = Annotated[JobManager, Depends(get_job_manager)]
 JobServiceDep = Annotated[HttpJobService, Depends(get_job_service)]
 SettingsDep = Annotated[ApiSettings, Depends(get_settings)]
+RequireApiOperatorDep = Annotated[None, Depends(require_api_operator)]
+RequireApiOperatorForProbesDep = Annotated[
+    None,
+    Depends(require_api_operator_when_probes_are_protected),
+]

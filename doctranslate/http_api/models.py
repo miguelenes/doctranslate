@@ -137,8 +137,24 @@ class JobStatusResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     progress: dict[str, Any] | None = None
+    progress_seq: int = 0
     error: TranslationErrorPayload | None = None
     message: str | None = None
+
+
+class JobEventItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    seq: int
+    event: dict[str, Any]
+
+
+class JobEventsResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str = PUBLIC_SCHEMA_VERSION
+    job_id: str
+    items: list[JobEventItem] = Field(default_factory=list)
 
 
 class ArtifactLink(BaseModel):
@@ -161,3 +177,26 @@ class JobResultResponse(BaseModel):
     translation_result: TranslationResult | None = None
     artifacts: list[ArtifactLink] = Field(default_factory=list)
     error: TranslationErrorPayload | None = None
+
+
+class JobManifestItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: ArtifactKind
+    download_url: str
+    path: str
+    sha256: str | None = None
+    size_bytes: int | None = None
+    media_type: str | None = None
+    filename: str | None = None
+    download_expires_in_seconds: int | None = None
+
+
+class JobManifestResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str = PUBLIC_SCHEMA_VERSION
+    job_id: str
+    kind: JobKind
+    state: JobState
+    items: list[JobManifestItem] = Field(default_factory=list)

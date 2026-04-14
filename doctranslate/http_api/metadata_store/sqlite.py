@@ -55,6 +55,43 @@ def _init_schema(conn: sqlite3.Connection) -> None:
         ON jobs (retention_expires_at)
         """,
     )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS job_events (
+            job_id TEXT NOT NULL,
+            seq INTEGER NOT NULL,
+            event_json TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            PRIMARY KEY (job_id, seq)
+        )
+        """,
+    )
+    conn.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_job_events_job_seq
+        ON job_events (job_id, seq)
+        """,
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS webhook_deliveries (
+            delivery_id TEXT PRIMARY KEY,
+            job_id TEXT NOT NULL,
+            payload_json TEXT NOT NULL,
+            attempt_count INTEGER NOT NULL DEFAULT 0,
+            next_attempt_at TEXT NOT NULL,
+            last_http_status INTEGER,
+            last_error TEXT,
+            created_at TEXT NOT NULL
+        )
+        """,
+    )
+    conn.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_webhook_due
+        ON webhook_deliveries (next_attempt_at)
+        """,
+    )
     conn.commit()
     _migrate_schema(conn)
 
@@ -74,6 +111,12 @@ def _migrate_schema(conn: sqlite3.Connection) -> None:
         alters.append("ALTER TABLE jobs ADD COLUMN worker_heartbeat_at TEXT")
     if "otel_traceparent" not in cols:
         alters.append("ALTER TABLE jobs ADD COLUMN otel_traceparent TEXT")
+    if "progress_seq" not in cols:
+        alters.append(
+            "ALTER TABLE jobs ADD COLUMN progress_seq INTEGER NOT NULL DEFAULT 0",
+        )
+    if "webhook_json" not in cols:
+        alters.append("ALTER TABLE jobs ADD COLUMN webhook_json TEXT")
     for stmt in alters:
         try:
             conn.execute(stmt)
@@ -172,7 +215,13 @@ class SqliteJobMetadataStore:
         cancel_requested_at: Any | None = None,
         worker_heartbeat_at: Any | None = None,
         otel_traceparent: str | None = None,
+        progress_seq: int | None = None,
+        log_progress_event: bool = False,
+        webhook_json: str | None = None,
     ) -> None:
+        if log_progress_event and (progress is None or progress_seq is None):
+            msg = "log_progress_event requires progress and progress_seq"
+            raise ValueError(msg)
         progress_json = json.dumps(progress) if progress is not None else None
         error_json = error.model_dump_json() if error else None
         result_json = result.model_dump_json() if result else None
@@ -207,52 +256,96 @@ class SqliteJobMetadataStore:
                 if hasattr(worker_heartbeat_at, "isoformat")
                 else str(worker_heartbeat_at)
             )
-        self._conn.execute(
-            """
-            INSERT INTO jobs (
-                job_id, kind, state, created_at, updated_at,
-                progress_json, error_json, result_json, message, retention_expires_at,
-                request_json, cancel_requested_at, worker_heartbeat_at, otel_traceparent
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(job_id) DO UPDATE SET
-                kind = excluded.kind,
-                state = excluded.state,
-                created_at = jobs.created_at,
-                updated_at = excluded.updated_at,
-                progress_json = excluded.progress_json,
-                error_json = excluded.error_json,
-                result_json = excluded.result_json,
-                message = excluded.message,
-                retention_expires_at = excluded.retention_expires_at,
-                request_json = COALESCE(excluded.request_json, jobs.request_json),
-                cancel_requested_at = COALESCE(
-                    excluded.cancel_requested_at, jobs.cancel_requested_at
+        seq_insert = 0 if progress_seq is None else int(progress_seq)
+        with self._conn:
+            self._conn.execute(
+                """
+                INSERT INTO jobs (
+                    job_id, kind, state, created_at, updated_at,
+                    progress_json, error_json, result_json, message, retention_expires_at,
+                    request_json, cancel_requested_at, worker_heartbeat_at, otel_traceparent,
+                    progress_seq, webhook_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(job_id) DO UPDATE SET
+                    kind = excluded.kind,
+                    state = excluded.state,
+                    created_at = jobs.created_at,
+                    updated_at = excluded.updated_at,
+                    progress_json = excluded.progress_json,
+                    error_json = excluded.error_json,
+                    result_json = excluded.result_json,
+                    message = excluded.message,
+                    retention_expires_at = excluded.retention_expires_at,
+                    request_json = COALESCE(excluded.request_json, jobs.request_json),
+                    cancel_requested_at = COALESCE(
+                        excluded.cancel_requested_at, jobs.cancel_requested_at
+                    ),
+                    worker_heartbeat_at = COALESCE(
+                        excluded.worker_heartbeat_at, jobs.worker_heartbeat_at
+                    ),
+                    otel_traceparent = COALESCE(
+                        jobs.otel_traceparent, excluded.otel_traceparent
+                    ),
+                    progress_seq = excluded.progress_seq,
+                    webhook_json = COALESCE(excluded.webhook_json, jobs.webhook_json)
+                """,
+                (
+                    job_id,
+                    kind,
+                    state,
+                    ca,
+                    ua,
+                    progress_json,
+                    error_json,
+                    result_json,
+                    message,
+                    ret,
+                    request_json,
+                    creq,
+                    whb,
+                    otel_traceparent,
+                    seq_insert,
+                    webhook_json,
                 ),
-                worker_heartbeat_at = COALESCE(
-                    excluded.worker_heartbeat_at, jobs.worker_heartbeat_at
-                ),
-                otel_traceparent = COALESCE(
-                    jobs.otel_traceparent, excluded.otel_traceparent
+            )
+            if log_progress_event:
+                assert progress is not None
+                assert progress_seq is not None
+                self._conn.execute(
+                    """
+                    INSERT OR REPLACE INTO job_events (job_id, seq, event_json, created_at)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    (job_id, int(progress_seq), progress_json, ua),
                 )
+
+    def list_job_events(
+        self,
+        job_id: str,
+        *,
+        after_seq: int = 0,
+        limit: int = 500,
+    ) -> list[dict[str, Any]]:
+        lim = max(1, min(int(limit), 10_000))
+        cur = self._conn.execute(
+            """
+            SELECT seq, event_json FROM job_events
+            WHERE job_id = ? AND seq > ?
+            ORDER BY seq ASC
+            LIMIT ?
             """,
-            (
-                job_id,
-                kind,
-                state,
-                ca,
-                ua,
-                progress_json,
-                error_json,
-                result_json,
-                message,
-                ret,
-                request_json,
-                creq,
-                whb,
-                otel_traceparent,
-            ),
+            (job_id, int(after_seq), lim),
         )
-        self._conn.commit()
+        out: list[dict[str, Any]] = []
+        for row in cur.fetchall():
+            ev = row[1]
+            out.append(
+                {
+                    "seq": int(row[0]),
+                    "event": json.loads(ev) if ev else None,
+                },
+            )
+        return out
 
     def get_job_raw(self, job_id: str) -> dict[str, Any] | None:
         cur = self._conn.execute(
@@ -287,9 +380,100 @@ class SqliteJobMetadataStore:
             out["attempt_count"] = int(d["attempt_count"])
         if d.get("otel_traceparent"):
             out["otel_traceparent"] = d["otel_traceparent"]
+        ps = d.get("progress_seq")
+        out["progress_seq"] = int(ps) if ps is not None else 0
+        if d.get("webhook_json") is not None:
+            out["webhook_json"] = d["webhook_json"]
         return out
 
+    def enqueue_webhook_delivery(
+        self,
+        *,
+        delivery_id: str,
+        job_id: str,
+        payload_json: str,
+        next_attempt_at_iso: str,
+    ) -> bool:
+        now = utc_iso_now()
+        cur = self._conn.execute(
+            """
+            INSERT OR IGNORE INTO webhook_deliveries (
+                delivery_id, job_id, payload_json, attempt_count,
+                next_attempt_at, last_http_status, last_error, created_at
+            ) VALUES (?, ?, ?, 0, ?, NULL, NULL, ?)
+            """,
+            (delivery_id, job_id, payload_json, next_attempt_at_iso, now),
+        )
+        self._conn.commit()
+        return cur.rowcount > 0
+
+    def claim_webhook_due(
+        self,
+        *,
+        limit: int,
+        now_iso: str,
+    ) -> list[dict[str, Any]]:
+        lim = max(1, min(int(limit), 100))
+        cur = self._conn.execute(
+            """
+            SELECT delivery_id, job_id, payload_json, attempt_count
+            FROM webhook_deliveries
+            WHERE next_attempt_at <= ?
+            ORDER BY next_attempt_at ASC
+            LIMIT ?
+            """,
+            (now_iso, lim),
+        )
+        rows = cur.fetchall()
+        return [
+            {
+                "delivery_id": str(r[0]),
+                "job_id": str(r[1]),
+                "payload_json": str(r[2]),
+                "attempt_count": int(r[3]),
+            }
+            for r in rows
+        ]
+
+    def mark_webhook_attempt(
+        self,
+        *,
+        delivery_id: str,
+        attempt_count: int,
+        next_attempt_at_iso: str,
+        last_http_status: int | None,
+        last_error: str | None,
+    ) -> None:
+        self._conn.execute(
+            """
+            UPDATE webhook_deliveries
+            SET attempt_count = ?, next_attempt_at = ?,
+                last_http_status = ?, last_error = ?
+            WHERE delivery_id = ?
+            """,
+            (
+                int(attempt_count),
+                next_attempt_at_iso,
+                last_http_status,
+                last_error,
+                delivery_id,
+            ),
+        )
+        self._conn.commit()
+
+    def delete_webhook_delivery(self, delivery_id: str) -> None:
+        self._conn.execute(
+            "DELETE FROM webhook_deliveries WHERE delivery_id = ?",
+            (delivery_id,),
+        )
+        self._conn.commit()
+
     def delete_job(self, job_id: str) -> None:
+        self._conn.execute(
+            "DELETE FROM webhook_deliveries WHERE job_id = ?",
+            (job_id,),
+        )
+        self._conn.execute("DELETE FROM job_events WHERE job_id = ?", (job_id,))
         self._conn.execute("DELETE FROM jobs WHERE job_id = ?", (job_id,))
         self._conn.commit()
 
