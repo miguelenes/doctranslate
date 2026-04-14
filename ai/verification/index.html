@@ -18,7 +18,7 @@
         <link rel="prev" href="../translator-stack/">
       
       
-        <link rel="next" href="../cli-vnext-baseline/">
+        <link rel="next" href="../mcp-suggestions/">
       
       
         
@@ -1355,8 +1355,6 @@
       
         
       
-        
-      
     
     
     
@@ -1658,34 +1656,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli-vnext-baseline/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CLI vNext baseline
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../mcp-suggestions/" class="md-nav__link">
         
   
@@ -1911,7 +1881,7 @@
 </tr>
 <tr>
 <td>Assets (if touching models/assets)</td>
-<td><code>uv run doctranslate assets warmup</code> (legacy <code>doctranslate --warmup</code> still works with a deprecation warning)</td>
+<td><code>uv run doctranslate assets warmup</code></td>
 </tr>
 <tr>
 <td>Unit tests</td>
@@ -1929,7 +1899,7 @@
 </ul>
 <h2 id="translator-config-changes">Translator / config changes</h2>
 <ul>
-<li>Router/local validation path (vNext): <code>uv run doctranslate config validate --translator router -c &lt;file&gt;</code> or <code>... --translator local ...</code> (legacy: <code>doctranslate --validate-translators --translator router --config &lt;file&gt;</code>) per <a href="../../local-translation/">Local translation</a>.</li>
+<li>Router/local validation: <code>uv run doctranslate config validate --translator router -c &lt;file&gt;</code> or <code>... --translator local ...</code> per <a href="../../local-translation/">Local translation</a>.</li>
 <li>Add or extend tests in <code>tests/</code>; avoid requiring paid APIs in default tests (CI job is “no paid APIs”).</li>
 </ul>
 <h2 id="docs-changes">Docs changes</h2>
@@ -2001,13 +1971,13 @@
         
         
           
-          <a href="../cli-vnext-baseline/" class="md-footer__link md-footer__link--next" aria-label="Next: CLI vNext baseline">
+          <a href="../mcp-suggestions/" class="md-footer__link md-footer__link--next" aria-label="Next: MCP suggestions">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                CLI vNext baseline
+                MCP suggestions
               </div>
             </div>
             <div class="md-footer__button md-icon">

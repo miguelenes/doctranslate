@@ -1567,8 +1567,6 @@
       
         
       
-        
-      
     
     
     
@@ -1722,34 +1720,6 @@
     
   
     Verification
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../ai/cli-vnext-baseline/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CLI vNext baseline
   
 
     
@@ -2064,17 +2034,15 @@
 
 
 <h1 id="configuration">Configuration</h1>
-<p>DocTranslater reads CLI flags first (via <code>configargparse</code> on the <strong>legacy</strong> flat path, and <code>argparse</code> on the <strong>vNext</strong> subcommand path). A TOML file passed with <code>-c</code> / <code>--config</code> merges into defaults. For <strong>multi-provider routing</strong>, nested tables under <strong><code>[doctranslate]</code></strong> define providers and route profiles. Legacy configs may use <strong><code>[babeldoc]</code></strong> with the same nested shape; prefer <code>[doctranslate]</code> for new files (see <a href="../migration/">Migration</a>).</p>
-<p><strong>vNext CLI:</strong> prefer <code>doctranslate translate …</code> with <code>--provider</code> and the renamed flags in <a href="../migration/">Migration</a>; global defaults can be set with <code>doctranslate -c defaults.toml translate …</code>.</p>
+<p>DocTranslater reads CLI flags with <strong><code>argparse</code></strong> on the <code>doctranslate &lt;subcommand&gt;</code> path. A TOML file passed with <code>-c</code> / <code>--config</code> on the root command merges scalar defaults into <code>translate</code> when you run <code>doctranslate -c file.toml translate …</code>. For <strong>multi-provider routing</strong>, nested tables under <strong><code>[doctranslate]</code></strong> define providers and route profiles (see <a href="../migration/">Migration</a> if you still have <code>[babeldoc]</code> sections).</p>
 <h2 id="merge-order-router-nested-toml">Merge order (router / nested TOML)</h2>
 <ol>
 <li><strong>Defaults</strong> in code (<code>NestedTranslatorConfig</code>).</li>
-<li><strong>TOML</strong> <code>[doctranslate]</code> section (and nested <code>profiles</code> / <code>providers</code>). Nested router config loading also accepts <code>[babeldoc]</code> when <code>[doctranslate]</code> is absent.</li>
+<li><strong>TOML</strong> <code>[doctranslate]</code> section (and nested <code>profiles</code> / <code>providers</code>).</li>
 <li><strong>Environment</strong> for API keys referenced by <code>api_key_env</code> on each provider.</li>
 <li><strong>CLI overrides</strong> for router-only flags (see below).</li>
 </ol>
-<p>When both <code>[babeldoc]</code> and <code>[doctranslate]</code> appear in the same file, CLI defaults loaded from TOML merge <strong><code>babeldoc</code> first, then <code>doctranslate</code></strong> (later values win for duplicate keys).</p>
-<p>Legacy <strong>OpenAI-only</strong> mode (<code>--translator openai</code>) does not require nested TOML; it uses <code>--openai*</code> flags and <code>OPENAI_*</code> environment variables.</p>
+<p><strong>OpenAI-only</strong> mode (<code>--translator openai</code>) does not require nested TOML; it uses <code>--openai*</code> flags and <code>OPENAI_*</code> environment variables.</p>
 <h2 id="local-translation-cli-flags">Local translation CLI flags</h2>
 <p>These apply when <code>--translator local</code> (see <a href="../local-translation/">Local translation</a>):</p>
 <table>

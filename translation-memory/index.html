@@ -1456,8 +1456,6 @@
       
         
       
-        
-      
     
     
     
@@ -1611,34 +1609,6 @@
     
   
     Verification
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../ai/cli-vnext-baseline/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CLI vNext baseline
   
 
     
@@ -1937,7 +1907,7 @@
 </span></code></pre></div>
 <p>If <code>sentence-transformers</code> / <code>torch</code> are missing, <code>--tm-mode=semantic</code> behaves like <code>fuzzy</code> (L3 is skipped when the backend is unavailable).</p>
 <h2 id="legacy-cachev1db-import">Legacy <code>cache.v1.db</code> import</h2>
-<p>If <code>~/.cache/doctranslate/cache.v1.db</code> exists, a <strong>one-time</strong> import of rows into the <code>_tmentry</code> table runs on startup (marker <code>legacy_cache_v1_import</code> in <code>_tmmigration</code>). The active database remains <code>cache.v2.db</code> with both legacy and TM tables.</p>
+<p>If you still have <code>~/.cache/doctranslate/cache.v1.db</code>, run <strong><code>doctranslate tm migrate-v1-cache</code></strong> once to import rows into the TM table (marker <code>legacy_cache_v1_import</code> in <code>_tmmigration</code>). The active database remains <code>cache.v2.db</code>.</p>
 <h2 id="quality-vs-cost">Quality vs cost</h2>
 <ul>
 <li><strong><code>off</code> / exact-only path</strong>: safest; same behavior as before TM columns existed.</li>

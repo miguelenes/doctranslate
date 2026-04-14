@@ -1355,8 +1355,6 @@
       
         
       
-        
-      
     
     
     
@@ -1636,34 +1634,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../cli-vnext-baseline/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CLI vNext baseline
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../mcp-suggestions/" class="md-nav__link">
         
   
@@ -1847,7 +1817,7 @@
 
 
 <h1 id="project-map-for-humans-and-coding-agents">Project map (for humans and coding agents)</h1>
-<p>DocTranslater is a Python 3.10+ package (PyPI name <strong>DocTranslater</strong>; import package <code>doctranslate</code>): CLI entries <code>doctranslate</code> / <code>doctranslater</code> → <code>doctranslate.main:cli</code>. This fork extends upstream with multi-provider routing and local translation.</p>
+<p>DocTranslater is a Python 3.10+ package (PyPI name <strong>DocTranslater</strong>; import package <code>doctranslate</code>): CLI entries <code>doctranslate</code> / <code>doc-translate</code> → <code>doctranslate.main:cli</code>. This fork extends upstream with multi-provider routing and local translation.</p>
 <h2 id="key-directories">Key directories</h2>
 <table>
 <thead>
@@ -1859,19 +1829,19 @@
 <tbody>
 <tr>
 <td><code>doctranslate/main.py</code></td>
-<td>Thin entry: <code>cli()</code> → <code>cli/dispatch.py</code>; <code>create_parser</code> aliases legacy parser.</td>
+<td>Entry: <code>cli()</code> → <code>cli/dispatch.py</code>; <code>create_parser</code> → translate argparse parent (tests).</td>
 </tr>
 <tr>
 <td><code>doctranslate/cli/</code></td>
-<td>vNext subcommands (<code>translate</code>, <code>assets</code>, <code>config</code>, …), argv mapping, JSON output helpers.</td>
+<td>Subcommands (<code>translate</code>, <code>assets</code>, <code>config</code>, …), JSON output helpers.</td>
 </tr>
 <tr>
-<td><code>doctranslate/cli/legacy_parser.py</code></td>
-<td>Flat <code>configargparse</code> surface (legacy + tests).</td>
+<td><code>doctranslate/cli/translate_cli.py</code></td>
+<td>Argparse flags for <code>translate</code>.</td>
 </tr>
 <tr>
 <td><code>doctranslate/cli/translate_run.py</code></td>
-<td>Shared async translation pipeline + progress UI.</td>
+<td>Async translation pipeline + progress UI.</td>
 </tr>
 <tr>
 <td><code>doctranslate/format/pdf/high_level.py</code></td>
@@ -1915,7 +1885,7 @@
 <tbody>
 <tr>
 <td>New CLI flag or default</td>
-<td>vNext: <code>doctranslate/cli/vnext_argv.py</code> + passthrough; legacy: <code>doctranslate/cli/legacy_parser.py</code>.</td>
+<td><code>doctranslate/cli/translate_cli.py</code> (+ <code>dispatch.py</code> if root-level).</td>
 </tr>
 <tr>
 <td>Router / TOML / local knobs</td>

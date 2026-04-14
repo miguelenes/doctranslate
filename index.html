@@ -1454,8 +1454,6 @@
       
         
       
-        
-      
     
     
     
@@ -1609,34 +1607,6 @@
     
   
     Verification
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="./ai/cli-vnext-baseline/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CLI vNext baseline
   
 
     
@@ -1849,12 +1819,11 @@
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>uv<span class="w"> </span>sync<span class="w"> </span>--locked<span class="w"> </span>--group<span class="w"> </span>dev
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>uv<span class="w"> </span>run<span class="w"> </span>doctranslate<span class="w"> </span>--help
 </span></code></pre></div>
-<p><strong>Translate with OpenAI-compatible API (vNext CLI):</strong></p>
+<p><strong>Translate with OpenAI-compatible API:</strong></p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-...
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv<span class="w"> </span>run<span class="w"> </span>doctranslate<span class="w"> </span>translate<span class="w"> </span>input.pdf<span class="w"> </span>--provider<span class="w"> </span>openai<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>--source-lang<span class="w"> </span>en<span class="w"> </span>--target-lang<span class="w"> </span>zh<span class="w"> </span>-o<span class="w"> </span>./out
 </span></code></pre></div>
-<p>Legacy flat flags (<code>--openai --files …</code>) still work but log a deprecation warning; see <a href="migration/">Migration</a>.</p>
 <p><strong>Local (Ollama):</strong> see <a href="local-translation/">Local translation</a>.</p>
 <hr />
 <h2 id="explore-the-docs">Explore the docs</h2>

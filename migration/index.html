@@ -29,7 +29,7 @@
     
     
       
-        <title>Migration and compatibility - DocTranslater</title>
+        <title>Migration (0.6) - DocTranslater</title>
       
     
     
@@ -87,7 +87,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#migration-and-compatibility" class="md-skip">
+        <a href="#migration-06" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Migration and compatibility
+              Migration (0.6)
             
           </span>
         </div>
@@ -1244,10 +1244,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#toml-configuration-section" class="md-nav__link">
+  <a href="#cli" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TOML configuration section
+        CLI
       
     </span>
   </a>
@@ -1255,10 +1255,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cache-directory" class="md-nav__link">
+  <a href="#toml" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cache directory
+        TOML
       
     </span>
   </a>
@@ -1266,10 +1266,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#console-entry-points" class="md-nav__link">
+  <a href="#translation-memory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Console entry points
+        Translation memory
       
     </span>
   </a>
@@ -1277,30 +1277,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cli-vnext-subcommands" class="md-nav__link">
+  <a href="#python-api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CLI vNext (subcommands)
+        Python API
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="CLI vNext (subcommands)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#common-mappings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Common mappings
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1467,8 +1450,6 @@
       
         
           
-        
-      
         
       
         
@@ -1656,34 +1637,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../ai/cli-vnext-baseline/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CLI vNext baseline
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../ai/mcp-suggestions/" class="md-nav__link">
         
   
@@ -1781,10 +1734,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#toml-configuration-section" class="md-nav__link">
+  <a href="#cli" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TOML configuration section
+        CLI
       
     </span>
   </a>
@@ -1792,10 +1745,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cache-directory" class="md-nav__link">
+  <a href="#toml" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cache directory
+        TOML
       
     </span>
   </a>
@@ -1803,10 +1756,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#console-entry-points" class="md-nav__link">
+  <a href="#translation-memory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Console entry points
+        Translation memory
       
     </span>
   </a>
@@ -1814,30 +1767,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cli-vnext-subcommands" class="md-nav__link">
+  <a href="#python-api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CLI vNext (subcommands)
+        Python API
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="CLI vNext (subcommands)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#common-mappings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Common mappings
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1883,33 +1819,24 @@
   
 
 
-<h1 id="migration-and-compatibility">Migration and compatibility</h1>
-<h2 id="toml-configuration-section">TOML configuration section</h2>
-<p>The CLI and nested translator configuration use the <strong><code>[doctranslate]</code></strong> table in TOML files.</p>
-<p><strong>Legacy:</strong> configs that used <strong><code>[babeldoc]</code></strong> (same schema) are still read for nested router/local settings when <strong><code>[doctranslate]</code></strong> is absent. Prefer <code>[doctranslate]</code> for new files.</p>
-<p>CLI flags loaded from a config file merge sections in this order: <strong><code>babeldoc</code> first, then <code>doctranslate</code></strong> (later keys win). Use only one section to avoid surprises.</p>
-<h2 id="cache-directory">Cache directory</h2>
-<p>Runtime cache defaults to <code>~/.cache/doctranslate</code>. There is no automatic migration from other tool cache folders; clear or ignore old directories if you are switching machines.</p>
-<h2 id="console-entry-points">Console entry points</h2>
-<p>The primary CLI is <strong><code>doctranslate</code></strong>. An additional kebab-case alias <strong><code>doc-translate</code></strong> may be installed for the same entry point (see <code>pyproject.toml</code> <code>[project.scripts]</code>).</p>
-<h2 id="cli-vnext-subcommands">CLI vNext (subcommands)</h2>
-<p>DocTranslater routes invocations in two ways:</p>
-<ol>
-<li><strong>vNext (default)</strong> when the first real token is a subcommand such as <code>translate</code>, <code>assets</code>, <code>config</code>, …</li>
-<li><strong>Legacy flat</strong> when argv contains classic entry triggers such as <code>--files</code>, <code>--warmup</code>, <code>--openai</code>, <code>--translator</code>, … (a deprecation warning is logged).</li>
-</ol>
-<h3 id="common-mappings">Common mappings</h3>
+<h1 id="migration-06">Migration (0.6)</h1>
+<h2 id="cli">CLI</h2>
+<p>DocTranslater <strong>0.6</strong> uses <strong>subcommands only</strong>. There is no flat <code>doctranslate --files …</code> or <code>doctranslate --warmup</code> entry point.</p>
 <table>
 <thead>
 <tr>
-<th>Legacy</th>
-<th>vNext</th>
+<th>Before (0.5 and earlier)</th>
+<th>After (0.6)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>doctranslate --warmup</code></td>
 <td><code>doctranslate assets warmup</code></td>
+</tr>
+<tr>
+<td><code>doctranslate --files a.pdf …</code></td>
+<td><code>doctranslate translate a.pdf …</code></td>
 </tr>
 <tr>
 <td><code>doctranslate --generate-offline-assets DIR</code></td>
@@ -1920,43 +1847,25 @@
 <td><code>doctranslate assets restore-offline PATH</code></td>
 </tr>
 <tr>
-<td><code>doctranslate --openai --files a.pdf …</code></td>
-<td><code>doctranslate translate a.pdf --provider openai …</code> (no <code>--openai</code> gate)</td>
-</tr>
-<tr>
-<td><code>--lang-in</code> / <code>--lang-out</code></td>
-<td><code>--source-lang</code> / <code>--target-lang</code> (aliases still accepted on <code>translate</code>)</td>
-</tr>
-<tr>
-<td><code>--qps</code></td>
-<td><code>--request-rate</code> (alias <code>--qps</code>)</td>
-</tr>
-<tr>
-<td><code>--max-pages-per-part</code></td>
-<td><code>--split-pages</code></td>
-</tr>
-<tr>
-<td><code>--watermark-output-mode</code></td>
-<td><code>--watermark-mode</code></td>
-</tr>
-<tr>
-<td><code>--metrics-json-path</code></td>
-<td><code>--metrics-file</code></td>
-</tr>
-<tr>
-<td><code>--term-extraction-profile</code></td>
-<td><code>--term-profile</code></td>
-</tr>
-<tr>
-<td><code>--validate-translators --translator router --config f.toml</code></td>
+<td><code>doctranslate --validate-translators --translator router -c f.toml</code></td>
 <td><code>doctranslate config validate --translator router -c f.toml</code></td>
 </tr>
 </tbody>
 </table>
-<p>Additional legacy flags can be passed <strong>after</strong> recognized <code>translate</code> options; they are forwarded to the legacy parser (e.g. <code>--ocr-mode hybrid</code>).</p>
-<p>See <a href="../ai/cli-vnext-baseline/">CLI vNext baseline</a> for the frozen inventory.</p>
+<p>Global defaults still load from <code>-c</code> / <code>--config</code> on the root command, for example:</p>
+<p><code>doctranslate -c doctranslate.toml translate doc.pdf</code></p>
+<h2 id="toml">TOML</h2>
+<p>Only <strong><code>[doctranslate]</code></strong> is read for nested router/local settings and for flat CLI defaults. Rename <strong><code>[babeldoc]</code></strong> sections to <strong><code>[doctranslate]</code></strong>.</p>
+<h2 id="translation-memory">Translation memory</h2>
+<p>Automatic import of <code>~/.cache/doctranslate/cache.v1.db</code> on startup is <strong>removed</strong>. Run once if you still have that file:</p>
+<p><code>doctranslate tm migrate-v1-cache</code></p>
+<h2 id="python-api">Python API</h2>
+<ul>
+<li><code>TranslationConfig</code> is constructed with a :class:<code>doctranslate.format.pdf.translation_settings.TranslationSettings</code> object (see source under <code>doctranslate/format/pdf/</code>).</li>
+<li>Exceptions live under <code>doctranslate.exceptions</code> (for example <code>PriorTranslatedInputError</code> replaces the old “input generated by BabelDOC” error name).</li>
+</ul>
 <h2 id="upstream">Upstream</h2>
-<p>This repository is a fork of <a href="https://github.com/funstory-ai/DocTranslate">funstory-ai/DocTranslate</a>. Issue links in older docs may still reference upstream; use <a href="https://github.com/miguelenes/doctranslate/issues">miguelenes/doctranslate issues</a> for this fork.</p>
+<p>This repository is a fork of <a href="https://github.com/funstory-ai/DocTranslate">funstory-ai/DocTranslate</a>. Use <a href="https://github.com/miguelenes/doctranslate/issues">miguelenes/doctranslate issues</a> for this fork.</p>
 
 
 
