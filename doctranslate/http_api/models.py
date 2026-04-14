@@ -12,7 +12,9 @@ from pydantic import Field
 from pydantic import model_validator
 
 from doctranslate.schemas.enums import ArtifactKind
+from doctranslate.schemas.public_api import ProgressEvent
 from doctranslate.schemas.public_api import TranslationErrorPayload
+from doctranslate.schemas.public_api import TranslationRequest
 from doctranslate.schemas.public_api import TranslationResult
 from doctranslate.schemas.versions import PROGRESS_EVENT_VERSION
 from doctranslate.schemas.versions import PUBLIC_SCHEMA_VERSION
@@ -88,7 +90,7 @@ class TranslatorConfigValidateSpec(BaseModel):
 class ConfigValidateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    translation_request: dict[str, Any] | None = None
+    translation_request: TranslationRequest | None = None
     translator_config: TranslatorConfigValidateSpec | None = None
 
     @model_validator(mode="after")
@@ -127,6 +129,32 @@ class JobCreateResponse(BaseModel):
     status_url: str
 
 
+class WebhookCreateSpec(BaseModel):
+    """Terminal webhook configuration (JSON body on ``POST /v1/jobs/json``)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    url: str
+    secret: str | None = None
+    secret_env: str | None = None
+
+
+class JobCreateJsonBody(BaseModel):
+    """Typed JSON job creation (alternative to multipart ``POST /v1/jobs``)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    translation_request: TranslationRequest
+    input_pdf_base64: str | None = Field(
+        default=None,
+        description=(
+            "Optional standard-base64 PDF bytes. When set, the server writes a temp "
+            "file and overrides ``translation_request.input_pdf``."
+        ),
+    )
+    webhook: WebhookCreateSpec | None = None
+
+
 class JobStatusResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -136,7 +164,7 @@ class JobStatusResponse(BaseModel):
     state: JobState
     created_at: datetime
     updated_at: datetime
-    progress: dict[str, Any] | None = None
+    progress: ProgressEvent | None = None
     progress_seq: int = 0
     error: TranslationErrorPayload | None = None
     message: str | None = None
@@ -146,7 +174,7 @@ class JobEventItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     seq: int
-    event: dict[str, Any]
+    event: ProgressEvent
 
 
 class JobEventsResponse(BaseModel):

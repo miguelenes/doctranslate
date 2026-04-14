@@ -22,7 +22,11 @@ router = APIRouter(
 )
 
 
-@router.post("/v1/config/validate", response_model=ConfigValidateResponse)
+@router.post(
+    "/v1/config/validate",
+    response_model=ConfigValidateResponse,
+    operation_id="v1_config_validate_post",
+)
 def post_validate_config(body: ConfigValidateRequest) -> ConfigValidateResponse:
     from doctranslate.api import validate_request
 
@@ -31,7 +35,7 @@ def post_validate_config(body: ConfigValidateRequest) -> ConfigValidateResponse:
 
     if body.translation_request is not None:
         try:
-            validate_request(body.translation_request)
+            validate_request(body.translation_request.model_dump(mode="json"))
         except (OSError, ValueError, TypeError, ValidationError):
             translation_request_valid = False
         else:

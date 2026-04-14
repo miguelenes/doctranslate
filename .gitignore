@@ -17,6 +17,7 @@ memray*
 *.pdf
 *.docx
 *.json
+!openapi/dist/openapi.json
 **/*.pyc
 .venv
 .idea

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 from fastapi import Depends
+from fastapi import Request
 from fastapi import status
 
 from doctranslate.http_api.auth import require_api_operator
@@ -24,8 +25,9 @@ router = APIRouter(
     "/v1/assets/warmup",
     response_model=JobCreateResponse,
     status_code=status.HTTP_202_ACCEPTED,
+    operation_id="v1_assets_warmup_post",
 )
-async def post_warmup(job_service: JobServiceDep) -> JobCreateResponse:
+async def post_warmup(request: Request, job_service: JobServiceDep) -> JobCreateResponse:
     try:
         job_id = await job_service.create_warmup_job()
     except RuntimeError:
@@ -42,5 +44,5 @@ async def post_warmup(job_service: JobServiceDep) -> JobCreateResponse:
         job_id=job_id,
         kind="warmup",
         state="queued",
-        status_url=f"/v1/jobs/{job_id}",
+        status_url=str(request.url_for("get_job", job_id=job_id)),
     )

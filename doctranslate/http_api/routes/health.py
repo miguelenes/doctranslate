@@ -28,6 +28,7 @@ router = APIRouter(tags=["health"])
 @router.get(
     "/v1/health/live",
     response_model=HealthLiveResponse,
+    operation_id="v1_health_live_get",
     dependencies=[Depends(require_api_operator_when_probes_are_protected)],
 )
 def health_live() -> HealthLiveResponse:
@@ -37,6 +38,7 @@ def health_live() -> HealthLiveResponse:
 @router.get(
     "/v1/health/ready",
     response_model=HealthReadyResponse,
+    operation_id="v1_health_ready_get",
     dependencies=[Depends(require_api_operator_when_probes_are_protected)],
 )
 async def health_ready(
@@ -124,6 +126,7 @@ async def health_ready(
 @router.get(
     "/v1/runtime",
     response_model=RuntimeInfoResponse,
+    operation_id="v1_runtime_get",
     dependencies=[Depends(require_api_operator)],
 )
 def runtime_info() -> RuntimeInfoResponse:
@@ -137,6 +140,7 @@ def runtime_info() -> RuntimeInfoResponse:
 @router.get(
     "/v1/assets/status",
     response_model=AssetStatusResponse,
+    operation_id="v1_assets_status_get",
     dependencies=[Depends(require_api_operator)],
 )
 def assets_status() -> AssetStatusResponse:

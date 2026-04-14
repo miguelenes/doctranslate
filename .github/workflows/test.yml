@@ -57,6 +57,12 @@ jobs:
           uv run doc-translate --help
       - name: Pytest without PDF-stack markers
         run: uv run pytest tests/ -q -m "not requires_pdf"
+      - name: OpenAPI export and generated HTTP client drift check
+        run: |
+          uv run python scripts/export_openapi.py
+          git diff --exit-code openapi/dist/openapi.json
+          uv run python scripts/regenerate_http_client.py
+          git diff --exit-code -- clients/http-python/
       - name: Validate documentation (MkDocs strict)
         env:
           NO_MKDOCS_2_WARNING: "1"

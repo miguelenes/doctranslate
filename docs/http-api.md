@@ -27,6 +27,8 @@ uv run doctranslate serve --host 127.0.0.1 --port 8000
 - OpenAPI UI: `http://127.0.0.1:8000/docs`
 - OpenAPI JSON: `http://127.0.0.1:8000/openapi.json`
 
+The repository keeps a **checked-in OpenAPI snapshot** at [`openapi/dist/openapi.json`](https://github.com/miguelenes/doctranslate/blob/main/openapi/dist/openapi.json) (regenerate with `uv run python scripts/export_openapi.py`). A **generated Python client** lives under `clients/http-python/`; see **[HTTP API — Python client](http-api-python-client.md)**.
+
 ## Authentication
 
 The OSS HTTP API uses a **single shared secret** (opaque string, not a JWT). By default **authentication is disabled** so local scripts and tests keep working unchanged.
@@ -175,6 +177,7 @@ When `DOCTRANSLATE_API_AUTH_MODE` is `disabled` (default), omit the `-H "Authori
 | `POST` | `/v1/config/validate` | Validate `TranslationRequest` JSON and/or router/local TOML |
 | `POST` | `/v1/inspect` | PDF inspection (`inspect_input`) |
 | `POST` | `/v1/jobs` | Create translation job (`202`, multipart or mounted path) |
+| `POST` | `/v1/jobs/json` | Create translation job (`202`, JSON body: typed `TranslationRequest`, optional `input_pdf_base64`, optional `webhook`) |
 | `GET` | `/v1/jobs/{id}` | Job status / last progress event (includes `progress_seq`) |
 | `GET` | `/v1/jobs/{id}/events` | Replayable progress history (`after_seq`, `limit`) |
 | `GET` | `/v1/jobs/{id}/stream` | **SSE** progress stream (`text/event-stream`; supports `Last-Event-ID` reconnect; `full_events=1` includes full `finish` payload) |

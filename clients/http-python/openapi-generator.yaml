@@ -1,0 +1,9 @@
+# Passed to: openapi-python-client generate --config clients/http-python/openapi-generator.yaml
+project_name_override: doc-translater-http-api-client
+package_name_override: doc_translater_http_api_client
+package_version_override: "0.1.0"
+literal_enums: true
+post_hooks:
+  - "ruff check . --fix-only"
+  - "ruff format ."
+  - "python ../../scripts/ensure_http_client_packaging.py"

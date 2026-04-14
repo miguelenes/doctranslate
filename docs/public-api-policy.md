@@ -55,3 +55,12 @@ Deep imports may continue to work but can change in minor releases.
 - **`PROGRESS_EVENT_VERSION`** applies to streaming progress objects normalized by `progress_event_from_dict`.
 
 Clients should reject unknown major schema versions when strict compatibility is required.
+
+## HTTP API wire contract (OpenAPI)
+
+The optional FastAPI service under `/v1` documents JSON shapes via **OpenAPI** (`/openapi.json`). This is **separate** from `doctranslate.schemas` semver: HTTP-only envelopes and fields live in `doctranslate.http_api.models`.
+
+- **Errors:** JSON error responses on `/v1/*` business failures use the `ApiErrorEnvelope` shape (`ok: false`, `schema_version`, optional `request_id`, structured `error` with `code`, `message`, `retryable`, optional `details`).
+- **Progress events:** `GET /v1/jobs/{id}/events` returns `event` objects aligned with `PROGRESS_EVENT_VERSION` / the `ProgressEvent` discriminated union in `doctranslate.schemas.public_api`.
+- **Artifacts:** `ArtifactKind` values follow the public enum; treat unknown kinds as forward-compatible.
+- **OpenAPI artifact:** [`openapi/dist/openapi.json`](https://github.com/miguelenes/doctranslate/blob/main/openapi/dist/openapi.json) is exported for CI and for the generated Python client (`clients/http-python/`).

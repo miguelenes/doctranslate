@@ -3,18 +3,20 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import binascii
 import json
 import uuid
 from collections.abc import AsyncIterator
 from pathlib import Path
 from typing import Any
+from typing import NoReturn
 
 import fsspec.core
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import File
 from fastapi import Form
-from fastapi import HTTPException
 from fastapi import Request
 from fastapi import UploadFile
 from fastapi import status
@@ -33,6 +35,7 @@ from doctranslate.http_api.errors import http_error
 from doctranslate.http_api.job_progress_hub import JobProgressHub
 from doctranslate.http_api.job_sse import job_progress_sse
 from doctranslate.http_api.models import ArtifactLink
+from doctranslate.http_api.models import JobCreateJsonBody
 from doctranslate.http_api.models import JobCreateResponse
 from doctranslate.http_api.models import JobEventItem
 from doctranslate.http_api.models import JobEventsResponse
@@ -53,6 +56,18 @@ router = APIRouter(
     tags=["jobs"],
     dependencies=[Depends(require_api_operator)],
 )
+
+
+def _unknown_job_http() -> NoReturn:
+    raise http_error(
+        status_code=status.HTTP_404_NOT_FOUND,
+        error=TranslationErrorPayload(
+            code=PublicErrorCode.NOT_FOUND,
+            message="Unknown job",
+            retryable=False,
+        ),
+        request_id=get_request_id(),
+    )
 
 
 def _record_to_status(job_id: str, rec: dict[str, Any]) -> JobStatusResponse:
@@ -102,6 +117,20 @@ def _artifact_filename(kind: ArtifactKind) -> str:
     return f"{kind.value}.pdf"
 
 
+def _validate_webhook_mapping(
+    cfg: dict[str, Any],
+    settings: Any,
+) -> dict[str, Any]:
+    url = cfg.get("url")
+    if not isinstance(url, str) or not url.strip():
+        msg = "webhook.url is required"
+        raise ValueError(msg)
+    validate_webhook_url(url.strip(), settings=settings)
+    out = dict(cfg)
+    out["url"] = url.strip()
+    return out
+
+
 def _parse_job_webhook(
     raw: str | None,
     settings: Any,
@@ -116,19 +145,14 @@ def _parse_job_webhook(
     if not isinstance(cfg, dict):
         msg = "webhook must be a JSON object"
         raise TypeError(msg)
-    url = cfg.get("url")
-    if not isinstance(url, str) or not url.strip():
-        msg = "webhook.url is required"
-        raise ValueError(msg)
-    validate_webhook_url(url.strip(), settings=settings)
-    cfg["url"] = url.strip()
-    return cfg
+    return _validate_webhook_mapping(cfg, settings)
 
 
 @router.post(
     "/v1/jobs",
     response_model=JobCreateResponse,
     status_code=status.HTTP_202_ACCEPTED,
+    operation_id="v1_jobs_create_multipart",
 )
 async def create_job(
     request: Request,
@@ -301,15 +325,215 @@ async def create_job(
     )
 
 
-@router.get("/v1/jobs/{job_id}", response_model=JobStatusResponse, name="get_job")
+@router.post(
+    "/v1/jobs/json",
+    response_model=JobCreateResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    operation_id="v1_jobs_create_json",
+)
+async def create_job_json(
+    request: Request,
+    settings: SettingsDep,
+    job_service: JobServiceDep,
+    body: JobCreateJsonBody,
+) -> JobCreateResponse:
+    """Create a translation job from a typed JSON body (OpenAPI-friendly)."""
+    from doctranslate.api import validate_request
+
+    wh_cfg: dict[str, Any] | None = None
+    if body.webhook is not None:
+        try:
+            wh_cfg = _validate_webhook_mapping(
+                body.webhook.model_dump(mode="json", exclude_none=True),
+                settings,
+            )
+        except (TypeError, ValueError) as e:
+            raise http_error(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                error=TranslationErrorPayload(
+                    code=PublicErrorCode.VALIDATION_ERROR,
+                    message=str(e),
+                    retryable=False,
+                ),
+                request_id=get_request_id(),
+            ) from e
+
+    if body.input_pdf_base64 is not None:
+        try:
+            raw_pdf = base64.standard_b64decode(body.input_pdf_base64)
+        except (binascii.Error, ValueError) as e:
+            raise http_error(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                error=TranslationErrorPayload(
+                    code=PublicErrorCode.VALIDATION_ERROR,
+                    message=f"Invalid base64 in input_pdf_base64: {e}",
+                    retryable=False,
+                ),
+                request_id=get_request_id(),
+            ) from e
+        job_id = str(uuid.uuid4())
+        job_service.artifact_store.ensure_workspace(job_id)
+
+        class _OneShotUpload:
+            __slots__ = ("_buf", "_done")
+
+            def __init__(self, buf: bytes) -> None:
+                self._buf = buf
+                self._done = False
+
+            async def read_chunk(self, _n: int) -> bytes:
+                if self._done:
+                    return b""
+                self._done = True
+                return self._buf
+
+        uploader = _OneShotUpload(raw_pdf)
+
+        try:
+            dest = await job_service.artifact_store.save_uploaded_input(
+                job_id,
+                "input.pdf",
+                settings.max_upload_bytes,
+                uploader.read_chunk,
+            )
+        except ValueError as e:
+            if "max_upload_bytes" in str(e):
+                raise http_error(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    error=TranslationErrorPayload(
+                        code=PublicErrorCode.VALIDATION_ERROR,
+                        message=str(e),
+                        retryable=False,
+                    ),
+                    request_id=get_request_id(),
+                ) from e
+            raise
+        except OSError as e:
+            raise http_error(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                error=TranslationErrorPayload(
+                    code=PublicErrorCode.INTERNAL_ERROR,
+                    message=str(e),
+                    retryable=False,
+                ),
+                request_id=get_request_id(),
+            ) from e
+
+        try:
+            req = body.translation_request.model_copy(
+                update={"input_pdf": str(dest.resolve())},
+            )
+            validate_request(req.model_dump(mode="json"))
+        except (ValidationError, ValueError, TypeError, OSError) as e:
+            raise http_error(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                error=TranslationErrorPayload(
+                    code=PublicErrorCode.VALIDATION_ERROR,
+                    message=str(e),
+                    retryable=False,
+                ),
+                request_id=get_request_id(),
+            ) from e
+        try:
+            await job_service.create_translation_job(
+                req,
+                input_pdf_path=dest,
+                job_id=job_id,
+                webhook=wh_cfg,
+            )
+        except RuntimeError:
+            raise http_error(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                error=TranslationErrorPayload(
+                    code=PublicErrorCode.INTERNAL_ERROR,
+                    message="Server busy; too many active or queued jobs.",
+                    retryable=True,
+                ),
+                request_id=get_request_id(),
+            ) from None
+        return JobCreateResponse(
+            job_id=job_id,
+            kind="translation",
+            state="queued",
+            status_url=str(request.url_for("get_job", job_id=job_id)),
+        )
+
+    raw_path = body.translation_request.input_pdf
+    if not raw_path or not str(raw_path).strip():
+        raise http_error(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            error=TranslationErrorPayload(
+                code=PublicErrorCode.VALIDATION_ERROR,
+                message="input_pdf is required when input_pdf_base64 is omitted",
+                retryable=False,
+            ),
+            request_id=get_request_id(),
+        )
+    path = Path(raw_path)
+    err = job_service.validate_mounted_input(path)
+    if err is not None:
+        raise http_error(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            error=err,
+            request_id=get_request_id(),
+        )
+    try:
+        req = body.translation_request.model_copy(
+            update={"input_pdf": str(path.resolve())},
+        )
+        validate_request(req.model_dump(mode="json"))
+    except (ValidationError, ValueError, TypeError, OSError) as e:
+        raise http_error(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            error=TranslationErrorPayload(
+                code=PublicErrorCode.VALIDATION_ERROR,
+                message=str(e),
+                retryable=False,
+            ),
+            request_id=get_request_id(),
+        ) from e
+    try:
+        job_id = await job_service.create_translation_job(
+            req,
+            input_pdf_path=path,
+            webhook=wh_cfg,
+        )
+    except RuntimeError:
+        raise http_error(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            error=TranslationErrorPayload(
+                code=PublicErrorCode.INTERNAL_ERROR,
+                message="Server busy; too many active or queued jobs.",
+                retryable=True,
+            ),
+            request_id=get_request_id(),
+        ) from None
+    return JobCreateResponse(
+        job_id=job_id,
+        kind="translation",
+        state="queued",
+        status_url=str(request.url_for("get_job", job_id=job_id)),
+    )
+
+
+@router.get(
+    "/v1/jobs/{job_id}",
+    response_model=JobStatusResponse,
+    name="get_job",
+    operation_id="v1_jobs_get",
+)
 async def get_job(job_id: str, job_service: JobServiceDep) -> JobStatusResponse:
     rec = await job_service.get_record(job_id)
     if rec is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
+        _unknown_job_http()
     return _record_to_status(job_id, rec)
 
 
-@router.get("/v1/jobs/{job_id}/events", response_model=JobEventsResponse)
+@router.get(
+    "/v1/jobs/{job_id}/events",
+    response_model=JobEventsResponse,
+    operation_id="v1_jobs_events_list",
+)
 async def list_job_events(
     job_id: str,
     job_service: JobServiceDep,
@@ -318,7 +542,7 @@ async def list_job_events(
 ) -> JobEventsResponse:
     rec = await job_service.get_record(job_id)
     if rec is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
+        _unknown_job_http()
     rows = job_service.list_job_events(job_id, after_seq=after_seq, limit=limit)
     return JobEventsResponse(
         job_id=job_id,
@@ -330,6 +554,7 @@ async def list_job_events(
     "/v1/jobs/{job_id}/stream",
     response_class=EventSourceResponse,
     response_model=None,
+    operation_id="v1_jobs_stream",
 )
 async def stream_job_progress(
     request: Request,
@@ -351,15 +576,23 @@ async def stream_job_progress(
         yield ev
 
 
-@router.post("/v1/jobs/{job_id}/cancel", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/v1/jobs/{job_id}/cancel",
+    status_code=status.HTTP_204_NO_CONTENT,
+    operation_id="v1_jobs_cancel",
+)
 async def cancel_job(job_id: str, job_service: JobServiceDep) -> None:
     rec = await job_service.get_record(job_id)
     if rec is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
+        _unknown_job_http()
     await job_service.cancel(job_id)
 
 
-@router.get("/v1/jobs/{job_id}/result", response_model=JobResultResponse)
+@router.get(
+    "/v1/jobs/{job_id}/result",
+    response_model=JobResultResponse,
+    operation_id="v1_jobs_result_get",
+)
 async def get_job_result(
     request: Request,
     job_id: str,
@@ -368,7 +601,7 @@ async def get_job_result(
 ) -> JobResultResponse:
     rec = await job_service.get_record(job_id)
     if rec is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
+        _unknown_job_http()
     artifacts: list[ArtifactLink] = []
     result = rec.get("result")
     if result is not None:
@@ -398,7 +631,11 @@ async def get_job_result(
     )
 
 
-@router.get("/v1/jobs/{job_id}/manifest", response_model=JobManifestResponse)
+@router.get(
+    "/v1/jobs/{job_id}/manifest",
+    response_model=JobManifestResponse,
+    operation_id="v1_jobs_manifest_get",
+)
 async def get_job_manifest(
     request: Request,
     job_id: str,
@@ -407,17 +644,27 @@ async def get_job_manifest(
 ) -> JobManifestResponse:
     rec = await job_service.get_record(job_id)
     if rec is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
+        _unknown_job_http()
     if rec["state"] != "succeeded":
-        raise HTTPException(
+        raise http_error(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Job has not succeeded yet",
+            error=TranslationErrorPayload(
+                code=PublicErrorCode.INPUT_ERROR,
+                message="Job has not succeeded yet",
+                retryable=False,
+            ),
+            request_id=get_request_id(),
         )
     result = rec.get("result")
     if result is None:
-        raise HTTPException(
+        raise http_error(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job has no result yet",
+            error=TranslationErrorPayload(
+                code=PublicErrorCode.NOT_FOUND,
+                message="Job has no result yet",
+                retryable=False,
+            ),
+            request_id=get_request_id(),
         )
     items: list[JobManifestItem] = []
     exp = (
@@ -461,6 +708,7 @@ def _remote_file_size(url: str, opts: dict[str, Any]) -> int:
 @router.head(
     "/v1/jobs/{job_id}/artifacts/{kind}",
     response_model=None,
+    operation_id="v1_jobs_artifact_head",
 )
 async def head_artifact(
     job_id: str,
@@ -470,12 +718,17 @@ async def head_artifact(
 ) -> Response:
     rec = await job_service.get_record(job_id)
     if rec is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
+        _unknown_job_http()
     result = rec.get("result")
     if result is None:
-        raise HTTPException(
+        raise http_error(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job has no result yet",
+            error=TranslationErrorPayload(
+                code=PublicErrorCode.NOT_FOUND,
+                message="Job has no result yet",
+                retryable=False,
+            ),
+            request_id=get_request_id(),
         )
     artifact = None
     media = "application/octet-stream"
@@ -485,8 +738,14 @@ async def head_artifact(
             media = item.media_type or media
             break
     if artifact is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Artifact not found"
+        raise http_error(
+            status_code=status.HTTP_404_NOT_FOUND,
+            error=TranslationErrorPayload(
+                code=PublicErrorCode.NOT_FOUND,
+                message="Artifact not found",
+                retryable=False,
+            ),
+            request_id=get_request_id(),
         )
     if settings.artifact_download_mode == "redirect":
         path_str = artifact.path
@@ -510,8 +769,14 @@ async def head_artifact(
     if mode == "path":
         path: Path = payload["path"]
         if not path.is_file():
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Artifact not found"
+            raise http_error(
+                status_code=status.HTTP_404_NOT_FOUND,
+                error=TranslationErrorPayload(
+                    code=PublicErrorCode.NOT_FOUND,
+                    message="Artifact not found",
+                    retryable=False,
+                ),
+                request_id=get_request_id(),
             )
         size = path.stat().st_size
         return Response(
@@ -528,9 +793,14 @@ async def head_artifact(
         try:
             fsize = await asyncio.to_thread(_remote_file_size, url, opts)
         except Exception:
-            raise HTTPException(
+            raise http_error(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Artifact not found",
+                error=TranslationErrorPayload(
+                    code=PublicErrorCode.NOT_FOUND,
+                    message="Artifact not found",
+                    retryable=False,
+                ),
+                request_id=get_request_id(),
             ) from None
         return Response(
             status_code=status.HTTP_200_OK,
@@ -540,15 +810,21 @@ async def head_artifact(
                 "Accept-Ranges": "bytes",
             },
         )
-    raise HTTPException(
+    raise http_error(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail="Unknown artifact storage mode",
+        error=TranslationErrorPayload(
+            code=PublicErrorCode.INTERNAL_ERROR,
+            message="Unknown artifact storage mode",
+            retryable=False,
+        ),
+        request_id=get_request_id(),
     )
 
 
 @router.get(
     "/v1/jobs/{job_id}/artifacts/{kind}",
     response_model=None,
+    operation_id="v1_jobs_artifact_get",
 )
 async def download_artifact(
     request: Request,
@@ -559,12 +835,17 @@ async def download_artifact(
 ) -> Response:
     rec = await job_service.get_record(job_id)
     if rec is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
+        _unknown_job_http()
     result = rec.get("result")
     if result is None:
-        raise HTTPException(
+        raise http_error(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job has no result yet",
+            error=TranslationErrorPayload(
+                code=PublicErrorCode.NOT_FOUND,
+                message="Job has no result yet",
+                retryable=False,
+            ),
+            request_id=get_request_id(),
         )
     artifact = None
     media = "application/octet-stream"
@@ -574,8 +855,14 @@ async def download_artifact(
             media = item.media_type or media
             break
     if artifact is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Artifact not found"
+        raise http_error(
+            status_code=status.HTTP_404_NOT_FOUND,
+            error=TranslationErrorPayload(
+                code=PublicErrorCode.NOT_FOUND,
+                message="Artifact not found",
+                retryable=False,
+            ),
+            request_id=get_request_id(),
         )
 
     if settings.artifact_download_mode == "redirect":
@@ -606,8 +893,14 @@ async def download_artifact(
     if mode == "path":
         path: Path = payload["path"]
         if not path.is_file():
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Artifact not found"
+            raise http_error(
+                status_code=status.HTTP_404_NOT_FOUND,
+                error=TranslationErrorPayload(
+                    code=PublicErrorCode.NOT_FOUND,
+                    message="Artifact not found",
+                    retryable=False,
+                ),
+                request_id=get_request_id(),
             )
         size = path.stat().st_size
         pr = parse_bytes_range(range_header, size)
@@ -655,9 +948,14 @@ async def download_artifact(
         try:
             fsize = await asyncio.to_thread(_remote_file_size, url, opts)
         except Exception:
-            raise HTTPException(
+            raise http_error(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Artifact not found",
+                error=TranslationErrorPayload(
+                    code=PublicErrorCode.NOT_FOUND,
+                    message="Artifact not found",
+                    retryable=False,
+                ),
+                request_id=get_request_id(),
             ) from None
         pr = parse_bytes_range(range_header, fsize)
         if pr == "unsatisfiable":
@@ -712,7 +1010,12 @@ async def download_artifact(
             },
         )
 
-    raise HTTPException(
+    raise http_error(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail="Unknown artifact storage mode",
+        error=TranslationErrorPayload(
+            code=PublicErrorCode.INTERNAL_ERROR,
+            message="Unknown artifact storage mode",
+            retryable=False,
+        ),
+        request_id=get_request_id(),
     )

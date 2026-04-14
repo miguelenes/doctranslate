@@ -23,6 +23,8 @@ uv run doctranslate serve --host 127.0.0.1 --port 8000
 - OpenAPI UI: `http://127.0.0.1:8000/docs`
 - OpenAPI JSON: `http://127.0.0.1:8000/openapi.json`
 
+Committed OpenAPI snapshot: [`openapi/dist/openapi.json`](openapi/dist/openapi.json). Generated Python client: [`clients/http-python/`](clients/http-python/) — quickstart in **[HTTP API — Python client](docs/http-api-python-client.md)**.
+
 ## Core Endpoints
 
 | Method | Path | Purpose |
@@ -35,6 +37,7 @@ uv run doctranslate serve --host 127.0.0.1 --port 8000
 | `POST` | `/v1/config/validate` | Validate `translation_request` and/or translator config |
 | `POST` | `/v1/inspect` | Inspect input PDFs without translation |
 | `POST` | `/v1/jobs` | Create translation job (`202`) using multipart upload or mounted path |
+| `POST` | `/v1/jobs/json` | Create translation job (`202`) with JSON body (`TranslationRequest` + optional `input_pdf_base64`) |
 | `GET` | `/v1/jobs/{job_id}` | Read job status/progress (`progress_seq` for event cursor) |
 | `GET` | `/v1/jobs/{job_id}/events` | List progress events after `after_seq` (replay / catch-up) |
 | `GET` | `/v1/jobs/{job_id}/stream` | SSE progress stream (`Last-Event-ID` reconnect; optional `full_events=1`) |
@@ -46,7 +49,7 @@ uv run doctranslate serve --host 127.0.0.1 --port 8000
 
 ## Typical Job Flow
 
-1. `POST /v1/jobs` to enqueue work (optional `webhook` multipart field for terminal callbacks).
+1. `POST /v1/jobs` (multipart) or `POST /v1/jobs/json` (typed JSON) to enqueue work (optional `webhook` field for terminal callbacks).
 2. Poll `GET /v1/jobs/{job_id}` until terminal state (`succeeded`, `failed`, `canceled`), or subscribe to `GET /v1/jobs/{job_id}/stream` (SSE).
 3. `GET /v1/jobs/{job_id}/result` to get result details and artifact URLs (or `GET .../manifest`).
 4. Optionally download specific files via `/v1/jobs/{job_id}/artifacts/{kind}`.
@@ -96,7 +99,7 @@ Error responses use a consistent JSON envelope (`ApiErrorEnvelope`) with:
 Common statuses include:
 
 - `400` invalid JSON/input
-- `404` unknown job/artifact
+- `404` unknown job/artifact (JSON body uses `ApiErrorEnvelope`, not bare `{"detail": ...}`)
 - `413` upload exceeds configured max size
 - `422` validation failure
 - `503` queue at capacity / service busy

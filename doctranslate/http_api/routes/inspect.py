@@ -15,7 +15,11 @@ router = APIRouter(
 )
 
 
-@router.post("/v1/inspect", response_model=InputInspectionResult)
+@router.post(
+    "/v1/inspect",
+    response_model=InputInspectionResult,
+    operation_id="v1_inspect_post",
+)
 def post_inspect(body: InspectRequest) -> InputInspectionResult:
     from doctranslate.api import inspect_input
 
