@@ -1220,6 +1220,8 @@
       
         
       
+        
+      
     
     
     
@@ -1308,6 +1310,34 @@
     
   
     HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-api-workers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API workers
   
 
     
@@ -2732,7 +2762,7 @@
 <p>Air-gapped or pinned asset trees: use <code>doctranslate assets pack-offline</code> / <code>restore-offline</code> (see <a href="../ai/verification/">Verification</a> and CI in <code>.github/workflows/test.yml</code>).</p>
 <h2 id="entrypoint-and-signals">Entrypoint and signals</h2>
 <p>The image entrypoint runs <a href="https://github.com/krallin/tini"><code>tini</code></a> so PID 1 forwards <code>SIGTERM</code>/<code>SIGINT</code> to the CLI. Override the command after the image name as usual.</p>
-<p>An <strong>optional</strong> HTTP API is included (<code>DocTranslater[api]</code>); see <a href="../http-api/">HTTP API</a>, <a href="../http-api-storage-backends/">HTTP API storage</a>, and the <code>runtime-api</code> image target. You can still embed with <code>doctranslate.api</code> from your own process or wrap the CLI.</p>
+<p>An <strong>optional</strong> HTTP API is included (<code>DocTranslater[api]</code>); see <a href="../http-api/">HTTP API</a>, <a href="../http-api-workers/">HTTP API workers</a> (Redis + <code>doctranslate worker</code> when <code>DOCTRANSLATE_API_QUEUE_BACKEND=arq</code>), <a href="../http-api-storage-backends/">HTTP API storage</a>, and the <code>runtime-api</code> image target. You can still embed with <code>doctranslate.api</code> from your own process or wrap the CLI.</p>
 <h2 id="health-checks">Health checks</h2>
 <p>Images declare <code>HEALTHCHECK</code> using <code>doctranslate --version</code>. For readiness that includes downloaded assets, use a warm target or mount a populated cache volume.</p>
 <h2 id="security">Security</h2>

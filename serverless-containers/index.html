@@ -1204,6 +1204,8 @@
       
         
       
+        
+      
     
     
     
@@ -1292,6 +1294,34 @@
     
   
     HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-api-workers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API workers
   
 
     
@@ -2656,7 +2686,7 @@
 <h3 id="mode-c-split-control-plane-workers-recommended-at-scale">Mode C — Split control plane + workers (recommended at scale)</h3>
 <ul>
 <li><strong>Control plane</strong>: small <code>runtime-api</code> (or serverless API gateway + minimal service) for <code>/v1/inspect</code>, <code>/v1/config/validate</code>, health, optional job <strong>acceptance</strong> that enqueues work only.</li>
-<li><strong>Data plane</strong>: Fargate / Modal / Runpod workers run <code>doctranslate translate</code> or embed <code>doctranslate.api.async_translate</code>.</li>
+<li><strong>Data plane</strong>: Fargate / Modal / Runpod workers run <code>doctranslate translate</code> or embed <code>doctranslate.api.async_translate</code>. For the <strong>reference HTTP API</strong>, you can run <strong><code>doctranslate worker</code></strong> (ARQ) beside <code>doctranslate serve</code> with shared <code>DOCTRANSLATE_API_DATA_ROOT</code> — see <a href="../http-api-workers/">HTTP API workers</a>.</li>
 </ul>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>flowchart LR
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  client[Client] --&gt; apiService[ApiService]

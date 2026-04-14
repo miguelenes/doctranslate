@@ -18,7 +18,7 @@
         <link rel="prev" href="../library-api/">
       
       
-        <link rel="next" href="../http-api-storage-backends/">
+        <link rel="next" href="../http-api-workers/">
       
       
         
@@ -998,6 +998,8 @@
       
         
       
+        
+      
     
     
     
@@ -1250,6 +1252,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-api-workers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API workers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -2474,11 +2504,30 @@
 <li>OpenAPI JSON: <code>http://127.0.0.1:8000/openapi.json</code></li>
 </ul>
 <h2 id="serverless-and-multi-instance-behavior">Serverless and multi-instance behavior</h2>
-<p>The HTTP API uses an <strong>in-process</strong> <code>JobManager</code> (bounded concurrency). Job records live in <strong>SQLite</strong> under <code>DOCTRANSLATE_API_DATA_ROOT</code> by default (with optional dual-write to legacy <code>meta.json</code> per job). That implies:</p>
+<p>Job records live in <strong>SQLite</strong> under <code>DOCTRANSLATE_API_DATA_ROOT</code> by default (with optional dual-write to legacy <code>meta.json</code> per job). Execution mode is selected with <strong><code>DOCTRANSLATE_API_QUEUE_BACKEND</code></strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>inprocess</code></strong> (default)</td>
+<td>A bounded-concurrency <code>JobManager</code> runs jobs inside the API process (asyncio tasks + semaphore).</td>
+</tr>
+<tr>
+<td><strong><code>arq</code></strong></td>
+<td>The API <strong>enqueues</strong> work to <strong>Redis</strong>; a separate <strong><code>doctranslate worker</code></strong> process runs translations/warmups. Use <strong>shared</strong> <code>DOCTRANSLATE_API_DATA_ROOT</code> (and DB path) across API + workers. See <a href="../http-api-workers/">HTTP API workers</a>.</td>
+</tr>
+</tbody>
+</table>
+<p>Implications:</p>
 <ul>
-<li><strong><code>POST /v1/jobs</code> returns <code>202</code></strong> with a <code>job_id</code>; <strong><code>GET /v1/jobs/{id}</code></strong> polls state on <strong>that same container instance</strong> unless you add infrastructure that pins the client to the instance (e.g. Cloud Run <strong>session affinity</strong>, ALB <strong>stickiness</strong>).</li>
-<li><strong>Horizontal scaling</strong> adds replicas that <strong>do not share</strong> the in-memory queue. For production multi-replica APIs, prefer an <strong>external job queue</strong> and <strong>object storage</strong> for inputs/outputs, put the SQLite DB on <strong>shared storage</strong> if you need shared metadata, or accept single-replica semantics.</li>
-<li><strong>Restarts</strong>: completed/failed jobs remain <strong>readable from SQLite</strong> (and disk blobs if <code>DOCTRANSLATE_API_DATA_ROOT</code> persists); <strong>in-flight</strong> tasks do not survive process restart.</li>
+<li><strong><code>POST /v1/jobs</code> returns <code>202</code></strong> with a <code>job_id</code>; <strong><code>GET /v1/jobs/{id}</code></strong> polls SQLite-backed state. With <strong><code>inprocess</code></strong> and multiple API replicas, clients may need stickiness unless only one replica accepts jobs. With <strong><code>arq</code></strong>, any replica can serve status as long as metadata/artifacts are shared.</li>
+<li><strong>Horizontal scaling</strong>: <code>inprocess</code> replicas do <strong>not</strong> share an in-memory queue. For production multi-replica APIs, prefer <strong><code>arq</code></strong> (or an external pattern) plus <strong>object storage</strong> for inputs/outputs when appropriate.</li>
+<li><strong>Restarts</strong>: completed/failed jobs remain <strong>readable from SQLite</strong> (and disk blobs if <code>DOCTRANSLATE_API_DATA_ROOT</code> persists). <strong><code>inprocess</code></strong>: in-flight tasks do not survive API restart. <strong><code>arq</code></strong>: queued jobs remain in Redis; a running worker may be restarted independently.</li>
 </ul>
 <p>For platform guidance, see <a href="../serverless-containers/">Serverless containers</a> and <a href="../deploy-cloud-run/">Deploy on Cloud Run</a>.</p>
 <p>For <strong>blob mirrors (S3/GCS), presigned downloads, TTL cleanup, and migration</strong> from legacy <code>meta.json</code>, see <a href="../http-api-storage-backends/">HTTP API storage and metadata</a>.</p>
@@ -2523,7 +2572,7 @@
 <tr>
 <td><code>GET</code></td>
 <td><code>/v1/health/ready</code></td>
-<td>Readiness (dirs, optional assets, job capacity)</td>
+<td>Readiness (dirs, optional assets, job capacity, Redis when <code>arq</code>)</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
@@ -2613,14 +2662,29 @@
 <td>Multipart upload limit</td>
 </tr>
 <tr>
+<td><code>DOCTRANSLATE_API_QUEUE_BACKEND</code></td>
+<td><code>inprocess</code></td>
+<td><code>inprocess</code> or <code>arq</code> (Redis workers)</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_REDIS_URL</code></td>
+<td><code>redis://127.0.0.1:6379/0</code></td>
+<td>Redis for ARQ (<code>queue_backend=arq</code>)</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_ARQ_QUEUE_NAME</code></td>
+<td><code>arq:queue</code></td>
+<td>ARQ queue name (API + worker must match)</td>
+</tr>
+<tr>
 <td><code>DOCTRANSLATE_API_MAX_CONCURRENT_JOBS</code></td>
 <td><code>2</code></td>
-<td>Semaphore for running jobs</td>
+<td>Semaphore for <strong>in-process</strong> running jobs; per-worker concurrency hint for <code>arq</code></td>
 </tr>
 <tr>
 <td><code>DOCTRANSLATE_API_MAX_QUEUED_JOBS</code></td>
 <td><code>32</code></td>
-<td>Max jobs in <code>queued</code>+<code>running</code></td>
+<td>Max jobs in <code>queued</code>+<code>running</code> (SQLite count for <code>arq</code>)</td>
 </tr>
 <tr>
 <td><code>DOCTRANSLATE_API_JOB_TIMEOUT_SECONDS</code></td>
@@ -2701,7 +2765,7 @@
 <li>Set <strong><code>DOCTRANSLATE_API_DATA_ROOT</code></strong> (and optionally <strong><code>DOCTRANSLATE_API_TMP_ROOT</code></strong>) on <strong>fast writable</strong> storage.</li>
 <li>Decide warmup strategy: baked <strong>warm</strong> image, <code>DOCTRANSLATE_API_WARMUP_ON_STARTUP=eager</code>, or <code>POST /v1/assets/warmup</code> after deploy.</li>
 <li>Set <strong><code>DOCTRANSLATE_API_JOB_TIMEOUT_SECONDS</code></strong> when the platform needs a hard wall-clock bound.</li>
-<li>For multi-replica services, read <a href="#serverless-and-multi-instance-behavior">Serverless and multi-instance behavior</a> and enable <strong>session affinity</strong> only as a best-effort mitigation.</li>
+<li>For multi-replica services, prefer <strong><code>DOCTRANSLATE_API_QUEUE_BACKEND=arq</code></strong> with shared storage, or read <a href="#serverless-and-multi-instance-behavior">Serverless and multi-instance behavior</a> and enable <strong>session affinity</strong> only as a best-effort mitigation for <code>inprocess</code>.</li>
 </ol>
 <p>Full matrix and image tags: <a href="../serverless-runtime-reference/">Serverless runtime &amp; image reference</a>.</p>
 <h2 id="asgi-import">ASGI import</h2>
@@ -2762,13 +2826,13 @@
         
         
           
-          <a href="../http-api-storage-backends/" class="md-footer__link md-footer__link--next" aria-label="Next: HTTP API storage">
+          <a href="../http-api-workers/" class="md-footer__link md-footer__link--next" aria-label="Next: HTTP API workers">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                HTTP API storage
+                HTTP API workers
               </div>
             </div>
             <div class="md-footer__button md-icon">

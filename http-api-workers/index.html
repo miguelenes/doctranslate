@@ -12,13 +12,13 @@
         <meta name="author" content="Miguel Enes & DocTranslater contributors">
       
       
-        <link rel="canonical" href="https://miguelenes.github.io/doctranslate/docker-profiles/">
+        <link rel="canonical" href="https://miguelenes.github.io/doctranslate/http-api-workers/">
       
       
-        <link rel="prev" href="../docker/">
+        <link rel="prev" href="../http-api/">
       
       
-        <link rel="next" href="../serverless-containers/">
+        <link rel="next" href="../http-api-storage-backends/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Docker image profiles - DocTranslater</title>
+        <title>HTTP API workers (ARQ + Redis) - DocTranslater</title>
       
     
     
@@ -87,7 +87,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#docker-image-profiles" class="md-skip">
+        <a href="#http-api-workers-arq-redis" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Docker image profiles
+              HTTP API workers (ARQ + Redis)
             
           </span>
         </div>
@@ -276,12 +276,10 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="../docker/" class="md-tabs__link">
           
   
@@ -361,10 +359,12 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../library-api/" class="md-tabs__link">
           
   
@@ -589,8 +589,6 @@
       
   
   
-    
-  
   
   
     
@@ -618,19 +616,16 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -652,13 +647,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -701,37 +696,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Image profiles
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="././" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../docker-profiles/" class="md-nav__link">
         
   
   
@@ -747,60 +715,6 @@
   
 
       </a>
-      
-        
-
-
-<nav class="md-nav md-nav--secondary" aria-label="On this page">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      On this page
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#serverless-deployment-role-mapping" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Serverless / deployment role mapping
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#build-arguments" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Build arguments
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Examples
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1067,8 +981,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -1088,19 +1004,22 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" checked>
         
           
-          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
             
   
   
@@ -1118,7 +1037,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_10">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1189,10 +1108,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../http-api-workers/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API workers
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1208,6 +1154,104 @@
   
 
       </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-the-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running the worker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-compose-minimal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Compose (minimal)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cancellation-and-readiness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cancellation and readiness
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local development
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2278,10 +2322,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#serverless-deployment-role-mapping" class="md-nav__link">
+  <a href="#requirements" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Serverless / deployment role mapping
+        Requirements
       
     </span>
   </a>
@@ -2289,10 +2333,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#build-arguments" class="md-nav__link">
+  <a href="#environment-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Build arguments
+        Environment variables
       
     </span>
   </a>
@@ -2300,10 +2344,54 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#examples" class="md-nav__link">
+  <a href="#running-the-worker" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Examples
+        Running the worker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-compose-minimal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Compose (minimal)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cancellation-and-readiness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cancellation and readiness
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local development
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See also
       
     </span>
   </a>
@@ -2325,7 +2413,7 @@
                 
                   
   
-    <a href="https://github.com/miguelenes/doctranslate/edit/main/docs/docker-profiles.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/miguelenes/doctranslate/edit/main/docs/http-api-workers.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-pen" viewBox="0 0 24 24"><path d="M12.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v9.34"/><path d="M14 2v5a1 1 0 0 0 1 1h5M10.378 12.622a1 1 0 0 1 3 3.003L8.36 20.637a2 2 0 0 1-.854.506l-2.867.837a.5.5 0 0 1-.62-.62l.836-2.869a2 2 0 0 1 .506-.853z"/></svg>
     </a>
@@ -2334,134 +2422,105 @@
     
       
     
-    <a href="https://github.com/miguelenes/doctranslate/raw/main/docs/docker-profiles.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/miguelenes/doctranslate/raw/main/docs/http-api-workers.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-code-2" viewBox="0 0 24 24"><path d="M4 12.15V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3.35"/><path d="M14 2v5a1 1 0 0 0 1 1h5M5 16l-3 3 3 3M9 22l3-3-3-3"/></svg>
     </a>
   
 
 
-<h1 id="docker-image-profiles">Docker image profiles</h1>
-<p>Build from the repository root with <code>-f Dockerfile</code>. The <a href="https://github.com/miguelenes/doctranslate/blob/main/Dockerfile"><code>Dockerfile</code></a> lives at the repo root.</p>
+<h1 id="http-api-workers-arq-redis">HTTP API workers (ARQ + Redis)</h1>
+<p>When <code>DOCTRANSLATE_API_QUEUE_BACKEND=arq</code>, the API process <strong>only enqueues</strong> jobs to Redis; a separate <strong>worker</strong> process runs translations and asset warmups. Job metadata stays in SQLite (<code>DOCTRANSLATE_API_METADATA_SQLITE_PATH</code> or default under <code>DOCTRANSLATE_API_DATA_ROOT</code>); artifacts use the same <a href="../http-api-storage-backends/">HTTP API storage</a> settings as the API.</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li><code>DocTranslater[api]</code> (includes <code>arq</code> and <code>redis</code>).</li>
+<li>A reachable <strong>Redis</strong> instance.</li>
+<li><strong>Shared</strong> <code>DOCTRANSLATE_API_DATA_ROOT</code> (or equivalent object storage + DB paths) between API and worker containers so both see the same job workspaces and SQLite file.</li>
+</ul>
+<h2 id="environment-variables">Environment variables</h2>
 <table>
 <thead>
 <tr>
-<th>Build target</th>
-<th>Python extras</th>
-<th>Typical use</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>runtime-base</code></td>
-<td>(none)</td>
-<td>Schemas, <code>doctranslate config</code>, light tooling</td>
-</tr>
-<tr>
-<td><code>runtime-cpu</code></td>
-<td><code>pdf</code>, <code>cli</code>, <code>llm</code>, <code>tm</code>, <code>vision</code></td>
-<td>CLI/API translation without <code>full</code> OCR/Hyperscan stack</td>
-</tr>
-<tr>
-<td><code>runtime-api</code></td>
-<td>same as <code>runtime-cpu</code> + <code>api</code></td>
-<td>HTTP API service (<code>doctranslate serve</code>, port <strong>8000</strong>)</td>
-</tr>
-<tr>
-<td><code>runtime-cpu-warm</code></td>
-<td>same as <code>runtime-cpu</code></td>
-<td>Pre-downloaded fonts/models/cmaps under <code>~/.cache/doctranslate</code></td>
-</tr>
-<tr>
-<td><code>runtime-vision</code></td>
-<td><code>full</code></td>
-<td>Parity with default CI install (OCR, glossary acceleration, vision)</td>
-</tr>
-<tr>
-<td><code>runtime-vision-warm</code></td>
-<td>same as <code>runtime-vision</code></td>
-<td>Warm asset cache baked in</td>
-</tr>
-<tr>
-<td><code>runtime-dev</code></td>
-<td><code>full</code> + <code>[dependency-groups] dev</code></td>
-<td>Pytest, Ruff, MkDocs in container</td>
-</tr>
-</tbody>
-</table>
-<h2 id="serverless-deployment-role-mapping">Serverless / deployment role mapping</h2>
-<p>Use this table when choosing a <strong>service</strong> vs <strong>worker</strong> image for managed platforms (<a href="../serverless-containers/">Serverless containers</a>).</p>
-<table>
-<thead>
-<tr>
-<th>Deployment role</th>
-<th>Dockerfile target</th>
-<th>Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>HTTP API (FastAPI / Uvicorn)</td>
-<td><code>runtime-api</code></td>
-<td>Default <code>CMD</code> is <code>serve</code> on port <strong>8000</strong></td>
-</tr>
-<tr>
-<td>Batch / queue worker (CLI)</td>
-<td><code>runtime-cpu</code> or <code>runtime-vision</code></td>
-<td>Run <code>doctranslate translate …</code> or embed <code>doctranslate.api</code></td>
-</tr>
-<tr>
-<td>Lowest cold-start (CPU stack)</td>
-<td><code>runtime-cpu-warm</code></td>
-<td>Pre-populated <code>~/.cache/doctranslate</code> in the image</td>
-</tr>
-<tr>
-<td>Full stack + lowest cold-start</td>
-<td><code>runtime-vision-warm</code></td>
-<td>CI-parity extras + baked cache</td>
-</tr>
-</tbody>
-</table>
-<h2 id="build-arguments">Build arguments</h2>
-<table>
-<thead>
-<tr>
-<th>ARG</th>
+<th>Variable</th>
 <th>Default</th>
-<th>Stages</th>
 <th>Meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>PYTHON_VERSION</code></td>
-<td><code>3.12</code></td>
-<td>all</td>
-<td>Must match a supported interpreter (3.10–3.13).</td>
+<td><code>DOCTRANSLATE_API_QUEUE_BACKEND</code></td>
+<td><code>inprocess</code></td>
+<td><code>inprocess</code> | <code>arq</code></td>
 </tr>
 <tr>
-<td><code>INCLUDE_OCR</code></td>
-<td><code>0</code></td>
-<td><code>builder-cpu-sync</code></td>
-<td>Add <code>ocr</code> extra to the CPU image.</td>
+<td><code>DOCTRANSLATE_API_REDIS_URL</code></td>
+<td><code>redis://127.0.0.1:6379/0</code></td>
+<td>Redis URL for ARQ</td>
 </tr>
 <tr>
-<td><code>INCLUDE_GLOSSARY</code></td>
-<td><code>0</code></td>
-<td><code>builder-cpu-sync</code></td>
-<td>Add <code>glossary</code> extra (Hyperscan); runtime already has <code>libhyperscan</code> only on vision targets — if you enable this, extend the <strong>runtime</strong> <code>apt</code> layer with <code>libhyperscan5</code> or use <code>runtime-vision</code>.</td>
+<td><code>DOCTRANSLATE_API_ARQ_QUEUE_NAME</code></td>
+<td><code>arq:queue</code></td>
+<td>Queue name; <strong>must match</strong> API and worker</td>
 </tr>
 </tbody>
 </table>
-<p>CPU runtime <strong>omits</strong> <code>libhyperscan5</code> by default. Use <code>runtime-vision</code> for Hyperscan-backed glossary scanning, or customize the Dockerfile <code>apt-get</code> list if you build CPU with <code>INCLUDE_GLOSSARY=1</code>.</p>
-<h2 id="examples">Examples</h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>runtime-cpu<span class="w"> </span>-t<span class="w"> </span>doctranslater:cpu<span class="w"> </span>.
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>docker<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>runtime-api<span class="w"> </span>-t<span class="w"> </span>doctranslater:api<span class="w"> </span>.
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>docker<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>runtime-vision-warm<span class="w"> </span>-t<span class="w"> </span>doctranslater:vision-warm<span class="w"> </span>.
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>docker<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>runtime-dev<span class="w"> </span>-t<span class="w"> </span>doctranslater:dev<span class="w"> </span>.
+<p>All other <code>DOCTRANSLATE_API_*</code> settings (data root, artifact mirror, timeouts, mount prefixes, etc.) apply to <strong>both</strong> processes.</p>
+<h2 id="running-the-worker">Running the worker</h2>
+<p>From the same environment as the API (same <code>DOCTRANSLATE_API_*</code> values):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv<span class="w"> </span>run<span class="w"> </span>doctranslate<span class="w"> </span>worker
 </span></code></pre></div>
-<p>Warm targets need network access during <code>docker build</code> for <code>doctranslate assets warmup</code>.</p>
-<p>See <a href="../docker/">Docker overview</a> for run examples, volumes, and environment variables.</p>
+<p>Batch / CI style (drain the queue then exit):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>doctranslate<span class="w"> </span>worker<span class="w"> </span>--burst
+</span></code></pre></div>
+<p>Equivalent ARQ CLI (same <code>WorkerSettings</code>):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>uv<span class="w"> </span>run<span class="w"> </span>arq<span class="w"> </span>doctranslate.http_api.worker.arq_worker.WorkerSettings
+</span></code></pre></div>
+<h2 id="docker-compose-minimal">Docker Compose (minimal)</h2>
+<p>Run <strong>Redis</strong>, <strong>one API</strong> replica, and <strong>one or more workers</strong>. Mount the same volume for <code>DOCTRANSLATE_API_DATA_ROOT</code> on API and worker. Example sketch:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">services</span><span class="p">:</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">redis</span><span class="p">:</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis:7-alpine</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;6379:6379&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">api</span><span class="p">:</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">doctranslater:api</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">      </span><span class="nt">DOCTRANSLATE_API_QUEUE_BACKEND</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arq</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">      </span><span class="nt">DOCTRANSLATE_API_REDIS_URL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis://redis:6379/0</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">      </span><span class="nt">DOCTRANSLATE_API_DATA_ROOT</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="s">&quot;api-data:/data&quot;</span><span class="w"> </span><span class="p p-Indicator">]</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;8000:8000&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">redis</span><span class="p p-Indicator">]</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">  </span><span class="nt">worker</span><span class="p">:</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">doctranslater:api</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;doctranslate&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;worker&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">      </span><span class="nt">DOCTRANSLATE_API_QUEUE_BACKEND</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arq</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">      </span><span class="nt">DOCTRANSLATE_API_REDIS_URL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis://redis:6379/0</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">      </span><span class="nt">DOCTRANSLATE_API_DATA_ROOT</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="s">&quot;api-data:/data&quot;</span><span class="w"> </span><span class="p p-Indicator">]</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">redis</span><span class="p p-Indicator">]</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="nt">volumes</span><span class="p">:</span>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">  </span><span class="nt">api-data</span><span class="p">:</span>
+</span></code></pre></div>
+<p>Scale <code>worker</code> replicas for throughput; tune <code>DOCTRANSLATE_API_MAX_CONCURRENT_JOBS</code> per worker container memory.</p>
+<h2 id="cancellation-and-readiness">Cancellation and readiness</h2>
+<ul>
+<li><code>POST /v1/jobs/{id}/cancel</code> records a cancel request in SQLite and signals ARQ <strong>abort</strong> (best-effort). Cooperative cancel is also checked during progress streaming in the worker.</li>
+<li><code>GET /v1/health/ready</code> includes <code>job_queue_healthy</code>: it pings Redis when <code>queue_backend=arq</code>.</li>
+</ul>
+<h2 id="local-development">Local development</h2>
+<p>Default remains <strong><code>inprocess</code></strong> (no Redis). To try ARQ locally:</p>
+<ol>
+<li>Start Redis (<code>docker run --rm -p 6379:6379 redis:7-alpine</code>).</li>
+<li>Export <code>DOCTRANSLATE_API_QUEUE_BACKEND=arq</code> and <code>DOCTRANSLATE_API_REDIS_URL=redis://127.0.0.1:6379/0</code>.</li>
+<li>Run <code>uv run doctranslate serve</code> in one terminal and <code>uv run doctranslate worker</code> in another (same <code>DOCTRANSLATE_API_DATA_ROOT</code>).</li>
+</ol>
+<h2 id="see-also">See also</h2>
+<ul>
+<li><a href="../http-api/">HTTP API</a> — endpoints and env reference</li>
+<li><a href="../docker/">Docker</a> — image targets</li>
+<li><a href="../serverless-containers/">Serverless containers</a> — deployment modes</li>
+</ul>
 
 
 
@@ -2499,7 +2558,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../docker/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Overview">
+          <a href="../http-api/" class="md-footer__link md-footer__link--prev" aria-label="Previous: HTTP API">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
@@ -2509,20 +2568,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Overview
+                HTTP API
               </div>
             </div>
           </a>
         
         
           
-          <a href="../serverless-containers/" class="md-footer__link md-footer__link--next" aria-label="Next: Serverless overview">
+          <a href="../http-api-storage-backends/" class="md-footer__link md-footer__link--next" aria-label="Next: HTTP API storage">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Serverless overview
+                HTTP API storage
               </div>
             </div>
             <div class="md-footer__button md-icon">
