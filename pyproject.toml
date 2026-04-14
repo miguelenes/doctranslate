@@ -86,6 +86,10 @@ doc-translate = "doctranslate.main:cli"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.uv]
+# ORT 1.24+ has no cp310 wheels; apply to the full graph (transitive deps too).
+constraint-dependencies = ["onnxruntime<1.24; python_version < '3.11'"]
+
 [tool.flake8]
 ignore = ["E203", "E261", "E501", "W503", "E741", "E501"]
 max-line-length = 88
