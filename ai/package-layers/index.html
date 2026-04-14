@@ -994,6 +994,8 @@
       
         
       
+        
+      
     
     
     
@@ -1082,6 +1084,34 @@
     
   
     HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../http-api-storage-backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API storage
   
 
     
@@ -2472,7 +2502,15 @@
 </tr>
 <tr>
 <td><code>api</code></td>
-<td>FastAPI, Uvicorn, <code>python-multipart</code> for the optional HTTP service (<code>doctranslate serve</code>)</td>
+<td>FastAPI, Uvicorn, <code>python-multipart</code>, <code>pydantic-settings</code>, <code>fsspec</code> for the optional HTTP service (<code>doctranslate serve</code>)</td>
+</tr>
+<tr>
+<td><code>api-s3</code></td>
+<td><code>s3fs</code>, <code>boto3</code> — S3-compatible blob mirror + presigned downloads</td>
+</tr>
+<tr>
+<td><code>api-gcs</code></td>
+<td><code>gcsfs</code> — GCS blob mirror + signed URLs</td>
 </tr>
 <tr>
 <td><code>tm_semantic</code></td>

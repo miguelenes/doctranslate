@@ -18,7 +18,7 @@
         <link rel="prev" href="../library-api/">
       
       
-        <link rel="next" href="../public-api-policy/">
+        <link rel="next" href="../http-api-storage-backends/">
       
       
         
@@ -996,6 +996,8 @@
       
         
       
+        
+      
     
     
     
@@ -1248,6 +1250,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-api-storage-backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -2444,13 +2474,14 @@
 <li>OpenAPI JSON: <code>http://127.0.0.1:8000/openapi.json</code></li>
 </ul>
 <h2 id="serverless-and-multi-instance-behavior">Serverless and multi-instance behavior</h2>
-<p>The HTTP API uses an <strong>in-process</strong> <code>JobManager</code> (bounded concurrency + on-disk <code>meta.json</code> per job). That implies:</p>
+<p>The HTTP API uses an <strong>in-process</strong> <code>JobManager</code> (bounded concurrency). Job records live in <strong>SQLite</strong> under <code>DOCTRANSLATE_API_DATA_ROOT</code> by default (with optional dual-write to legacy <code>meta.json</code> per job). That implies:</p>
 <ul>
 <li><strong><code>POST /v1/jobs</code> returns <code>202</code></strong> with a <code>job_id</code>; <strong><code>GET /v1/jobs/{id}</code></strong> polls state on <strong>that same container instance</strong> unless you add infrastructure that pins the client to the instance (e.g. Cloud Run <strong>session affinity</strong>, ALB <strong>stickiness</strong>).</li>
-<li><strong>Horizontal scaling</strong> adds replicas that <strong>do not share</strong> the in-memory queue. For production multi-replica APIs, prefer an <strong>external job queue</strong> and <strong>object storage</strong> for inputs/outputs, or accept single-replica semantics.</li>
-<li><strong>Restarts</strong>: completed/failed jobs may still be <strong>readable from disk</strong> if <code>DOCTRANSLATE_API_DATA_ROOT</code> persists; <strong>in-flight</strong> tasks do not survive process restart.</li>
+<li><strong>Horizontal scaling</strong> adds replicas that <strong>do not share</strong> the in-memory queue. For production multi-replica APIs, prefer an <strong>external job queue</strong> and <strong>object storage</strong> for inputs/outputs, put the SQLite DB on <strong>shared storage</strong> if you need shared metadata, or accept single-replica semantics.</li>
+<li><strong>Restarts</strong>: completed/failed jobs remain <strong>readable from SQLite</strong> (and disk blobs if <code>DOCTRANSLATE_API_DATA_ROOT</code> persists); <strong>in-flight</strong> tasks do not survive process restart.</li>
 </ul>
 <p>For platform guidance, see <a href="../serverless-containers/">Serverless containers</a> and <a href="../deploy-cloud-run/">Deploy on Cloud Run</a>.</p>
+<p>For <strong>blob mirrors (S3/GCS), presigned downloads, TTL cleanup, and migration</strong> from legacy <code>meta.json</code>, see <a href="../http-api-storage-backends/">HTTP API storage and metadata</a>.</p>
 <h2 id="docker">Docker</h2>
 <p>Build the API image (extends the CPU translate stack + <code>api</code> extra):</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>runtime-api<span class="w"> </span>-t<span class="w"> </span>doctranslater:api<span class="w"> </span>.
@@ -2542,7 +2573,7 @@
 <tr>
 <td><code>GET</code></td>
 <td><code>/v1/jobs/{id}/artifacts/{kind}</code></td>
-<td>Download one artifact</td>
+<td>Download one artifact (supports <code>Range</code>, optional redirect to presigned URL)</td>
 </tr>
 </tbody>
 </table>
@@ -2609,7 +2640,52 @@
 <tr>
 <td><code>DOCTRANSLATE_API_ARTIFACT_RETENTION_SECONDS</code></td>
 <td><code>86400</code></td>
-<td>Reserved for future TTL cleanup of job workspaces — <strong>not enforced</strong> by the HTTP layer today; use external lifecycle rules</td>
+<td>After terminal job states, schedule workspace + metadata deletion (0 disables)</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_TTL_CLEANUP_INTERVAL_SECONDS</code></td>
+<td><code>300</code></td>
+<td>Background sweep interval for expired jobs</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_METADATA_SQLITE_PATH</code></td>
+<td><em>(unset)</em></td>
+<td>Override SQLite DB path (default <code>&lt;DATA_ROOT&gt;/http_api_metadata.db</code>)</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_DUAL_WRITE_JSON_META</code></td>
+<td><code>true</code></td>
+<td>Also write <code>jobs/&lt;id&gt;/meta.json</code></td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_READ_JSON_META_FALLBACK</code></td>
+<td><code>true</code></td>
+<td>If SQLite misses a row, read legacy <code>meta.json</code></td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_ARTIFACT_STORAGE</code></td>
+<td><code>local</code></td>
+<td><code>local</code> or <code>remote</code> (fsspec mirror)</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_ARTIFACT_REMOTE_ROOT</code></td>
+<td><em>(unset)</em></td>
+<td>e.g. <code>s3://bucket/prefix</code> (requires <code>[api-s3]</code>)</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_FSSPEC_STORAGE_OPTIONS_JSON</code></td>
+<td><em>(empty)</em></td>
+<td>JSON object for fsspec / s3fs / gcsfs options</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_ARTIFACT_DOWNLOAD_MODE</code></td>
+<td><code>proxy</code></td>
+<td><code>proxy</code> or <code>redirect</code> (presigned URLs when available)</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_PRESIGN_EXPIRES_SECONDS</code></td>
+<td><code>3600</code></td>
+<td>Presigned URL TTL</td>
 </tr>
 </tbody>
 </table>
@@ -2686,13 +2762,13 @@
         
         
           
-          <a href="../public-api-policy/" class="md-footer__link md-footer__link--next" aria-label="Next: Public API policy">
+          <a href="../http-api-storage-backends/" class="md-footer__link md-footer__link--next" aria-label="Next: HTTP API storage">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Public API policy
+                HTTP API storage
               </div>
             </div>
             <div class="md-footer__button md-icon">

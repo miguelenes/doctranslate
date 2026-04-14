@@ -12,13 +12,13 @@
         <meta name="author" content="Miguel Enes & DocTranslater contributors">
       
       
-        <link rel="canonical" href="https://miguelenes.github.io/doctranslate/serverless-containers/">
+        <link rel="canonical" href="https://miguelenes.github.io/doctranslate/http-api-storage-backends/">
       
       
-        <link rel="prev" href="../docker-profiles/">
+        <link rel="prev" href="../http-api/">
       
       
-        <link rel="next" href="../deploy-cloud-run/">
+        <link rel="next" href="../public-api-policy/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Serverless containers - DocTranslater</title>
+        <title>HTTP API storage and metadata - DocTranslater</title>
       
     
     
@@ -87,7 +87,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#serverless-containers" class="md-skip">
+        <a href="#http-api-storage-and-metadata" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Serverless containers
+              HTTP API storage and metadata
             
           </span>
         </div>
@@ -276,12 +276,10 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="../docker/" class="md-tabs__link">
           
   
@@ -361,10 +359,12 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../library-api/" class="md-tabs__link">
           
   
@@ -589,8 +589,6 @@
       
   
   
-    
-  
   
   
     
@@ -618,19 +616,16 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -652,13 +647,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -729,37 +724,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Serverless overview
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="././" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../serverless-containers/" class="md-nav__link">
         
   
   
@@ -775,182 +743,6 @@
   
 
       </a>
-      
-        
-
-
-<nav class="md-nav md-nav--secondary" aria-label="On this page">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      On this page
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#primary-reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Primary reference
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#platform-comparison" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Platform comparison
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Platform comparison">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#fit-vs-repository-characteristics" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fit vs repository characteristics
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#recommended-deployment-modes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Recommended deployment modes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Recommended deployment modes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#mode-a-http-service-small-medium-jobs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Mode A — HTTP service (small / medium jobs)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mode-b-batch-worker-long-or-heavy-jobs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Mode B — Batch / worker (long or heavy jobs)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mode-c-split-control-plane-workers-recommended-at-scale" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Mode C — Split control plane + workers (recommended at scale)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#runtime-envelopes-starting-points" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Runtime envelopes (starting points)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#oss-surface-what-this-repo-ships" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        OSS surface (what this repo ships)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#operational-checklist" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Operational checklist
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#aws-lambda-container-images-caveat" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        AWS Lambda container images (caveat)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#related" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rollout-phases-contributors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Rollout phases (contributors)
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1189,8 +981,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -1208,19 +1002,22 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" checked>
         
           
-          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
             
   
   
@@ -1238,7 +1035,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_10">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1309,10 +1106,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../http-api-storage-backends/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API storage
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1328,6 +1152,104 @@
   
 
       </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#defaults-oss-local-dev" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defaults (OSS / local dev)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metadata-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata migration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remote-blob-mirror-fsspec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remote blob mirror (fsspec)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#downloads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Downloads
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ttl-cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TTL cleanup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-replica-note" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-replica note
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2370,10 +2292,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#primary-reference" class="md-nav__link">
+  <a href="#defaults-oss-local-dev" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Primary reference
+        Defaults (OSS / local dev)
       
     </span>
   </a>
@@ -2381,88 +2303,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#platform-comparison" class="md-nav__link">
+  <a href="#metadata-migration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Platform comparison
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Platform comparison">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#fit-vs-repository-characteristics" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fit vs repository characteristics
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#recommended-deployment-modes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Recommended deployment modes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Recommended deployment modes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#mode-a-http-service-small-medium-jobs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Mode A — HTTP service (small / medium jobs)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mode-b-batch-worker-long-or-heavy-jobs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Mode B — Batch / worker (long or heavy jobs)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mode-c-split-control-plane-workers-recommended-at-scale" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Mode C — Split control plane + workers (recommended at scale)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#runtime-envelopes-starting-points" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Runtime envelopes (starting points)
+        Metadata migration
       
     </span>
   </a>
@@ -2470,10 +2314,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#oss-surface-what-this-repo-ships" class="md-nav__link">
+  <a href="#remote-blob-mirror-fsspec" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OSS surface (what this repo ships)
+        Remote blob mirror (fsspec)
       
     </span>
   </a>
@@ -2481,10 +2325,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#operational-checklist" class="md-nav__link">
+  <a href="#downloads" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Operational checklist
+        Downloads
       
     </span>
   </a>
@@ -2492,10 +2336,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#aws-lambda-container-images-caveat" class="md-nav__link">
+  <a href="#ttl-cleanup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        AWS Lambda container images (caveat)
+        TTL cleanup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-replica-note" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-replica note
       
     </span>
   </a>
@@ -2507,17 +2362,6 @@
     <span class="md-ellipsis">
       
         Related
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rollout-phases-contributors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Rollout phases (contributors)
       
     </span>
   </a>
@@ -2539,7 +2383,7 @@
                 
                   
   
-    <a href="https://github.com/miguelenes/doctranslate/edit/main/docs/serverless-containers.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/miguelenes/doctranslate/edit/main/docs/http-api-storage-backends.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-pen" viewBox="0 0 24 24"><path d="M12.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v9.34"/><path d="M14 2v5a1 1 0 0 0 1 1h5M10.378 12.622a1 1 0 0 1 3 3.003L8.36 20.637a2 2 0 0 1-.854.506l-2.867.837a.5.5 0 0 1-.62-.62l.836-2.869a2 2 0 0 1 .506-.853z"/></svg>
     </a>
@@ -2548,231 +2392,120 @@
     
       
     
-    <a href="https://github.com/miguelenes/doctranslate/raw/main/docs/serverless-containers.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/miguelenes/doctranslate/raw/main/docs/http-api-storage-backends.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-code-2" viewBox="0 0 24 24"><path d="M4 12.15V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3.35"/><path d="M14 2v5a1 1 0 0 0 1 1h5M5 16l-3 3 3 3M9 22l3-3-3-3"/></svg>
     </a>
   
 
 
-<h1 id="serverless-containers">Serverless containers</h1>
-<p>This page describes how to run DocTranslater on <strong>managed container / serverless job</strong> platforms (Cloud Run, ECS Fargate, App Runner, Modal, Runpod, etc.). It is <strong>not</strong> about edge runtimes (Workers, Lambda@Edge).</p>
-<p>For image contents and build targets, see <a href="../docker/">Docker overview</a> and <a href="../docker-profiles/">Docker image profiles</a>. For the optional HTTP API, see <a href="../http-api/">HTTP API</a>.</p>
-<h2 id="primary-reference">Primary reference</h2>
-<p><strong>Google Cloud Run</strong> is the recommended primary reference for OSS docs: single-container deploy, env-based config, and a good match for the <code>runtime-api</code> image. Step-by-step guide: <a href="../deploy-cloud-run/">Deploy on Cloud Run</a>.</p>
-<p>When jobs exceed request timeouts or need heavier isolation, graduate to <strong>ECS Fargate</strong> workers or <strong>Modal</strong> functions—see <a href="../deploy-fargate-app-runner/">Deploy on Fargate and App Runner</a> and the platform notes below.</p>
-<h2 id="platform-comparison">Platform comparison</h2>
+<h1 id="http-api-storage-and-metadata">HTTP API storage and metadata</h1>
+<p>The optional HTTP API persists <strong>job metadata</strong> (state, progress, errors, <code>TranslationResult</code>) separately from <strong>blobs</strong> (uploaded PDFs and generated artifacts). Defaults keep a <strong>zero-infra</strong> layout on local disk; optional settings mirror blobs to <strong>S3-compatible</strong> or <strong>GCS</strong> URLs via <a href="https://filesystem-spec.readthedocs.io/">fsspec</a>.</p>
+<h2 id="defaults-oss-local-dev">Defaults (OSS / local dev)</h2>
 <table>
 <thead>
 <tr>
-<th>Platform</th>
-<th>Fit</th>
-<th>Native / large image</th>
-<th>Cold start</th>
-<th>Long jobs</th>
-<th>Ephemeral disk</th>
-<th>Notes</th>
+<th>Plane</th>
+<th>Behavior</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Google Cloud Run</strong></td>
-<td><strong>Strong</strong></td>
-<td>Supported; use warm image or startup warmup</td>
-<td>Mitigate with min instances + warm cache</td>
-<td>Bounded by <strong>request timeout</strong>; use workers for very long PDFs</td>
-<td>Ephemeral; use object storage for durable artifacts</td>
-<td>Primary OSS reference</td>
+<td>Metadata</td>
+<td>SQLite at <code>&lt;DOCTRANSLATE_API_DATA_ROOT&gt;/http_api_metadata.db</code></td>
 </tr>
 <tr>
-<td><strong>AWS ECS Fargate</strong></td>
-<td><strong>Strong</strong></td>
-<td>Full control over task CPU/RAM</td>
-<td>Task cold start; scale with service + queue</td>
-<td><strong>No hard platform request cap</strong> like Cloud Run HTTP</td>
-<td>Ephemeral task storage; EFS optional</td>
-<td>Best for <strong>worker</strong> queues</td>
+<td>Blobs</td>
+<td>Local directories <code>&lt;DOCTRANSLATE_API_DATA_ROOT&gt;/jobs/&lt;job_id&gt;/{input,work,output}</code></td>
 </tr>
 <tr>
-<td><strong>Modal</strong></td>
-<td><strong>Strong</strong> (workers)</td>
-<td>Custom images / volumes</td>
-<td>Good primitives for ML-style cold start</td>
-<td>Fits async job pattern</td>
-<td>Ephemeral; mount volumes or fetch artifacts</td>
-<td>Great <strong>burst worker</strong>; less universal than Cloud Run for “drop-in API”</td>
-</tr>
-<tr>
-<td><strong>AWS App Runner</strong></td>
-<td><strong>Possible</strong></td>
-<td>Similar to Fargate service</td>
-<td>Autoscaling service</td>
-<td><strong>Weaker</strong> for long-running batch</td>
-<td>Ephemeral</td>
-<td>Prefer for <strong>light API</strong> or short jobs</td>
-</tr>
-<tr>
-<td><strong>Runpod</strong></td>
-<td><strong>Possible</strong></td>
-<td>GPU-oriented</td>
-<td>Pod startup</td>
-<td>Long runs OK</td>
-<td>Ephemeral / volume options</td>
-<td>Use when <strong>GPU</strong> or pod-style execution fits</td>
-</tr>
-<tr>
-<td><strong>AWS Lambda (container)</strong></td>
-<td><strong>Poor</strong></td>
-<td>250 MB unzipped / 10 GB image limits; heavy ONNX stack is awkward</td>
-<td>Cold start + size</td>
-<td><strong>Hard max duration</strong> (minutes)</td>
-<td>Ephemeral</td>
-<td>Appendix only—see <a href="#aws-lambda-container-images-caveat">Lambda caveat</a></td>
+<td>Legacy</td>
+<td>If <code>DOCTRANSLATE_API_DUAL_WRITE_JSON_META=true</code>, <code>meta.json</code> is still written beside each job for compatibility</td>
 </tr>
 </tbody>
 </table>
-<h3 id="fit-vs-repository-characteristics">Fit vs repository characteristics</h3>
-<ul>
-<li><strong>Native-heavy stack</strong> (ONNXRuntime, OpenCV, PyMuPDF, optional Hyperscan): prefer <strong>Linux amd64/arm64</strong> images from this repo’s <code>Dockerfile</code>; avoid exotic libc unless you rebuild.</li>
-<li><strong>Cold-start sensitivity</strong>: layout ONNX and font caches dominate; use <strong><code>runtime-*-warm</code></strong> targets, <strong><code>DOCTRANSLATE_API_WARMUP_ON_STARTUP=eager</code></strong>, or <code>POST /v1/assets/warmup</code> before traffic; see <a href="../http-api/#serverless-and-multi-instance-behavior">HTTP API – Production notes</a>.</li>
-<li><strong>Large images</strong>: acceptable on Cloud Run, Fargate, Modal, Runpod; Lambda container images are the outlier.</li>
-<li><strong>Model / asset warmup</strong>: outbound HTTPS or <a href="../ai/verification/">offline asset bundles</a>; warm build stages need network at <strong>image build</strong> time. Runtime warmups: see <a href="../docker/#quick-start">Docker – Quick start</a> (<code>assets warmup</code> and warm image targets).</li>
-<li><strong>Long-running jobs</strong>: HTTP API jobs run <strong>inside the container process</strong>; platform <strong>request timeouts</strong> do not cancel background tasks on all platforms—still cap risk with <code>DOCTRANSLATE_API_JOB_TIMEOUT_SECONDS</code> and worker architectures.</li>
-<li><strong>Local disk</strong>: treat as <strong>scratch only</strong>; persist outputs to <strong>object storage</strong> (S3, GCS, R2) for production.</li>
-</ul>
-<h2 id="recommended-deployment-modes">Recommended deployment modes</h2>
-<h3 id="mode-a-http-service-small-medium-jobs">Mode A — HTTP service (small / medium jobs)</h3>
-<ul>
-<li>Image: <strong><code>runtime-api</code></strong> (<code>doctranslate serve</code>, port <strong>8000</strong>).</li>
-<li>Scale <strong>replicas</strong> horizontally; keep <strong>one Uvicorn worker</strong> per container (see <a href="../http-api/">HTTP API</a>).</li>
-<li>Tune <code>DOCTRANSLATE_API_MAX_CONCURRENT_JOBS</code> (default <code>2</code>) to match memory.</li>
-</ul>
-<h3 id="mode-b-batch-worker-long-or-heavy-jobs">Mode B — Batch / worker (long or heavy jobs)</h3>
-<ul>
-<li>Image: <strong><code>runtime-cpu</code></strong> or <strong><code>runtime-vision</code></strong> (no FastAPI unless you add a thin sidecar).</li>
-<li>Pull work from an <strong>external queue</strong> (SQS, Pub/Sub, Celery broker, Modal <code>.map</code>, etc.).</li>
-<li>Write <strong>inputs/outputs to object storage</strong>; use local disk only for temp IL/PDF work.</li>
-</ul>
-<h3 id="mode-c-split-control-plane-workers-recommended-at-scale">Mode C — Split control plane + workers (recommended at scale)</h3>
-<ul>
-<li><strong>Control plane</strong>: small <code>runtime-api</code> (or serverless API gateway + minimal service) for <code>/v1/inspect</code>, <code>/v1/config/validate</code>, health, optional job <strong>acceptance</strong> that enqueues work only.</li>
-<li><strong>Data plane</strong>: Fargate / Modal / Runpod workers run <code>doctranslate translate</code> or embed <code>doctranslate.api.async_translate</code>.</li>
-</ul>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>flowchart LR
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  client[Client] --&gt; apiService[ApiService]
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  apiService --&gt; jobQueue[ExternalQueue]
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  jobQueue --&gt; workerPool[WorkerPool]
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  workerPool --&gt; objectStore[ObjectStorage]
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  apiService --&gt; objectStore
+<p>The translation engine still runs against <strong>local paths</strong>; remote modes <strong>upload outputs after</strong> a job finishes.</p>
+<h2 id="metadata-migration">Metadata migration</h2>
+<p>To import existing <code>jobs/*/meta.json</code> files into SQLite (for example after an upgrade):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>doctranslate.http_api.migrate_metadata<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--data-root<span class="w"> </span>/path/to/doctranslate-api-data
 </span></code></pre></div>
-<h2 id="runtime-envelopes-starting-points">Runtime envelopes (starting points)</h2>
-<p>Tune per document size and OCR flags; these are <strong>documentation defaults</strong>, not hard limits.</p>
+<p>Optional: <code>--sqlite-path /custom/path.db</code>.</p>
+<h2 id="remote-blob-mirror-fsspec">Remote blob mirror (fsspec)</h2>
+<p>Set:</p>
 <table>
 <thead>
 <tr>
-<th>Profile</th>
-<th>vCPU</th>
-<th>Memory</th>
-<th>Startup budget</th>
-<th>Timeout / duration</th>
+<th>Variable</th>
+<th>Meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>HTTP service</td>
-<td>1–2</td>
-<td>2–4 GiB</td>
-<td>20–45 s cold; 10–20 s with warm cache</td>
-<td>Align <strong>platform HTTP timeout</strong> with largest expected <strong>upload + poll</strong>; set <code>DOCTRANSLATE_API_JOB_TIMEOUT_SECONDS</code> for safety</td>
+<td><code>DOCTRANSLATE_API_ARTIFACT_STORAGE</code></td>
+<td><code>local</code> (default) or <code>remote</code></td>
 </tr>
 <tr>
-<td>CPU worker</td>
-<td>2–4</td>
-<td>4–8 GiB</td>
-<td>45–120 s for heavy cold pulls</td>
-<td>Task / job runner limit (hours on Fargate)</td>
+<td><code>DOCTRANSLATE_API_ARTIFACT_REMOTE_ROOT</code></td>
+<td>fsspec URL root, e.g. <code>s3://mybucket/prefix</code> or <code>file:///tmp/remote-test</code></td>
 </tr>
 <tr>
-<td>Vision / OCR worker</td>
-<td>4+</td>
-<td>8–16 GiB</td>
-<td>60–120 s</td>
-<td>Same as worker</td>
+<td><code>DOCTRANSLATE_API_FSSPEC_STORAGE_OPTIONS_JSON</code></td>
+<td>JSON object of storage options (S3 keys, <code>client_kwargs</code>, <code>endpoint_url</code>, …)</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Filesystem</strong>: ephemeral; mount a volume for <code>~/.cache/doctranslate</code> when the platform supports it (Cloud Run volumes, EFS on Fargate).</p>
-<p><strong>Cache / models</strong>: persist <code>HOME/.cache/doctranslate</code> (default user <code>doctranslater</code>, UID <strong>1000</strong>) or ship <a href="../docker/#quick-start">offline assets</a> (<code>pack-offline</code> / <code>restore-offline</code>; see <a href="../ai/verification/">Verification</a>).</p>
-<h2 id="oss-surface-what-this-repo-ships">OSS surface (what this repo ships)</h2>
+<p>Install optional extras as needed:</p>
 <ul>
-<li><strong>Docker images</strong> — multi-target <code>Dockerfile</code> and GHCR publishes (see <a href="../docker/">Docker</a>).</li>
-<li><strong>Reference HTTP API</strong> — optional; not required for workers using the CLI or <code>doctranslate.api</code>.</li>
-<li><strong>Example manifests</strong> — starter YAML under <a href="../deploy-samples/">Deploy samples</a> (see per-platform guides).</li>
-<li><strong>Docs</strong> — this page, <a href="../deploy-cloud-run/">Cloud Run</a>, <a href="../deploy-fargate-app-runner/">Fargate / App Runner</a>, <a href="../serverless-runtime-reference/">Runtime &amp; image reference</a>.</li>
+<li><strong>S3 / MinIO / R2:</strong> <code>pip install "DocTranslater[api,api-s3]"</code> (pulls <code>s3fs</code>, <code>boto3</code>).</li>
+<li><strong>GCS:</strong> <code>pip install "DocTranslater[api,api-gcs]"</code> (pulls <code>gcsfs</code>).</li>
 </ul>
-<h2 id="operational-checklist">Operational checklist</h2>
-<ul>
-<li><strong>Autoscaling</strong>: scale replicas; avoid many Uvicorn workers per replica for memory-heavy ONNX + PDF work.</li>
-<li><strong>Concurrency</strong>: lower <code>DOCTRANSLATE_API_MAX_CONCURRENT_JOBS</code> when OOM risk is high; combine with max instances / max tasks.</li>
-<li><strong>Isolation</strong>: separate <strong>inspect/config</strong> traffic from <strong>translate</strong> workers when possible.</li>
-<li><strong>Observability</strong>: ship container <strong>stdout/stderr</strong> to your platform logs; include <strong>job_id</strong> from API responses in client logs.</li>
-<li><strong>Startup / assets</strong>: use <code>/v1/health/ready</code> with <code>DOCTRANSLATE_API_REQUIRE_ASSETS_READY=true</code> when you require a warmed cache before serving (see <a href="../http-api/">HTTP API</a>).</li>
-<li><strong>Multi-instance HTTP API</strong>: the in-process <code>JobManager</code> is <strong>per replica</strong>; clients must poll the <strong>same</strong> instance that accepted <code>202</code> <strong>or</strong> you must add an external job store—documented in <a href="../http-api/#serverless-and-multi-instance-behavior">HTTP API</a>.</li>
-</ul>
-<h2 id="aws-lambda-container-images-caveat">AWS Lambda container images (caveat)</h2>
-<p>Lambda’s <strong>maximum execution time</strong> (minutes) and packaging constraints conflict with long PDF pipelines and large native dependencies. DocTranslater does <strong>not</strong> target Lambda as a primary deployment.</p>
-<p>If you experiment anyway: use the smallest possible extra set, <strong>skip LLM</strong> paths (e.g. <code>skip_translation</code> smoke only), aggressive memory, and accept frequent <strong>cold starts</strong>. Prefer <strong>Fargate</strong> or <strong>Cloud Run</strong> for real workloads.</p>
+<h2 id="downloads">Downloads</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DOCTRANSLATE_API_ARTIFACT_DOWNLOAD_MODE</code></td>
+<td><code>proxy</code> (default): API streams bytes; <code>redirect</code>: <code>/result</code> and direct artifact GET may use <strong>presigned</strong> URLs when credentials allow</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_PRESIGN_EXPIRES_SECONDS</code></td>
+<td>Presigned URL lifetime (default <code>3600</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><code>GET /v1/jobs/{id}/artifacts/{kind}</code> supports <code>Range: bytes=…</code> for <strong>local</strong> files and <strong>remote</strong> objects opened via fsspec.</p>
+<h2 id="ttl-cleanup">TTL cleanup</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DOCTRANSLATE_API_ARTIFACT_RETENTION_SECONDS</code></td>
+<td>After a job reaches a terminal state (<code>succeeded</code>, <code>failed</code>, <code>canceled</code>), metadata gets an expiry; the background sweep deletes SQLite rows, optional <code>meta.json</code>, local workspace, and remote <code>jobs/&lt;id&gt;</code> prefix when due. <code>0</code> disables TTL.</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_API_TTL_CLEANUP_INTERVAL_SECONDS</code></td>
+<td>Sweep interval (default <code>300</code>)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="multi-replica-note">Multi-replica note</h2>
+<p>SQLite metadata is <strong>per host file</strong> unless the database file lives on <strong>shared storage</strong>. For multiple API replicas sharing job state, run an external database (for example Postgres) in your own deployment layer or accept single-replica semantics; the OSS tree ships SQLite as the portable default.</p>
 <h2 id="related">Related</h2>
 <ul>
-<li><a href="../serverless-runtime-reference/">Serverless runtime &amp; image reference</a> — env vars and image/workload matrix</li>
-<li><a href="../deploy-cloud-run/">Deploy on Cloud Run</a></li>
-<li><a href="../deploy-fargate-app-runner/">Deploy on Fargate and App Runner</a></li>
-<li><a href="../deploy-modal-runpod/">Modal and Runpod notes</a></li>
+<li><a href="../http-api/">HTTP API</a> — endpoints and core environment variables</li>
+<li><a href="../docker/">Docker</a> — volumes and cache paths</li>
 </ul>
-<h2 id="rollout-phases-contributors">Rollout phases (contributors)</h2>
-<p>PR-sized sequencing (mirrors the serverless deployment plan):</p>
-<table>
-<thead>
-<tr>
-<th>Phase</th>
-<th>Scope</th>
-<th>Done when</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Overview docs</td>
-<td><a href="../serverless-containers/">Serverless containers</a> merged with platform matrix + architecture</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Primary reference</td>
-<td><a href="../deploy-cloud-run/">Deploy on Cloud Run</a> + <a href="../deploy-samples/cloud-run-service.sample.yaml">Cloud Run sample YAML</a></td>
-</tr>
-<tr>
-<td>3</td>
-<td>Secondary platforms</td>
-<td><a href="../deploy-fargate-app-runner/">Fargate / App Runner</a>, <a href="../deploy-modal-runpod/">Modal / Runpod</a>, <a href="../deploy-samples/ecs-taskdef-api.sample.yaml">ECS sample YAML</a></td>
-</tr>
-<tr>
-<td>4</td>
-<td>Runtime profiles</td>
-<td><a href="../docker/">Docker</a>, <a href="../docker-profiles/">Docker profiles</a>, <a href="../http-api/">HTTP API</a> serverless sections + <a href="../serverless-runtime-reference/">runtime reference</a></td>
-</tr>
-<tr>
-<td>5</td>
-<td>CI</td>
-<td>Docker workflow runs <strong>API boot + health</strong> and <strong>CLI skip-translation</strong> fixture smoke</td>
-</tr>
-<tr>
-<td>6</td>
-<td>Verify</td>
-<td><code>mkdocs build --strict</code> passes; cross-links and nav updated</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Risks:</strong> large cold-start downloads; OOM from high concurrency; multi-replica job polling without sticky sessions or external queue — mitigations are documented above and in the HTTP API page.</p>
 
 
 
@@ -2810,7 +2543,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../docker-profiles/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Image profiles">
+          <a href="../http-api/" class="md-footer__link md-footer__link--prev" aria-label="Previous: HTTP API">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
@@ -2820,20 +2553,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Image profiles
+                HTTP API
               </div>
             </div>
           </a>
         
         
           
-          <a href="../deploy-cloud-run/" class="md-footer__link md-footer__link--next" aria-label="Next: Deploy on Cloud Run">
+          <a href="../public-api-policy/" class="md-footer__link md-footer__link--next" aria-label="Next: Public API policy">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Deploy on Cloud Run
+                Public API policy
               </div>
             </div>
             <div class="md-footer__button md-icon">
