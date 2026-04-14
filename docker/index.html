@@ -600,6 +600,20 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          
+        
+      
     
     
     
@@ -619,8 +633,9 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../deploy-samples/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -634,8 +649,14 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
@@ -720,6 +741,17 @@
     <span class="md-ellipsis">
       
         Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#serverless-containers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serverless containers
       
     </span>
   </a>
@@ -910,6 +942,148 @@
     </li>
   
 
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../serverless-containers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serverless overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy-cloud-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy on Cloud Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy-fargate-app-runner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy on Fargate / App Runner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy-modal-runpod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modal / Runpod
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../serverless-runtime-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serverless runtime reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
               
             
           </ul>
@@ -2193,6 +2367,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#serverless-containers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serverless containers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#prebuilt-images-github-container-registry" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2379,6 +2564,16 @@
 <li>Docker 23+ with BuildKit (<code>DOCKER_BUILDKIT=1</code>).</li>
 <li>Linux <code>amd64</code> or <code>arm64</code> (buildx for multi-arch: <code>docker buildx build --platform linux/amd64,linux/arm64 …</code>).</li>
 </ul>
+<h2 id="serverless-containers">Serverless containers</h2>
+<p>For <strong>Cloud Run</strong>, <strong>ECS Fargate</strong>, <strong>App Runner</strong>, <strong>Modal</strong>, <strong>Runpod</strong>, and related patterns (image choice, warm assets, ephemeral disk, worker vs HTTP service), see:</p>
+<ul>
+<li><a href="../serverless-containers/">Serverless containers</a> — platform matrix and architecture</li>
+<li><a href="../serverless-runtime-reference/">Serverless runtime &amp; image reference</a> — env vars and workload ↔ image matrix</li>
+<li><a href="../deploy-cloud-run/">Deploy on Cloud Run</a> — primary reference</li>
+<li><a href="../deploy-fargate-app-runner/">Deploy on Fargate and App Runner</a></li>
+<li>Example manifests: <a href="../deploy-samples/">Deploy samples</a> (<code>cloud-run-service.sample.yaml</code>, <code>ecs-taskdef-api.sample.yaml</code>)</li>
+</ul>
+<p><strong>Profiles:</strong> use <strong><code>runtime-api</code></strong> for the optional HTTP service; <strong><code>runtime-cpu</code></strong> / <strong><code>runtime-vision</code></strong> for CLI or worker-style batch. Warm variants (<code>runtime-cpu-warm</code>, <code>runtime-vision-warm</code>) reduce runtime downloads but need <strong>network at image build</strong> time.</p>
 <h2 id="prebuilt-images-github-container-registry">Prebuilt images (GitHub Container Registry)</h2>
 <p>On push to <code>main</code>, <a href="https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/docker.yml"><code>.github/workflows/docker.yml</code></a> builds and pushes <strong>amd64</strong> images to <strong>GitHub Packages</strong> (<code>ghcr.io</code>). Use your GitHub username or organization name in <strong>lowercase</strong> as <code>OWNER</code> (GHCR requires a lowercase owner in the image path).</p>
 <table>

@@ -598,6 +598,20 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          
+        
+      
     
     
     
@@ -614,8 +628,9 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../deploy-samples/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -629,8 +644,14 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
@@ -697,6 +718,148 @@
     </li>
   
 
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../serverless-containers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serverless overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deploy-cloud-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy on Cloud Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deploy-fargate-app-runner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy on Fargate / App Runner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deploy-modal-runpod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modal / Runpod
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../serverless-runtime-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serverless runtime reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
               
             
           </ul>
@@ -2264,6 +2427,7 @@
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>docker<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>runtime-dev<span class="w"> </span>-t<span class="w"> </span>doctranslater:dev<span class="w"> </span>.
 </span></code></pre></div>
 <p>Smoke examples: <a href="../../docker/">Docker</a>.</p>
+<p>Serverless / container deploy docs: <a href="../../serverless-containers/">Serverless containers</a>, <a href="../../deploy-cloud-run/">Deploy on Cloud Run</a>, <a href="../../deploy-samples/">Deploy samples</a>. CI exercises API boot + a <strong>skip-translation</strong> job in <a href="https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/docker.yml"><code>.github/workflows/docker.yml</code></a>.</p>
 <p>If you change <code>pyproject.toml</code> dependencies, run <strong><code>uv lock</code></strong> and commit <strong><code>uv.lock</code></strong> so CI (<code>uv sync --locked</code>) stays in sync.</p>
 <h2 id="ci-lanes-what-runs-where">CI lanes (what runs where)</h2>
 <table>

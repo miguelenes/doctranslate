@@ -598,6 +598,20 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          
+        
+      
     
     
     
@@ -614,8 +628,9 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../deploy-samples/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -629,8 +644,14 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
@@ -697,6 +718,148 @@
     </li>
   
 
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../serverless-containers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serverless overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy-cloud-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy on Cloud Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy-fargate-app-runner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy on Fargate / App Runner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy-modal-runpod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modal / Runpod
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../serverless-runtime-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serverless runtime reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
               
             
           </ul>
@@ -999,6 +1162,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#serverless-and-multi-instance-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serverless and multi-instance behavior
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#docker" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1039,6 +1213,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Production notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#serverless-deployment-short-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serverless deployment (short checklist)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2121,6 +2312,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#serverless-and-multi-instance-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serverless and multi-instance behavior
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#docker" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2161,6 +2363,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Production notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#serverless-deployment-short-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serverless deployment (short checklist)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2224,6 +2443,14 @@
 <li>OpenAPI UI: <code>http://127.0.0.1:8000/docs</code></li>
 <li>OpenAPI JSON: <code>http://127.0.0.1:8000/openapi.json</code></li>
 </ul>
+<h2 id="serverless-and-multi-instance-behavior">Serverless and multi-instance behavior</h2>
+<p>The HTTP API uses an <strong>in-process</strong> <code>JobManager</code> (bounded concurrency + on-disk <code>meta.json</code> per job). That implies:</p>
+<ul>
+<li><strong><code>POST /v1/jobs</code> returns <code>202</code></strong> with a <code>job_id</code>; <strong><code>GET /v1/jobs/{id}</code></strong> polls state on <strong>that same container instance</strong> unless you add infrastructure that pins the client to the instance (e.g. Cloud Run <strong>session affinity</strong>, ALB <strong>stickiness</strong>).</li>
+<li><strong>Horizontal scaling</strong> adds replicas that <strong>do not share</strong> the in-memory queue. For production multi-replica APIs, prefer an <strong>external job queue</strong> and <strong>object storage</strong> for inputs/outputs, or accept single-replica semantics.</li>
+<li><strong>Restarts</strong>: completed/failed jobs may still be <strong>readable from disk</strong> if <code>DOCTRANSLATE_API_DATA_ROOT</code> persists; <strong>in-flight</strong> tasks do not survive process restart.</li>
+</ul>
+<p>For platform guidance, see <a href="../serverless-containers/">Serverless containers</a> and <a href="../deploy-cloud-run/">Deploy on Cloud Run</a>.</p>
 <h2 id="docker">Docker</h2>
 <p>Build the API image (extends the CPU translate stack + <code>api</code> extra):</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>runtime-api<span class="w"> </span>-t<span class="w"> </span>doctranslater:api<span class="w"> </span>.
@@ -2379,6 +2606,11 @@
 <td><code>none</code></td>
 <td><code>none</code> | <code>lazy</code> | <code>eager</code> (only <code>eager</code> is implemented: run <code>assets.warmup</code> at startup)</td>
 </tr>
+<tr>
+<td><code>DOCTRANSLATE_API_ARTIFACT_RETENTION_SECONDS</code></td>
+<td><code>86400</code></td>
+<td>Reserved for future TTL cleanup of job workspaces — <strong>not enforced</strong> by the HTTP layer today; use external lifecycle rules</td>
+</tr>
 </tbody>
 </table>
 <h2 id="production-notes">Production notes</h2>
@@ -2387,6 +2619,15 @@
 <li>Put <code>DOCTRANSLATE_API_DATA_ROOT</code> on a writable volume; mount <code>~/.cache/doctranslate</code> for persistent fonts/models/TM.</li>
 <li>Configure reverse-proxy <code>client_max_body_size</code> to match <code>DOCTRANSLATE_API_MAX_UPLOAD_BYTES</code>.</li>
 </ul>
+<h3 id="serverless-deployment-short-checklist">Serverless deployment (short checklist)</h3>
+<ol>
+<li>Choose image <strong><code>runtime-api</code></strong> and container port <strong>8000</strong> (see <a href="../docker-profiles/">Docker image profiles</a>).</li>
+<li>Set <strong><code>DOCTRANSLATE_API_DATA_ROOT</code></strong> (and optionally <strong><code>DOCTRANSLATE_API_TMP_ROOT</code></strong>) on <strong>fast writable</strong> storage.</li>
+<li>Decide warmup strategy: baked <strong>warm</strong> image, <code>DOCTRANSLATE_API_WARMUP_ON_STARTUP=eager</code>, or <code>POST /v1/assets/warmup</code> after deploy.</li>
+<li>Set <strong><code>DOCTRANSLATE_API_JOB_TIMEOUT_SECONDS</code></strong> when the platform needs a hard wall-clock bound.</li>
+<li>For multi-replica services, read <a href="#serverless-and-multi-instance-behavior">Serverless and multi-instance behavior</a> and enable <strong>session affinity</strong> only as a best-effort mitigation.</li>
+</ol>
+<p>Full matrix and image tags: <a href="../serverless-runtime-reference/">Serverless runtime &amp; image reference</a>.</p>
 <h2 id="asgi-import">ASGI import</h2>
 <p>Uvicorn can load the pre-built app:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>uvicorn<span class="w"> </span>doctranslate.http_api.app:app<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>

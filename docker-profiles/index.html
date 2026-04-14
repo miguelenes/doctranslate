@@ -18,7 +18,7 @@
         <link rel="prev" href="../docker/">
       
       
-        <link rel="next" href="../benchmarks/">
+        <link rel="next" href="../serverless-containers/">
       
       
         
@@ -600,6 +600,20 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          
+        
+      
     
     
     
@@ -619,8 +633,9 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../deploy-samples/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -634,8 +649,14 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
@@ -744,6 +765,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#serverless-deployment-role-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serverless / deployment role mapping
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#build-arguments" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -772,6 +804,148 @@
     </li>
   
 
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../serverless-containers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serverless overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy-cloud-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy on Cloud Run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy-fargate-app-runner/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy on Fargate / App Runner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy-modal-runpod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modal / Runpod
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../serverless-runtime-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serverless runtime reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
               
             
           </ul>
@@ -2044,6 +2218,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#serverless-deployment-role-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serverless / deployment role mapping
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#build-arguments" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2144,6 +2329,39 @@
 </tr>
 </tbody>
 </table>
+<h2 id="serverless-deployment-role-mapping">Serverless / deployment role mapping</h2>
+<p>Use this table when choosing a <strong>service</strong> vs <strong>worker</strong> image for managed platforms (<a href="../serverless-containers/">Serverless containers</a>).</p>
+<table>
+<thead>
+<tr>
+<th>Deployment role</th>
+<th>Dockerfile target</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP API (FastAPI / Uvicorn)</td>
+<td><code>runtime-api</code></td>
+<td>Default <code>CMD</code> is <code>serve</code> on port <strong>8000</strong></td>
+</tr>
+<tr>
+<td>Batch / queue worker (CLI)</td>
+<td><code>runtime-cpu</code> or <code>runtime-vision</code></td>
+<td>Run <code>doctranslate translate …</code> or embed <code>doctranslate.api</code></td>
+</tr>
+<tr>
+<td>Lowest cold-start (CPU stack)</td>
+<td><code>runtime-cpu-warm</code></td>
+<td>Pre-populated <code>~/.cache/doctranslate</code> in the image</td>
+</tr>
+<tr>
+<td>Full stack + lowest cold-start</td>
+<td><code>runtime-vision-warm</code></td>
+<td>CI-parity extras + baked cache</td>
+</tr>
+</tbody>
+</table>
 <h2 id="build-arguments">Build arguments</h2>
 <table>
 <thead>
@@ -2238,13 +2456,13 @@
         
         
           
-          <a href="../benchmarks/" class="md-footer__link md-footer__link--next" aria-label="Next: Benchmarks">
+          <a href="../serverless-containers/" class="md-footer__link md-footer__link--next" aria-label="Next: Serverless overview">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Benchmarks
+                Serverless overview
               </div>
             </div>
             <div class="md-footer__button md-icon">

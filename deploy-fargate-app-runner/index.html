@@ -12,13 +12,13 @@
         <meta name="author" content="Miguel Enes & DocTranslater contributors">
       
       
-        <link rel="canonical" href="https://miguelenes.github.io/doctranslate/migration/">
+        <link rel="canonical" href="https://miguelenes.github.io/doctranslate/deploy-fargate-app-runner/">
       
       
-        <link rel="prev" href="../github-pages/">
+        <link rel="prev" href="../deploy-cloud-run/">
       
       
-        <link rel="next" href="../CONTRIBUTING/">
+        <link rel="next" href="../deploy-modal-runpod/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Migration (0.6) - DocTranslater</title>
+        <title>Deploy on AWS ECS Fargate and App Runner - DocTranslater</title>
       
     
     
@@ -87,7 +87,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#migration-06" class="md-skip">
+        <a href="#deploy-on-aws-ecs-fargate-and-app-runner" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Migration (0.6)
+              Deploy on AWS ECS Fargate and App Runner
             
           </span>
         </div>
@@ -276,10 +276,12 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../docker/" class="md-tabs__link">
           
   
@@ -397,12 +399,10 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="../CODE_OF_CONDUCT/" class="md-tabs__link">
           
   
@@ -589,6 +589,8 @@
       
   
   
+    
+  
   
   
     
@@ -616,16 +618,19 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -647,13 +652,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -780,10 +785,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../deploy-fargate-app-runner/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy on Fargate / App Runner
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
         
   
   
@@ -799,6 +831,132 @@
   
 
       </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ecs-fargate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ECS Fargate
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ECS Fargate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#service-vs-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service vs worker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-definition-hints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task definition hints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#load-balancer-session-affinity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Load balancer + session affinity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autoscaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autoscaling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-snippets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example snippets
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aws-app-runner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS App Runner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#artifact-and-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Artifact and state
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1536,10 +1694,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -1555,22 +1711,19 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
         
           
-          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="">
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
             
   
   
@@ -1588,7 +1741,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_12">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1659,37 +1812,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Migration
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="././" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../migration/" class="md-nav__link">
         
   
   
@@ -1705,82 +1831,6 @@
   
 
       </a>
-      
-        
-
-
-<nav class="md-nav md-nav--secondary" aria-label="On this page">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      On this page
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#cli" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CLI
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#toml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        TOML
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#translation-memory" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Translation memory
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#python-api" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Python API
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#upstream" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Upstream
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1805,20 +1855,17 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12_4" >
         
           
-          <label class="md-nav__link" for="__nav_12_4" id="__nav_12_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_12_4" id="__nav_12_4_label" tabindex="0">
             
   
   
@@ -2243,10 +2290,82 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#cli" class="md-nav__link">
+  <a href="#ecs-fargate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CLI
+        ECS Fargate
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ECS Fargate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#service-vs-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service vs worker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-definition-hints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task definition hints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#load-balancer-session-affinity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Load balancer + session affinity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autoscaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autoscaling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-snippets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example snippets
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aws-app-runner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS App Runner
       
     </span>
   </a>
@@ -2254,10 +2373,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#toml" class="md-nav__link">
+  <a href="#artifact-and-state" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TOML
+        Artifact and state
       
     </span>
   </a>
@@ -2265,32 +2384,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#translation-memory" class="md-nav__link">
+  <a href="#related" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Translation memory
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#python-api" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Python API
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#upstream" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Upstream
+        Related
       
     </span>
   </a>
@@ -2312,7 +2409,7 @@
                 
                   
   
-    <a href="https://github.com/miguelenes/doctranslate/edit/main/docs/migration.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/miguelenes/doctranslate/edit/main/docs/deploy-fargate-app-runner.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-pen" viewBox="0 0 24 24"><path d="M12.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v9.34"/><path d="M14 2v5a1 1 0 0 0 1 1h5M10.378 12.622a1 1 0 0 1 3 3.003L8.36 20.637a2 2 0 0 1-.854.506l-2.867.837a.5.5 0 0 1-.62-.62l.836-2.869a2 2 0 0 1 .506-.853z"/></svg>
     </a>
@@ -2321,61 +2418,78 @@
     
       
     
-    <a href="https://github.com/miguelenes/doctranslate/raw/main/docs/migration.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/miguelenes/doctranslate/raw/main/docs/deploy-fargate-app-runner.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-code-2" viewBox="0 0 24 24"><path d="M4 12.15V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3.35"/><path d="M14 2v5a1 1 0 0 0 1 1h5M5 16l-3 3 3 3M9 22l3-3-3-3"/></svg>
     </a>
   
 
 
-<h1 id="migration-06">Migration (0.6)</h1>
-<h2 id="cli">CLI</h2>
-<p>DocTranslater <strong>0.6</strong> uses <strong>subcommands only</strong>. There is no flat <code>doctranslate --files …</code> or <code>doctranslate --warmup</code> entry point.</p>
+<h1 id="deploy-on-aws-ecs-fargate-and-app-runner">Deploy on AWS ECS Fargate and App Runner</h1>
+<p>This page covers <strong>AWS ECS Fargate</strong> (strong fit for workers and long jobs) and <strong>AWS App Runner</strong> (simpler HTTP service, with caveats). See <a href="../serverless-containers/">Serverless containers</a> for the full platform matrix.</p>
+<h2 id="ecs-fargate">ECS Fargate</h2>
+<h3 id="service-vs-worker">Service vs worker</h3>
 <table>
 <thead>
 <tr>
-<th>Before (0.5 and earlier)</th>
-<th>After (0.6)</th>
+<th>Pattern</th>
+<th>Image</th>
+<th>Entry command</th>
+<th>When to use</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>doctranslate --warmup</code></td>
-<td><code>doctranslate assets warmup</code></td>
+<td><strong>HTTP service</strong></td>
+<td><code>runtime-api</code></td>
+<td>Default <code>doctranslate serve --host 0.0.0.0 --port 8000</code></td>
+<td>API + in-process jobs behind ALB</td>
 </tr>
 <tr>
-<td><code>doctranslate --files a.pdf …</code></td>
-<td><code>doctranslate translate a.pdf …</code></td>
-</tr>
-<tr>
-<td><code>doctranslate --generate-offline-assets DIR</code></td>
-<td><code>doctranslate assets pack-offline DIR</code></td>
-</tr>
-<tr>
-<td><code>doctranslate --restore-offline-assets PATH</code></td>
-<td><code>doctranslate assets restore-offline PATH</code></td>
-</tr>
-<tr>
-<td><code>doctranslate --validate-translators --translator router -c f.toml</code></td>
-<td><code>doctranslate config validate --translator router -c f.toml</code></td>
+<td><strong>Worker</strong></td>
+<td><code>runtime-cpu</code> or <code>runtime-vision</code></td>
+<td><code>doctranslate translate …</code> or your wrapper</td>
+<td>SQS / Step Functions / EventBridge driven batch</td>
 </tr>
 </tbody>
 </table>
-<p>Global defaults still load from <code>-c</code> / <code>--config</code> on the root command, for example:</p>
-<p><code>doctranslate -c doctranslate.toml translate doc.pdf</code></p>
-<h2 id="toml">TOML</h2>
-<p>Only <strong><code>[doctranslate]</code></strong> is read for nested router/local settings and for flat CLI defaults. Rename <strong><code>[babeldoc]</code></strong> sections to <strong><code>[doctranslate]</code></strong>.</p>
-<h2 id="translation-memory">Translation memory</h2>
-<p>Automatic import of <code>~/.cache/doctranslate/cache.v1.db</code> on startup is <strong>removed</strong>. Run once if you still have that file:</p>
-<p><code>doctranslate tm migrate-v1-cache</code></p>
-<h2 id="python-api">Python API</h2>
+<h3 id="task-definition-hints">Task definition hints</h3>
 <ul>
-<li><strong>Stable embedding:</strong> use <code>doctranslate.api</code> with <code>TranslationRequest</code> / <code>TranslationResult</code> (see <a href="../library-api/">Stable library API</a> and <a href="../public-api-policy/">Public API policy</a>).</li>
-<li><strong>Legacy path:</strong> <code>TranslationConfig</code> is constructed with a :class:<code>doctranslate.format.pdf.translation_settings.TranslationSettings</code> object (see source under <code>doctranslate/format/pdf/</code>). Prefer the stable API for new code.</li>
-<li>Exceptions live under <code>doctranslate.exceptions</code> (for example <code>PriorTranslatedInputError</code> replaces the old “input generated by BabelDOC” error name).</li>
+<li><strong>Port</strong>: container port <strong>8000</strong> for <code>runtime-api</code>.</li>
+<li><strong>CPU / memory</strong>: start at <strong>2 vCPU / 4 GB</strong> for API; <strong>4 vCPU / 8 GB</strong> for heavy OCR / large PDFs (<code>runtime-vision</code>).</li>
+<li><strong>Ephemeral storage</strong>: default 20 GiB may be tight for large jobs; increase <strong>ephemeralStorage</strong> in the task definition when needed.</li>
+<li><strong>Read-only root</strong>: if <code>readonlyRootFilesystem=true</code>, mount writable volumes for <code>DOCTRANSLATE_API_DATA_ROOT</code>, <code>DOCTRANSLATE_API_TMP_ROOT</code>, and <code>HOME/.cache/doctranslate</code>.</li>
+<li><strong>EFS</strong>: optional mount for persistent font/model cache across tasks.</li>
 </ul>
-<h2 id="upstream">Upstream</h2>
-<p>This repository is a fork of <a href="https://github.com/funstory-ai/DocTranslate">funstory-ai/DocTranslate</a>. Use <a href="https://github.com/miguelenes/doctranslate/issues">miguelenes/doctranslate issues</a> for this fork.</p>
+<h3 id="load-balancer-session-affinity">Load balancer + session affinity</h3>
+<p>For <code>runtime-api</code>, place an <strong>Application Load Balancer</strong> target group in front of the service. Enable <strong>sticky sessions</strong> (target group stickiness) if clients poll job status on the same host—same caveat as Cloud Run: stickiness is best-effort; production multi-replica setups should use an <strong>external queue + object storage</strong> (<a href="../http-api/#serverless-and-multi-instance-behavior">HTTP API</a>).</p>
+<h3 id="autoscaling">Autoscaling</h3>
+<p>Use <strong>ECS Service Auto Scaling</strong> on CPU, memory, or custom metrics (e.g. SQS queue depth for workers). Cap <strong><code>DOCTRANSLATE_API_MAX_CONCURRENT_JOBS</code></strong> per task so scaling adds capacity instead of OOMs.</p>
+<h3 id="example-snippets">Example snippets</h3>
+<p>Repository samples (adjust ARNs, subnets, security groups):</p>
+<ul>
+<li><a href="../deploy-samples/ecs-taskdef-api.sample.yaml"><code>docs/deploy-samples/ecs-taskdef-api.sample.yaml</code></a> — Fargate task definition skeleton for <code>runtime-api</code>.</li>
+</ul>
+<h2 id="aws-app-runner">AWS App Runner</h2>
+<p>App Runner is a <strong>managed HTTP service</strong> with less control than Fargate.</p>
+<ul>
+<li><strong>Fit</strong>: light traffic, smaller PDFs, or <strong>control-plane</strong> endpoints (<code>/v1/inspect</code>, <code>/v1/config/validate</code>) if you offload translation to Fargate workers.</li>
+<li><strong>Caveats</strong>:</li>
+<li><strong>Request timeouts</strong> and <strong>concurrency</strong> models differ from raw Fargate; very long translations may still need a worker pattern.</li>
+<li><strong>Sticky routing</strong> is not as explicit as ALB stickiness—treat multi-instance job polling as <strong>non-portable</strong> without external state.</li>
+</ul>
+<p>Configure <strong>port 8000</strong>, health check HTTP path <strong><code>/v1/health/ready</code></strong> (or <code>/v1/health/live</code> for liveness-only), and pass the same env vars as <a href="../http-api/#environment-variables">HTTP API</a>.</p>
+<h2 id="artifact-and-state">Artifact and state</h2>
+<ul>
+<li>Use <strong>S3</strong> for durable inputs/outputs; task disk for scratch only.</li>
+<li>Set <code>DOCTRANSLATE_API_DATA_ROOT</code> to a writable path on the task volume.</li>
+</ul>
+<h2 id="related">Related</h2>
+<ul>
+<li><a href="../deploy-cloud-run/">Deploy on Cloud Run</a> (primary reference)</li>
+<li><a href="../deploy-modal-runpod/">Modal and Runpod notes</a></li>
+<li><a href="../serverless-runtime-reference/">Serverless runtime &amp; image reference</a></li>
+</ul>
 
 
 
@@ -2413,7 +2527,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../github-pages/" class="md-footer__link md-footer__link--prev" aria-label="Previous: GitHub Pages">
+          <a href="../deploy-cloud-run/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Deploy on Cloud Run">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
@@ -2423,20 +2537,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                GitHub Pages
+                Deploy on Cloud Run
               </div>
             </div>
           </a>
         
         
           
-          <a href="../CONTRIBUTING/" class="md-footer__link md-footer__link--next" aria-label="Next: Contributing">
+          <a href="../deploy-modal-runpod/" class="md-footer__link md-footer__link--next" aria-label="Next: Modal &#x2f; Runpod">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Contributing
+                Modal / Runpod
               </div>
             </div>
             <div class="md-footer__button md-icon">
