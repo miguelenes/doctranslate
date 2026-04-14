@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 from fastapi import status
 
-from doctranslate.http_api.deps import JobManagerDep
+from doctranslate.http_api.deps import JobServiceDep
 from doctranslate.http_api.errors import http_error
 from doctranslate.http_api.models import JobCreateResponse
 from doctranslate.schemas.enums import PublicErrorCode
@@ -19,9 +19,9 @@ router = APIRouter(tags=["assets"])
     response_model=JobCreateResponse,
     status_code=status.HTTP_202_ACCEPTED,
 )
-async def post_warmup(job_manager: JobManagerDep) -> JobCreateResponse:
+async def post_warmup(job_service: JobServiceDep) -> JobCreateResponse:
     try:
-        job_id = await job_manager.create_warmup_job()
+        job_id = await job_service.create_warmup_job()
     except RuntimeError:
         raise http_error(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

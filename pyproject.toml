@@ -121,11 +121,13 @@ tm_semantic = [
     "torch>=2.2.0",
 ]
 api = [
+    "arq>=0.26.0",
     "fastapi>=0.115.0",
     "fsspec>=2024.2.0",
     "httpx[socks]>=0.27.0",
     "pydantic-settings>=2.7.0",
     "python-multipart>=0.0.9",
+    "redis[hiredis]>=5.0.0",
     "uvicorn[standard]>=0.32.0",
 ]
 api-s3 = [
@@ -219,19 +221,22 @@ max-complexity = 10 # 函数圈复杂度阈值
 
 [tool.ruff.lint.per-file-ignores]
 "doctranslate/format/pdf/pdfinterp.py" = ["N"] # 忽略命名规范
-"tests/*" = ["S101"]            # 在测试文件中允许 assert
+"tests/*" = ["S101", "S105"]    # 在测试文件中允许 assert / 示例凭据字符串
 "**/__init__.py" = ["F401"]     # 允许未使用的导入
 # 忽略 S311 警告，因为这是有意的
 "doctranslate/format/pdf/document_il/midend/paragraph_finder.py" = ["S311"]
 "docs/*" = ["A001"]
 "doctranslate/pdfminer/*" =["A","F", "I", "N", "S", "B", "C", "COM", "ARG", "PTH", "UP"]
+"doctranslate/http_api/worker/arq_worker.py" = ["ARG001"]
 [dependency-groups]
 dev = [
+    "arq>=0.26.0",
     "fastapi>=0.115.0",
     "fsspec>=2024.2.0",
     "httpx>=0.27.0",
     "pydantic-settings>=2.7.0",
     "python-multipart>=0.0.9",
+    "redis[hiredis]>=5.0.0",
     "uvicorn[standard]>=0.32.0",
     "bumpver>=2024.1130",
     "markdown-callouts>=0.4.0",

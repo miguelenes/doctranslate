@@ -7,12 +7,16 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+from arq.connections import create_pool
 from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from doctranslate.http_api.job_manager import JobManager
+from doctranslate.http_api.job_service import HttpJobService
+from doctranslate.http_api.queue_backends.arq_backend import ArqQueueBackend
+from doctranslate.http_api.redis_settings import redis_settings_from_url
 from doctranslate.http_api.routes import assets as assets_routes
 from doctranslate.http_api.routes import config as config_routes
 from doctranslate.http_api.routes import health as health_routes
@@ -37,7 +41,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     metadata_store = build_metadata_store(settings)
     app.state.artifact_store = artifact_store
     app.state.metadata_store = metadata_store
-    app.state.job_manager = JobManager(
+    arq_pool = None
+    arq_backend = None
+    if settings.queue_backend == "arq":
+        redis_settings = redis_settings_from_url(settings.redis_url)
+        arq_pool = await create_pool(redis_settings)
+        arq_backend = ArqQueueBackend(
+            arq_pool,
+            queue_name=settings.arq_queue_name,
+        )
+        await arq_backend.ping()
+    app.state.arq_pool = arq_pool
+    job_manager = JobManager(
         artifact_store=artifact_store,
         metadata_store=metadata_store,
         max_concurrent=settings.max_concurrent_jobs,
@@ -48,6 +63,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         dual_write_json_meta=settings.dual_write_json_meta,
         read_json_meta_fallback=settings.read_json_meta_fallback,
         artifact_retention_seconds=settings.artifact_retention_seconds,
+    )
+    app.state.job_manager = job_manager
+    app.state.job_service = HttpJobService(
+        settings=settings,
+        artifact_store=artifact_store,
+        metadata_store=metadata_store,
+        job_manager=job_manager,
+        arq_backend=arq_backend,
     )
     stop_ttl = asyncio.Event()
 
@@ -61,7 +84,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 break
             except asyncio.TimeoutError:
                 try:
-                    await app.state.job_manager.run_ttl_cleanup_once()
+                    await app.state.job_service.run_ttl_cleanup_once()
                 except Exception:
                     logger.exception("TTL cleanup sweep failed")
 
@@ -81,6 +104,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         except asyncio.CancelledError:
             pass
         metadata_store.close()
+        if arq_pool is not None:
+            await arq_pool.close(close_connection_pool=True)
 
 
 def create_app() -> FastAPI:

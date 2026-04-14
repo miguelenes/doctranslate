@@ -40,7 +40,7 @@ Python **3.10–3.13** are supported (`requires-python = ">=3.10,<3.14"` in `pyp
 | `glossary` | Hyperscan-backed glossary scanning |
 | `cli` | Rich, tqdm, psutil (CLI UX); `main.cli()` falls back to stdlib logging if Rich is missing |
 | `full` | Meta-extra listing everything needed for the default CLI translate path |
-| `api` | FastAPI, Uvicorn, `python-multipart`, `pydantic-settings`, `fsspec` for the optional HTTP service (`doctranslate serve`) |
+| `api` | FastAPI, Uvicorn, `arq`, `redis`, `python-multipart`, `pydantic-settings`, `fsspec` for the optional HTTP service (`doctranslate serve`, `doctranslate worker`) |
 | `api-s3` | `s3fs`, `boto3` — S3-compatible blob mirror + presigned downloads |
 | `api-gcs` | `gcsfs` — GCS blob mirror + signed URLs |
 | `tm_semantic` | sentence-transformers + torch (semantic TM tier) |

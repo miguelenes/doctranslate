@@ -44,3 +44,4 @@ def test_health_ready(api_client: TestClient) -> None:
     assert "ready" in body
     assert "checks" in body
     assert body["checks"]["data_root_writable"] is True
+    assert body["checks"]["job_queue_healthy"] is True

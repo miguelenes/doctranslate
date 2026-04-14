@@ -133,6 +133,16 @@ def build_vnext_parser() -> argparse.ArgumentParser:
         help="Development auto-reload (do not use in production).",
     )
 
+    wrk = sub.add_parser(
+        "worker",
+        help="Run ARQ worker for HTTP API jobs (DocTranslater[api]; requires Redis).",
+    )
+    wrk.add_argument(
+        "--burst",
+        action="store_true",
+        help="Process queued jobs then exit (batch mode).",
+    )
+
     cfg = sub.add_parser("config", help="Project configuration utilities.")
     c_s = cfg.add_subparsers(dest="cfg_cmd", required=True)
     cv = c_s.add_parser(
@@ -191,7 +201,9 @@ async def run_vnext_async(argv: Sequence[str]) -> int:
         ctx.emit_result(
             True,
             {
-                "hint": ("Subcommands: translate, assets, config, inspect, serve, ..."),
+                "hint": (
+                    "Subcommands: translate, assets, config, inspect, serve, worker, ..."
+                ),
             },
         )
         return EXIT_OK
@@ -201,6 +213,11 @@ async def run_vnext_async(argv: Sequence[str]) -> int:
 
         run_serve(host=args.host, port=args.port, reload=args.reload)
         return EXIT_OK
+
+    if args.command == "worker":
+        from doctranslate.http_api.serve import run_arq_worker
+
+        return run_arq_worker(burst=args.burst)
 
     if args.command == "translate":
         from doctranslate.bootstrap import ensure_user_cache_dirs

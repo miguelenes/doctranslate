@@ -29,11 +29,18 @@ uv run doctranslate serve --host 127.0.0.1 --port 8000
 
 ## Serverless and multi-instance behavior
 
-The HTTP API uses an **in-process** `JobManager` (bounded concurrency). Job records live in **SQLite** under `DOCTRANSLATE_API_DATA_ROOT` by default (with optional dual-write to legacy `meta.json` per job). That implies:
+Job records live in **SQLite** under `DOCTRANSLATE_API_DATA_ROOT` by default (with optional dual-write to legacy `meta.json` per job). Execution mode is selected with **`DOCTRANSLATE_API_QUEUE_BACKEND`**:
 
-- **`POST /v1/jobs` returns `202`** with a `job_id`; **`GET /v1/jobs/{id}`** polls state on **that same container instance** unless you add infrastructure that pins the client to the instance (e.g. Cloud Run **session affinity**, ALB **stickiness**).
-- **Horizontal scaling** adds replicas that **do not share** the in-memory queue. For production multi-replica APIs, prefer an **external job queue** and **object storage** for inputs/outputs, put the SQLite DB on **shared storage** if you need shared metadata, or accept single-replica semantics.
-- **Restarts**: completed/failed jobs remain **readable from SQLite** (and disk blobs if `DOCTRANSLATE_API_DATA_ROOT` persists); **in-flight** tasks do not survive process restart.
+| Mode | Behavior |
+|------|----------|
+| **`inprocess`** (default) | A bounded-concurrency `JobManager` runs jobs inside the API process (asyncio tasks + semaphore). |
+| **`arq`** | The API **enqueues** work to **Redis**; a separate **`doctranslate worker`** process runs translations/warmups. Use **shared** `DOCTRANSLATE_API_DATA_ROOT` (and DB path) across API + workers. See [HTTP API workers](http-api-workers.md). |
+
+Implications:
+
+- **`POST /v1/jobs` returns `202`** with a `job_id`; **`GET /v1/jobs/{id}`** polls SQLite-backed state. With **`inprocess`** and multiple API replicas, clients may need stickiness unless only one replica accepts jobs. With **`arq`**, any replica can serve status as long as metadata/artifacts are shared.
+- **Horizontal scaling**: `inprocess` replicas do **not** share an in-memory queue. For production multi-replica APIs, prefer **`arq`** (or an external pattern) plus **object storage** for inputs/outputs when appropriate.
+- **Restarts**: completed/failed jobs remain **readable from SQLite** (and disk blobs if `DOCTRANSLATE_API_DATA_ROOT` persists). **`inprocess`**: in-flight tasks do not survive API restart. **`arq`**: queued jobs remain in Redis; a running worker may be restarted independently.
 
 For platform guidance, see [Serverless containers](serverless-containers.md) and [Deploy on Cloud Run](deploy-cloud-run.md).
 
@@ -80,7 +87,7 @@ curl -sS "http://127.0.0.1:8000/v1/jobs/$JOB_ID/result"
 | Method | Path | Purpose |
 |--------|------|---------|
 | `GET` | `/v1/health/live` | Liveness |
-| `GET` | `/v1/health/ready` | Readiness (dirs, optional assets, job capacity) |
+| `GET` | `/v1/health/ready` | Readiness (dirs, optional assets, job capacity, Redis when `arq`) |
 | `GET` | `/v1/runtime` | Version and schema versions |
 | `GET` | `/v1/assets/status` | Font/model cache presence |
 | `POST` | `/v1/assets/warmup` | Async warmup job (`202` + job id) |
@@ -101,8 +108,11 @@ curl -sS "http://127.0.0.1:8000/v1/jobs/$JOB_ID/result"
 | `DOCTRANSLATE_API_MOUNT_ALLOW_PREFIXES` | `/work,/in,/data` | Allowed path prefixes for `input_pdf` without upload |
 | `DOCTRANSLATE_API_ALLOW_MOUNTED_PATHS` | `true` | Disable mounted paths when `false` |
 | `DOCTRANSLATE_API_MAX_UPLOAD_BYTES` | `256000000` | Multipart upload limit |
-| `DOCTRANSLATE_API_MAX_CONCURRENT_JOBS` | `2` | Semaphore for running jobs |
-| `DOCTRANSLATE_API_MAX_QUEUED_JOBS` | `32` | Max jobs in `queued`+`running` |
+| `DOCTRANSLATE_API_QUEUE_BACKEND` | `inprocess` | `inprocess` or `arq` (Redis workers) |
+| `DOCTRANSLATE_API_REDIS_URL` | `redis://127.0.0.1:6379/0` | Redis for ARQ (`queue_backend=arq`) |
+| `DOCTRANSLATE_API_ARQ_QUEUE_NAME` | `arq:queue` | ARQ queue name (API + worker must match) |
+| `DOCTRANSLATE_API_MAX_CONCURRENT_JOBS` | `2` | Semaphore for **in-process** running jobs; per-worker concurrency hint for `arq` |
+| `DOCTRANSLATE_API_MAX_QUEUED_JOBS` | `32` | Max jobs in `queued`+`running` (SQLite count for `arq`) |
 | `DOCTRANSLATE_API_JOB_TIMEOUT_SECONDS` | `0` | Per-job wall clock (`0` = off) |
 | `DOCTRANSLATE_API_REQUIRE_ASSETS_READY` | `false` | If `true`, readiness requires warmed assets |
 | `DOCTRANSLATE_API_WARMUP_ON_STARTUP` | `none` | `none` \| `lazy` \| `eager` (only `eager` is implemented: run `assets.warmup` at startup) |
@@ -129,7 +139,7 @@ curl -sS "http://127.0.0.1:8000/v1/jobs/$JOB_ID/result"
 2. Set **`DOCTRANSLATE_API_DATA_ROOT`** (and optionally **`DOCTRANSLATE_API_TMP_ROOT`**) on **fast writable** storage.
 3. Decide warmup strategy: baked **warm** image, `DOCTRANSLATE_API_WARMUP_ON_STARTUP=eager`, or `POST /v1/assets/warmup` after deploy.
 4. Set **`DOCTRANSLATE_API_JOB_TIMEOUT_SECONDS`** when the platform needs a hard wall-clock bound.
-5. For multi-replica services, read [Serverless and multi-instance behavior](#serverless-and-multi-instance-behavior) and enable **session affinity** only as a best-effort mitigation.
+5. For multi-replica services, prefer **`DOCTRANSLATE_API_QUEUE_BACKEND=arq`** with shared storage, or read [Serverless and multi-instance behavior](#serverless-and-multi-instance-behavior) and enable **session affinity** only as a best-effort mitigation for `inprocess`.
 
 Full matrix and image tags: [Serverless runtime & image reference](serverless-runtime-reference.md).
 

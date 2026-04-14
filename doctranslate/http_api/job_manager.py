@@ -13,6 +13,10 @@ from pathlib import Path
 from typing import Any
 
 from doctranslate.http_api.artifact_store import ArtifactStore
+from doctranslate.http_api.job_records import disk_to_memory_record
+from doctranslate.http_api.job_validation import (
+    validate_mounted_input as validate_mounted_path,
+)
 from doctranslate.http_api.metadata_store.sqlite import SqliteJobMetadataStore
 from doctranslate.http_api.storage import JobPaths
 from doctranslate.http_api.storage import read_meta
@@ -25,24 +29,6 @@ from doctranslate.schemas.public_api import TranslationRequest
 from doctranslate.schemas.public_api import TranslationResult
 
 logger = logging.getLogger(__name__)
-
-
-def _is_under_allowed_prefix(path: Path, prefixes: list[str]) -> bool:
-    try:
-        resolved = path.expanduser().resolve()
-    except OSError:
-        return False
-    for raw in prefixes:
-        try:
-            base = Path(raw).expanduser().resolve()
-        except OSError:
-            continue
-        try:
-            resolved.relative_to(base)
-            return True
-        except ValueError:
-            continue
-    return False
 
 
 class JobManager:
@@ -230,29 +216,11 @@ class JobManager:
         return jid
 
     def validate_mounted_input(self, path: Path) -> TranslationErrorPayload | None:
-        if not self._allow_mounted_paths:
-            return TranslationErrorPayload(
-                code=PublicErrorCode.UNSUPPORTED_CONFIGURATION,
-                message="Mounted path input is disabled by server policy.",
-                retryable=False,
-            )
-        if not path.is_file():
-            return TranslationErrorPayload(
-                code=PublicErrorCode.NOT_FOUND,
-                message=f"Input PDF not found: {path}",
-                retryable=False,
-            )
-        if not _is_under_allowed_prefix(path, self._mounted_allow_prefixes):
-            return TranslationErrorPayload(
-                code=PublicErrorCode.VALIDATION_ERROR,
-                message="Input path is not under an allowed mount prefix.",
-                retryable=False,
-                details={
-                    "path": str(path),
-                    "allowed_prefixes": self._mounted_allow_prefixes,
-                },
-            )
-        return None
+        return validate_mounted_path(
+            path,
+            allow_mounted_paths=self._allow_mounted_paths,
+            mounted_allow_prefixes=self._mounted_allow_prefixes,
+        )
 
     async def cancel(self, job_id: str) -> bool:
         task = self._tasks.get(job_id)
@@ -272,24 +240,7 @@ class JobManager:
         disk = self.load_from_storage(job_id)
         if disk is None:
             return None
-        return self._disk_to_memory(job_id, disk)
-
-    def _disk_to_memory(self, job_id: str, disk: dict[str, Any]) -> dict[str, Any]:
-        paths = self._artifact_store.job_paths(job_id)
-        err = disk.get("error")
-        res = disk.get("result")
-        return {
-            "kind": disk.get("kind", "translation"),
-            "state": disk.get("state", "failed"),
-            "created_at": _parse_dt(disk.get("created_at")),
-            "updated_at": _parse_dt(disk.get("updated_at")),
-            "progress": disk.get("progress"),
-            "error": TranslationErrorPayload.model_validate(err) if err else None,
-            "result": TranslationResult.model_validate(res) if res else None,
-            "paths": paths,
-            "request": None,
-            "message": disk.get("message"),
-        }
+        return disk_to_memory_record(self._artifact_store, job_id, disk)
 
     async def run_ttl_cleanup_once(self) -> None:
         """Delete expired jobs from metadata, sidecars, blobs, and local workspace."""
@@ -297,6 +248,9 @@ class JobManager:
         ids = self._metadata_store.list_job_ids_expired_before(cutoff)
         for jid in ids:
             if jid in self._tasks and not self._tasks[jid].done():
+                continue
+            raw = self._metadata_store.get_job_raw(jid)
+            if raw and raw.get("state") == "running":
                 continue
             try:
                 await self._artifact_store.delete_job_prefix(jid)
@@ -438,11 +392,3 @@ class JobManager:
                 rec["updated_at"] = utcnow()
                 self._persist(job_id)
                 return
-
-
-def _parse_dt(value: Any) -> datetime:
-    if isinstance(value, datetime):
-        return value
-    if isinstance(value, str):
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
-    return utcnow()

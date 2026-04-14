@@ -8,7 +8,7 @@ from fastapi import APIRouter
 
 from doctranslate import __version__ as package_version
 from doctranslate.const import CACHE_FOLDER
-from doctranslate.http_api.deps import JobManagerDep
+from doctranslate.http_api.deps import JobServiceDep
 from doctranslate.http_api.deps import SettingsDep
 from doctranslate.http_api.models import AssetFileStatus
 from doctranslate.http_api.models import AssetStatusResponse
@@ -25,9 +25,9 @@ def health_live() -> HealthLiveResponse:
 
 
 @router.get("/v1/health/ready", response_model=HealthReadyResponse)
-def health_ready(
+async def health_ready(
     settings: SettingsDep,
-    job_manager: JobManagerDep,
+    job_service: JobServiceDep,
 ) -> HealthReadyResponse:
     checks: dict[str, bool] = {}
     messages: list[str] = []
@@ -77,9 +77,13 @@ def health_ready(
     else:
         checks["assets_ready"] = True
 
-    checks["accepting_jobs"] = job_manager.accepts_new_jobs()
+    checks["accepting_jobs"] = job_service.accepts_new_jobs()
     if not checks["accepting_jobs"]:
         messages.append("job queue at capacity")
+
+    checks["job_queue_healthy"] = await job_service.ping_queue()
+    if not checks["job_queue_healthy"]:
+        messages.append("job queue broker unreachable")
 
     ready = all(checks.values())
     return HealthReadyResponse(

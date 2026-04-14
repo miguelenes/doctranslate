@@ -22,7 +22,7 @@ from fastapi.responses import Response
 from fastapi.responses import StreamingResponse
 from pydantic import ValidationError
 
-from doctranslate.http_api.deps import JobManagerDep
+from doctranslate.http_api.deps import JobServiceDep
 from doctranslate.http_api.deps import SettingsDep
 from doctranslate.http_api.errors import http_error
 from doctranslate.http_api.models import ArtifactLink
@@ -87,7 +87,7 @@ def _artifact_download_link(
 async def create_job(
     request: Request,
     settings: SettingsDep,
-    job_manager: JobManagerDep,
+    job_service: JobServiceDep,
     translation_request: str = Form(
         ...,
         description="JSON string of TranslationRequest",
@@ -110,13 +110,13 @@ async def create_job(
 
     if input_pdf is not None:
         job_id = str(uuid.uuid4())
-        job_manager.artifact_store.ensure_workspace(job_id)
+        job_service.artifact_store.ensure_workspace(job_id)
 
         async def read_chunk(n: int) -> bytes:
             return await input_pdf.read(n)
 
         try:
-            dest = await job_manager.artifact_store.save_uploaded_input(
+            dest = await job_service.artifact_store.save_uploaded_input(
                 job_id,
                 input_pdf.filename,
                 settings.max_upload_bytes,
@@ -156,7 +156,7 @@ async def create_job(
                 ),
             ) from e
         try:
-            await job_manager.create_translation_job(
+            await job_service.create_translation_job(
                 req,
                 input_pdf_path=dest,
                 job_id=job_id,
@@ -188,7 +188,7 @@ async def create_job(
             ),
         )
     path = Path(raw_path)
-    err = job_manager.validate_mounted_input(path)
+    err = job_service.validate_mounted_input(path)
     if err is not None:
         raise http_error(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -206,7 +206,7 @@ async def create_job(
             ),
         ) from e
     try:
-        job_id = await job_manager.create_translation_job(req, input_pdf_path=path)
+        job_id = await job_service.create_translation_job(req, input_pdf_path=path)
     except RuntimeError:
         raise http_error(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -225,29 +225,29 @@ async def create_job(
 
 
 @router.get("/v1/jobs/{job_id}", response_model=JobStatusResponse, name="get_job")
-async def get_job(job_id: str, job_manager: JobManagerDep) -> JobStatusResponse:
-    rec = await job_manager.get_record(job_id)
+async def get_job(job_id: str, job_service: JobServiceDep) -> JobStatusResponse:
+    rec = await job_service.get_record(job_id)
     if rec is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
     return _record_to_status(job_id, rec)
 
 
 @router.post("/v1/jobs/{job_id}/cancel", status_code=status.HTTP_204_NO_CONTENT)
-async def cancel_job(job_id: str, job_manager: JobManagerDep) -> None:
-    rec = await job_manager.get_record(job_id)
+async def cancel_job(job_id: str, job_service: JobServiceDep) -> None:
+    rec = await job_service.get_record(job_id)
     if rec is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
-    await job_manager.cancel(job_id)
+    await job_service.cancel(job_id)
 
 
 @router.get("/v1/jobs/{job_id}/result", response_model=JobResultResponse)
 async def get_job_result(
     request: Request,
     job_id: str,
-    job_manager: JobManagerDep,
+    job_service: JobServiceDep,
     settings: SettingsDep,
 ) -> JobResultResponse:
-    rec = await job_manager.get_record(job_id)
+    rec = await job_service.get_record(job_id)
     if rec is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
     artifacts: list[ArtifactLink] = []
@@ -293,10 +293,10 @@ async def download_artifact(
     request: Request,
     job_id: str,
     kind: ArtifactKind,
-    job_manager: JobManagerDep,
+    job_service: JobServiceDep,
     settings: SettingsDep,
 ) -> Response:
-    rec = await job_manager.get_record(job_id)
+    rec = await job_service.get_record(job_id)
     if rec is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
     result = rec.get("result")
@@ -334,7 +334,7 @@ async def download_artifact(
             if signed:
                 return RedirectResponse(url=signed, status_code=307)
 
-    mode, payload = job_manager.artifact_store.resolve_artifact_for_download(
+    mode, payload = job_service.artifact_store.resolve_artifact_for_download(
         job_id,
         kind,
         artifact,
@@ -390,7 +390,7 @@ async def download_artifact(
 
     if mode == "fsspec":
         url = payload["url"]
-        opts = job_manager.artifact_store.fsspec_read_options()
+        opts = job_service.artifact_store.fsspec_read_options()
         try:
             fsize = await asyncio.to_thread(_remote_file_size, url, opts)
         except Exception:

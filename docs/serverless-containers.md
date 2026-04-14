@@ -47,7 +47,7 @@ When jobs exceed request timeouts or need heavier isolation, graduate to **ECS F
 ### Mode C — Split control plane + workers (recommended at scale)
 
 - **Control plane**: small `runtime-api` (or serverless API gateway + minimal service) for `/v1/inspect`, `/v1/config/validate`, health, optional job **acceptance** that enqueues work only.
-- **Data plane**: Fargate / Modal / Runpod workers run `doctranslate translate` or embed `doctranslate.api.async_translate`.
+- **Data plane**: Fargate / Modal / Runpod workers run `doctranslate translate` or embed `doctranslate.api.async_translate`. For the **reference HTTP API**, you can run **`doctranslate worker`** (ARQ) beside `doctranslate serve` with shared `DOCTRANSLATE_API_DATA_ROOT` — see [HTTP API workers](http-api-workers.md).
 
 ```mermaid
 flowchart LR

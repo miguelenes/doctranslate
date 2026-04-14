@@ -101,6 +101,20 @@ class ApiSettings(BaseSettings):
         description="Background TTL sweep interval in seconds.",
     )
 
+    # --- Queue / worker execution ---
+    queue_backend: Literal["inprocess", "arq"] = Field(
+        default="inprocess",
+        description="inprocess: asyncio tasks in API; arq: Redis-backed workers.",
+    )
+    redis_url: str = Field(
+        default="redis://127.0.0.1:6379/0",
+        description="Redis URL for ARQ (when queue_backend=arq).",
+    )
+    arq_queue_name: str = Field(
+        default="arq:queue",
+        description="ARQ queue name; must match the worker process.",
+    )
+
     @field_validator("mount_allow_prefixes", mode="before")
     @classmethod
     def _split_mount_prefixes(cls, v: object) -> list[str]:
@@ -109,6 +123,14 @@ class ApiSettings(BaseSettings):
         if isinstance(v, str):
             return [p.strip() for p in v.split(",") if p.strip()]
         return _default_mount_prefixes()
+
+    @field_validator("queue_backend", mode="before")
+    @classmethod
+    def _normalize_queue_backend(cls, v: object) -> str:
+        s = str(v).strip().lower() if v is not None else "inprocess"
+        if s not in {"inprocess", "arq"}:
+            return "inprocess"
+        return s
 
     @field_validator("warmup_on_startup", mode="before")
     @classmethod

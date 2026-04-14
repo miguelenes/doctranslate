@@ -155,6 +155,7 @@ nav:
   - API:
     - Stable library API: library-api.md
     - HTTP API: http-api.md
+    - HTTP API workers: http-api-workers.md
     - HTTP API storage: http-api-storage-backends.md
     - Public API policy: public-api-policy.md
     - Async Translation API: ImplementationDetails/AsyncTranslate/AsyncTranslate.md

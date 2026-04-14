@@ -122,7 +122,7 @@ Air-gapped or pinned asset trees: use `doctranslate assets pack-offline` / `rest
 
 The image entrypoint runs [`tini`](https://github.com/krallin/tini) so PID 1 forwards `SIGTERM`/`SIGINT` to the CLI. Override the command after the image name as usual.
 
-An **optional** HTTP API is included (`DocTranslater[api]`); see [HTTP API](http-api.md), [HTTP API storage](http-api-storage-backends.md), and the `runtime-api` image target. You can still embed with `doctranslate.api` from your own process or wrap the CLI.
+An **optional** HTTP API is included (`DocTranslater[api]`); see [HTTP API](http-api.md), [HTTP API workers](http-api-workers.md) (Redis + `doctranslate worker` when `DOCTRANSLATE_API_QUEUE_BACKEND=arq`), [HTTP API storage](http-api-storage-backends.md), and the `runtime-api` image target. You can still embed with `doctranslate.api` from your own process or wrap the CLI.
 
 ## Health checks
 
