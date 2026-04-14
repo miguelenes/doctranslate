@@ -1134,6 +1134,8 @@
       
         
       
+        
+      
     
     
     
@@ -1194,6 +1196,34 @@
     
   
     Stable library API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
   
 
     
@@ -2500,6 +2530,7 @@
 <p><strong>Structured outputs:</strong> With <code>--translator openai</code>, term extraction and batched LLM paragraph translation can use OpenAI <code>chat.completions.parse</code> when <code>supports_structured_outputs</code> is true (default for common providers in router config). Router / LiteLLM paths continue to use <code>response_format: json_object</code> unless you add future schema support in provider configs.</p>
 <h2 id="metrics">Metrics</h2>
 <p>With <code>metrics_output = "json"</code> or <code>both</code>, and <code>metrics_json_path</code> set (or overridden by CLI), the router can write structured usage summaries. Logs always include a human-readable summary when <code>log</code> or <code>both</code> is selected.</p>
+<p>When <strong>Prometheus</strong> metrics are enabled for the process (<code>DOCTRANSLATE_METRICS_ENABLED</code>, see <a href="../observability/">Observability</a>), the same router emits labeled <strong>service</strong> counters and histograms (outcomes, latency, tokens, estimated cost) alongside these end-of-run summaries—use one or both depending on whether you need files/logs vs scrape targets.</p>
 <h2 id="example">Example</h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>doctranslate<span class="w"> </span>-c<span class="w"> </span>doctranslate.toml<span class="w"> </span>translate<span class="w"> </span>input.pdf<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--translator<span class="w"> </span>router<span class="w"> </span><span class="se">\</span>

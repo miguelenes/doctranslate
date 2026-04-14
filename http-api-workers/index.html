@@ -1000,6 +1000,8 @@
       
         
       
+        
+      
     
     
     
@@ -1063,6 +1065,34 @@
     
   
     Stable library API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
   
 
     
@@ -1231,6 +1261,17 @@
     <span class="md-ellipsis">
       
         Local development
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observability
       
     </span>
   </a>
@@ -2388,6 +2429,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#observability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observability
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#see-also" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2515,6 +2567,8 @@
 <li>Export <code>DOCTRANSLATE_API_QUEUE_BACKEND=arq</code> and <code>DOCTRANSLATE_API_REDIS_URL=redis://127.0.0.1:6379/0</code>.</li>
 <li>Run <code>uv run doctranslate serve</code> in one terminal and <code>uv run doctranslate worker</code> in another (same <code>DOCTRANSLATE_API_DATA_ROOT</code>).</li>
 </ol>
+<h2 id="observability">Observability</h2>
+<p>Workers run in a <strong>separate process</strong> from the API: configure the same <code>DOCTRANSLATE_*</code> logging and metrics environment variables, scrape metrics per process, and rely on persisted <strong><code>traceparent</code></strong> on queued jobs for distributed traces when OTLP is enabled. See <a href="../observability/">Observability</a>.</p>
 <h2 id="see-also">See also</h2>
 <ul>
 <li><a href="../http-api/">HTTP API</a> — endpoints and env reference</li>

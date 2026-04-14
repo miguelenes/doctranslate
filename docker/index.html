@@ -1222,6 +1222,8 @@
       
         
       
+        
+      
     
     
     
@@ -1282,6 +1284,34 @@
     
   
     Stable library API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
   
 
     
@@ -2765,6 +2795,7 @@
 <p>An <strong>optional</strong> HTTP API is included (<code>DocTranslater[api]</code>); see <a href="../http-api/">HTTP API</a>, <a href="../http-api-workers/">HTTP API workers</a> (Redis + <code>doctranslate worker</code> when <code>DOCTRANSLATE_API_QUEUE_BACKEND=arq</code>), <a href="../http-api-storage-backends/">HTTP API storage</a>, and the <code>runtime-api</code> image target. You can still embed with <code>doctranslate.api</code> from your own process or wrap the CLI.</p>
 <h2 id="health-checks">Health checks</h2>
 <p>Images declare <code>HEALTHCHECK</code> using <code>doctranslate --version</code>. For readiness that includes downloaded assets, use a warm target or mount a populated cache volume.</p>
+<p>For HTTP services (<code>runtime-api</code>), you can also scrape <strong><code>/metrics</code></strong> and ship JSON logs from stdout when observability is enabled; see <a href="../observability/">Observability</a>.</p>
 <h2 id="security">Security</h2>
 <ul>
 <li>Images run as user <code>doctranslater</code> (UID <strong>1000</strong>).</li>

@@ -1206,6 +1206,8 @@
       
         
       
+        
+      
     
     
     
@@ -1266,6 +1268,34 @@
     
   
     Stable library API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
   
 
     
@@ -2745,7 +2775,7 @@
 <li><strong>Autoscaling</strong>: scale replicas; avoid many Uvicorn workers per replica for memory-heavy ONNX + PDF work.</li>
 <li><strong>Concurrency</strong>: lower <code>DOCTRANSLATE_API_MAX_CONCURRENT_JOBS</code> when OOM risk is high; combine with max instances / max tasks.</li>
 <li><strong>Isolation</strong>: separate <strong>inspect/config</strong> traffic from <strong>translate</strong> workers when possible.</li>
-<li><strong>Observability</strong>: ship container <strong>stdout/stderr</strong> to your platform logs; include <strong>job_id</strong> from API responses in client logs.</li>
+<li><strong>Observability</strong>: ship container <strong>stdout/stderr</strong> to your platform logs; include <strong>job_id</strong> from API responses in client logs. Enable <strong>Prometheus</strong> (<code>/metrics</code>) and optional <strong>OTLP</strong> tracing via <code>DOCTRANSLATE_*</code> variables — see <a href="../observability/">Observability</a>.</li>
 <li><strong>Startup / assets</strong>: use <code>/v1/health/ready</code> with <code>DOCTRANSLATE_API_REQUIRE_ASSETS_READY=true</code> when you require a warmed cache before serving (see <a href="../http-api/">HTTP API</a>).</li>
 <li><strong>Multi-instance HTTP API</strong>: the in-process <code>JobManager</code> is <strong>per replica</strong>; clients must poll the <strong>same</strong> instance that accepted <code>202</code> <strong>or</strong> you must add an external job store—documented in <a href="../http-api/#serverless-and-multi-instance-behavior">HTTP API</a>.</li>
 </ul>

@@ -1212,6 +1212,8 @@
       
         
       
+        
+      
     
     
     
@@ -1272,6 +1274,34 @@
     
   
     Stable library API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
   
 
     
@@ -2774,6 +2804,7 @@
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">metrics_output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;log&quot;</span><span class="w">                 </span><span class="c1"># log | json | both</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">metrics_json_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w">               </span><span class="c1"># path when metrics_output includes json</span>
 </span></code></pre></div>
+<p><strong>Service observability</strong> (HTTP API, workers, CLI) is separate from <code>metrics_output</code>: Prometheus counters/histograms, structured JSON logs, and optional OTLP tracing are controlled with <code>DOCTRANSLATE_*</code> environment variables. See <a href="../observability/">Observability</a>.</p>
 <h3 id="profiles-doctranslateprofilesname">Profiles (<code>[doctranslate.profiles.&lt;name&gt;]</code>)</h3>
 <ul>
 <li><code>providers</code> — ordered list of provider <strong>ids</strong> (strings).</li>

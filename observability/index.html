@@ -12,36 +12,36 @@
         <meta name="author" content="Miguel Enes & DocTranslater contributors">
       
       
-        <link rel="canonical" href="https://miguelenes.github.io/doctranslate/ai/mcp-suggestions/">
+        <link rel="canonical" href="https://miguelenes.github.io/doctranslate/observability/">
       
       
-        <link rel="prev" href="../package-layers/">
+        <link rel="prev" href="../library-api/">
       
       
-        <link rel="next" href="../phase2-skills/">
+        <link rel="next" href="../http-api/">
       
       
         
       
       
-      <link rel="icon" href="../../images/doctranslate-mark.svg">
+      <link rel="icon" href="../images/doctranslate-mark.svg">
       <meta name="generator" content="zensical-0.0.33">
     
     
       
-        <title>MCP and external context (suggestions) - DocTranslater</title>
+        <title>Observability - DocTranslater</title>
       
     
     
       
         
       
-      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.53a7feaf.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.53a7feaf.min.css">
       
         
           
         
-        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/modern/palette.dfe2e883.min.css">
       
       
 
@@ -60,9 +60,9 @@
       
     
     
-      <link rel="stylesheet" href="../../stylesheets/extra.css">
+      <link rel="stylesheet" href="../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
     
       
 
@@ -87,7 +87,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#mcp-and-external-context-suggestions" class="md-skip">
+        <a href="#observability" class="md-skip">
           Skip to content
         </a>
       
@@ -101,9 +101,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="DocTranslater" class="md-header__button md-logo" aria-label="DocTranslater" data-md-component="logo">
+    <a href="./.." title="DocTranslater" class="md-header__button md-logo" aria-label="DocTranslater" data-md-component="logo">
       
-  <img src="../../images/doctranslate-mark.svg" alt="DocTranslater">
+  <img src="../images/doctranslate-mark.svg" alt="DocTranslater">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              MCP and external context (suggestions)
+              Observability
             
           </span>
         </div>
@@ -214,7 +214,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="./.." class="md-tabs__link">
         
   
   Home
@@ -230,7 +230,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../supported_languages/" class="md-tabs__link">
+      <a href="../supported_languages/" class="md-tabs__link">
         
   
   Supported Languages
@@ -246,7 +246,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../configuration/" class="md-tabs__link">
+      <a href="../configuration/" class="md-tabs__link">
         
   
   Configuration
@@ -262,7 +262,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../troubleshooting/" class="md-tabs__link">
+      <a href="../troubleshooting/" class="md-tabs__link">
         
   
   Troubleshooting
@@ -280,7 +280,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../docker/" class="md-tabs__link">
+        <a href="../docker/" class="md-tabs__link">
           
   
   Docker
@@ -297,7 +297,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../benchmarks/" class="md-tabs__link">
+      <a href="../benchmarks/" class="md-tabs__link">
         
   
   Benchmarks
@@ -313,7 +313,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../translation-memory/" class="md-tabs__link">
+      <a href="../translation-memory/" class="md-tabs__link">
         
   
   Translation memory
@@ -329,7 +329,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../multi-translator/" class="md-tabs__link">
+      <a href="../multi-translator/" class="md-tabs__link">
         
   
   Multi-Provider Routing
@@ -345,7 +345,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../local-translation/" class="md-tabs__link">
+      <a href="../local-translation/" class="md-tabs__link">
         
   
   Local translation
@@ -359,11 +359,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../library-api/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../library-api/" class="md-tabs__link">
           
   
   API
@@ -382,7 +384,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../il-spec-notes/" class="md-tabs__link">
+        <a href="../il-spec-notes/" class="md-tabs__link">
           
   
   Implementation Details
@@ -401,7 +403,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../CODE_OF_CONDUCT/" class="md-tabs__link">
+        <a href="../CODE_OF_CONDUCT/" class="md-tabs__link">
           
   
   Community
@@ -416,13 +418,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../ai/" class="md-tabs__link">
           
   
   AI assistant context
@@ -455,9 +455,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="DocTranslater" class="md-nav__button md-logo" aria-label="DocTranslater" data-md-component="logo">
+    <a href="./.." title="DocTranslater" class="md-nav__button md-logo" aria-label="DocTranslater" data-md-component="logo">
       
-  <img src="../../images/doctranslate-mark.svg" alt="DocTranslater">
+  <img src="../images/doctranslate-mark.svg" alt="DocTranslater">
 
     </a>
     DocTranslater
@@ -484,7 +484,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="./.." class="md-nav__link">
         
   
   
@@ -511,7 +511,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../supported_languages/" class="md-nav__link">
+      <a href="../supported_languages/" class="md-nav__link">
         
   
   
@@ -538,7 +538,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../configuration/" class="md-nav__link">
+      <a href="../configuration/" class="md-nav__link">
         
   
   
@@ -565,7 +565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../troubleshooting/" class="md-nav__link">
+      <a href="../troubleshooting/" class="md-nav__link">
         
   
   
@@ -629,7 +629,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../deploy-samples/" class="md-nav__link ">
+            <a href="../deploy-samples/" class="md-nav__link ">
               
   
   
@@ -671,7 +671,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../docker/" class="md-nav__link">
+      <a href="../docker/" class="md-nav__link">
         
   
   
@@ -699,7 +699,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../docker-profiles/" class="md-nav__link">
+      <a href="../docker-profiles/" class="md-nav__link">
         
   
   
@@ -727,7 +727,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../serverless-containers/" class="md-nav__link">
+      <a href="../serverless-containers/" class="md-nav__link">
         
   
   
@@ -755,7 +755,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deploy-cloud-run/" class="md-nav__link">
+      <a href="../deploy-cloud-run/" class="md-nav__link">
         
   
   
@@ -783,7 +783,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deploy-fargate-app-runner/" class="md-nav__link">
+      <a href="../deploy-fargate-app-runner/" class="md-nav__link">
         
   
   
@@ -811,7 +811,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deploy-modal-runpod/" class="md-nav__link">
+      <a href="../deploy-modal-runpod/" class="md-nav__link">
         
   
   
@@ -839,7 +839,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../serverless-runtime-reference/" class="md-nav__link">
+      <a href="../serverless-runtime-reference/" class="md-nav__link">
         
   
   
@@ -876,7 +876,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/" class="md-nav__link">
+      <a href="../benchmarks/" class="md-nav__link">
         
   
   
@@ -903,7 +903,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../translation-memory/" class="md-nav__link">
+      <a href="../translation-memory/" class="md-nav__link">
         
   
   
@@ -930,7 +930,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../multi-translator/" class="md-nav__link">
+      <a href="../multi-translator/" class="md-nav__link">
         
   
   
@@ -957,7 +957,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../local-translation/" class="md-nav__link">
+      <a href="../local-translation/" class="md-nav__link">
         
   
   
@@ -981,8 +981,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -1004,19 +1006,22 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" checked>
         
           
-          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
             
   
   
@@ -1034,7 +1039,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_10">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1052,7 +1057,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../library-api/" class="md-nav__link">
+      <a href="../library-api/" class="md-nav__link">
         
   
   
@@ -1077,10 +1082,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../observability/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1096,6 +1128,115 @@
   
 
       </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#profiles-and-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profiles and environment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#http-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP API
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workers-arq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workers (ARQ)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#router-metrics-vs-service-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Router metrics vs service metrics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-and-serverless" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker and serverless
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phased-rollout-contributors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phased rollout (contributors)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1108,7 +1249,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../http-api/" class="md-nav__link">
+      <a href="../http-api/" class="md-nav__link">
         
   
   
@@ -1136,7 +1277,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../http-api-workers/" class="md-nav__link">
+      <a href="../http-api-workers/" class="md-nav__link">
         
   
   
@@ -1164,7 +1305,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../http-api-storage-backends/" class="md-nav__link">
+      <a href="../http-api-storage-backends/" class="md-nav__link">
         
   
   
@@ -1192,7 +1333,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../public-api-policy/" class="md-nav__link">
+      <a href="../public-api-policy/" class="md-nav__link">
         
   
   
@@ -1220,7 +1361,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ImplementationDetails/AsyncTranslate/AsyncTranslate/" class="md-nav__link">
+      <a href="../ImplementationDetails/AsyncTranslate/AsyncTranslate/" class="md-nav__link">
         
   
   
@@ -1298,7 +1439,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../ImplementationDetails/" class="md-nav__link ">
+            <a href="../ImplementationDetails/" class="md-nav__link ">
               
   
   
@@ -1340,7 +1481,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../il-spec-notes/" class="md-nav__link">
+      <a href="../il-spec-notes/" class="md-nav__link">
         
   
   
@@ -1370,7 +1511,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ImplementationDetails/PDFParsing/PDFParsing/" class="md-nav__link">
+      <a href="../ImplementationDetails/PDFParsing/PDFParsing/" class="md-nav__link">
         
   
   
@@ -1426,7 +1567,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ImplementationDetails/ParagraphFinding/ParagraphFinding/" class="md-nav__link">
+      <a href="../ImplementationDetails/ParagraphFinding/ParagraphFinding/" class="md-nav__link">
         
   
   
@@ -1454,7 +1595,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ImplementationDetails/StylesAndFormulas/StylesAndFormulas/" class="md-nav__link">
+      <a href="../ImplementationDetails/StylesAndFormulas/StylesAndFormulas/" class="md-nav__link">
         
   
   
@@ -1482,7 +1623,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ImplementationDetails/ILTranslator/ILTranslator/" class="md-nav__link">
+      <a href="../ImplementationDetails/ILTranslator/ILTranslator/" class="md-nav__link">
         
   
   
@@ -1510,7 +1651,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ImplementationDetails/Typesetting/Typesetting/" class="md-nav__link">
+      <a href="../ImplementationDetails/Typesetting/Typesetting/" class="md-nav__link">
         
   
   
@@ -1566,7 +1707,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ImplementationDetails/PDFCreation/PDFCreation/" class="md-nav__link">
+      <a href="../ImplementationDetails/PDFCreation/PDFCreation/" class="md-nav__link">
         
   
   
@@ -1594,7 +1735,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../intro-to-pdf-object/" class="md-nav__link">
+      <a href="../intro-to-pdf-object/" class="md-nav__link">
         
   
   
@@ -1691,7 +1832,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../CODE_OF_CONDUCT/" class="md-nav__link">
+      <a href="../CODE_OF_CONDUCT/" class="md-nav__link">
         
   
   
@@ -1719,7 +1860,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../github-pages/" class="md-nav__link">
+      <a href="../github-pages/" class="md-nav__link">
         
   
   
@@ -1747,7 +1888,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../migration/" class="md-nav__link">
+      <a href="../migration/" class="md-nav__link">
         
   
   
@@ -1833,7 +1974,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../CONTRIBUTING/" class="md-nav__link">
+      <a href="../CONTRIBUTING/" class="md-nav__link">
         
   
   
@@ -1861,7 +2002,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../CONTRIBUTOR_REWARD/" class="md-nav__link">
+      <a href="../CONTRIBUTOR_REWARD/" class="md-nav__link">
         
   
   
@@ -1901,8 +2042,6 @@
       
   
   
-    
-  
   
   
     
@@ -1930,23 +2069,20 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../ai/" class="md-nav__link ">
               
   
   
@@ -1964,13 +2100,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_13">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1990,7 +2126,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../project-map/" class="md-nav__link">
+      <a href="../ai/project-map/" class="md-nav__link">
         
   
   
@@ -2018,7 +2154,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../pdf-pipeline/" class="md-nav__link">
+      <a href="../ai/pdf-pipeline/" class="md-nav__link">
         
   
   
@@ -2046,7 +2182,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../translator-stack/" class="md-nav__link">
+      <a href="../ai/translator-stack/" class="md-nav__link">
         
   
   
@@ -2074,7 +2210,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../verification/" class="md-nav__link">
+      <a href="../ai/verification/" class="md-nav__link">
         
   
   
@@ -2102,7 +2238,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../package-layers/" class="md-nav__link">
+      <a href="../ai/package-layers/" class="md-nav__link">
         
   
   
@@ -2127,37 +2263,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    MCP suggestions
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="././" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../ai/mcp-suggestions/" class="md-nav__link">
         
   
   
@@ -2173,71 +2282,6 @@
   
 
       </a>
-      
-        
-
-
-<nav class="md-nav md-nav--secondary" aria-label="On this page">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      On this page
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#high-value-for-this-stack" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        High value for this stack
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#optional-team-dependent" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Optional (team-dependent)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#low-value-out-of-scope-for-core-doctranslater-work" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Low value / out of scope for core DocTranslater work
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hygiene" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hygiene
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2250,7 +2294,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../phase2-skills/" class="md-nav__link">
+      <a href="../ai/phase2-skills/" class="md-nav__link">
         
   
   
@@ -2319,10 +2363,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#high-value-for-this-stack" class="md-nav__link">
+  <a href="#profiles-and-environment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        High value for this stack
+        Profiles and environment
       
     </span>
   </a>
@@ -2330,10 +2374,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#optional-team-dependent" class="md-nav__link">
+  <a href="#http-api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Optional (team-dependent)
+        HTTP API
       
     </span>
   </a>
@@ -2341,10 +2385,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#low-value-out-of-scope-for-core-doctranslater-work" class="md-nav__link">
+  <a href="#workers-arq" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Low value / out of scope for core DocTranslater work
+        Workers (ARQ)
       
     </span>
   </a>
@@ -2352,10 +2396,54 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#hygiene" class="md-nav__link">
+  <a href="#cli" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Hygiene
+        CLI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#router-metrics-vs-service-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Router metrics vs service metrics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-and-serverless" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker and serverless
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phased-rollout-contributors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phased rollout (contributors)
       
     </span>
   </a>
@@ -2377,7 +2465,7 @@
                 
                   
   
-    <a href="https://github.com/miguelenes/doctranslate/edit/main/docs/ai/mcp-suggestions.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/miguelenes/doctranslate/edit/main/docs/observability.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-pen" viewBox="0 0 24 24"><path d="M12.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v9.34"/><path d="M14 2v5a1 1 0 0 0 1 1h5M10.378 12.622a1 1 0 0 1 3 3.003L8.36 20.637a2 2 0 0 1-.854.506l-2.867.837a.5.5 0 0 1-.62-.62l.836-2.869a2 2 0 0 1 .506-.853z"/></svg>
     </a>
@@ -2386,59 +2474,117 @@
     
       
     
-    <a href="https://github.com/miguelenes/doctranslate/raw/main/docs/ai/mcp-suggestions.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/miguelenes/doctranslate/raw/main/docs/observability.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-code-2" viewBox="0 0 24 24"><path d="M4 12.15V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3.35"/><path d="M14 2v5a1 1 0 0 0 1 1h5M5 16l-3 3 3 3M9 22l3-3-3-3"/></svg>
     </a>
   
 
 
-<h1 id="mcp-and-external-context-suggestions">MCP and external context (suggestions)</h1>
-<p>Use MCPs when they reduce hallucinations or automate repo-external lookups. This project is <strong>Python CLI + PDF + LLM routing</strong>; not all generic MCPs add value.</p>
-<h2 id="high-value-for-this-stack">High value for this stack</h2>
+<h1 id="observability">Observability</h1>
+<p>DocTranslater exposes <strong>structured logs</strong>, optional <strong>Prometheus</strong> metrics, and optional <strong>OpenTelemetry</strong> tracing across the CLI, HTTP API, ARQ workers, PDF pipeline, and translator routing.</p>
+<h2 id="profiles-and-environment">Profiles and environment</h2>
+<p>Settings are read from process environment variables (shared by <code>doctranslate serve</code>, <code>doctranslate worker</code>, and CLI translate runs).</p>
 <table>
 <thead>
 <tr>
-<th>MCP / pattern</th>
-<th>When to use</th>
+<th>Variable</th>
+<th>Default</th>
+<th>Meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Context7</strong> (<code>resolve-library-id</code> → <code>query-docs</code>)</td>
-<td>Current API for <strong>LiteLLM</strong>, <strong>Pydantic v2</strong>, <strong>PyMuPDF</strong>, <strong>pytest</strong>, <strong>Ruff</strong>, <strong>MkDocs Material</strong>, <strong>httpx</strong>, etc. Prefer over stale training cutoffs.</td>
+<td><code>DOCTRANSLATE_OBS_PROFILE</code></td>
+<td><code>minimal</code></td>
+<td><code>minimal</code> | <code>logs_only</code> | <code>prometheus</code> | <code>otlp</code> (OTLP enables tracing export)</td>
 </tr>
 <tr>
-<td><strong>Browser / IDE browser</strong></td>
-<td>After <strong>MkDocs</strong> or marketing doc edits: smoke navigation, search, and anchors.</td>
+<td><code>DOCTRANSLATE_LOG_FORMAT</code></td>
+<td><code>json</code></td>
+<td><code>json</code> or <code>console</code> (human-friendly)</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_LOG_LEVEL</code></td>
+<td><code>INFO</code></td>
+<td>Root log level</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_LOG_REDACT_USER_TEXT</code></td>
+<td><code>true</code></td>
+<td>Truncate/redact sensitive-looking log payloads</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_REQUEST_ID_HEADER</code></td>
+<td><code>X-Request-ID</code></td>
+<td>Incoming correlation header; response echoes the resolved id</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_METRICS_ENABLED</code></td>
+<td><code>true</code></td>
+<td>When <code>false</code>, Prometheus instruments are not registered</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_METRICS_PATH</code></td>
+<td><code>/metrics</code></td>
+<td>Path for the Prometheus scrape endpoint (HTTP API only)</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_METRICS_NAMESPACE</code></td>
+<td><code>doctranslate</code></td>
+<td>Metric name prefix</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_OTEL_ENABLED</code></td>
+<td><code>false</code></td>
+<td>Set <code>true</code> or use profile <code>otlp</code> to configure tracing</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_OTEL_SERVICE_NAME</code></td>
+<td><code>doctranslate</code></td>
+<td><code>service.name</code> resource attribute</td>
+</tr>
+<tr>
+<td><code>DOCTRANSLATE_OTEL_RESOURCE_ATTRIBUTES</code></td>
+<td><em>(empty)</em></td>
+<td>Comma-separated <code>key=value</code> pairs merged into the resource</td>
 </tr>
 </tbody>
 </table>
-<h2 id="optional-team-dependent">Optional (team-dependent)</h2>
-<table>
-<thead>
-<tr>
-<th>MCP</th>
-<th>When to use</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Atlassian</strong> (Jira/Confluence)</td>
-<td>If your org tracks specs, bugs, or runbooks there; link issues in PRs, not secrets.</td>
-</tr>
-</tbody>
-</table>
-<h2 id="low-value-out-of-scope-for-core-doctranslater-work">Low value / out of scope for core DocTranslater work</h2>
+<p>Standard <strong>OTLP exporter</strong> environment variables (for example <code>OTEL_EXPORTER_OTLP_ENDPOINT</code>) are honored by the SDK when tracing is enabled.</p>
+<h2 id="http-api">HTTP API</h2>
 <ul>
-<li><strong>Cloudflare</strong> Workers/Pages/D1/R2 MCPs — unrelated unless you add a Cloudflare deployment to this repo.</li>
-<li><strong>Laravel Forge</strong> — unrelated to this codebase.</li>
+<li><strong>Request IDs:</strong> Every response includes <code>X-Request-ID</code>. Error bodies (<code>ApiErrorEnvelope</code>) include the same <code>request_id</code> for log correlation.</li>
+<li><strong>Prometheus:</strong> <code>GET /metrics</code> exposes RED-style HTTP metrics, job queue depth (updated on readiness checks), job lifecycle histograms, pipeline stage timings (when the PDF stack runs), translator router counters, and asset warmup counters when metrics are enabled.</li>
+<li><strong>Tracing:</strong> With <code>DOCTRANSLATE_OTEL_ENABLED=true</code> and a reachable OTLP collector, spans cover FastAPI requests (via auto-instrumentation), ARQ job execution (<code>job.execute</code>, <code>job.warmup</code>), and PDF <code>pipeline.translate_sync</code>. For <strong>split API + worker</strong> deployments, the API stores a W3C <code>traceparent</code> on queued jobs so the worker can continue the trace.</li>
 </ul>
-<h2 id="hygiene">Hygiene</h2>
+<h2 id="workers-arq">Workers (ARQ)</h2>
+<p>Run the worker with the same <code>DOCTRANSLATE_*</code> observability variables as the API. Metrics use the same registry naming; scrape <strong>each process</strong> that should be monitored (API and workers are separate processes).</p>
+<h2 id="cli">CLI</h2>
+<p><code>doctranslate translate</code> configures structured logging and optional Prometheus metrics using the same environment variables. Each CLI invocation binds a fresh <code>cli_run_id</code> in log context.</p>
+<h2 id="router-metrics-vs-service-metrics">Router metrics vs service metrics</h2>
+<p>TOML/CLI <strong><code>metrics_output</code></strong> / <strong><code>metrics_json_path</code></strong> still control end-of-run <strong>router summaries</strong> (per-provider tokens, cost, latency averages). Service-level Prometheus metrics complement those with labeled counters/histograms suitable for dashboards.</p>
+<h2 id="docker-and-serverless">Docker and serverless</h2>
 <ul>
-<li>Do not paste <strong>API keys</strong> or proprietary PDFs into MCP queries; use env vars and redacted examples.</li>
-<li>Prefer <strong>repo files</strong> as source of truth for behavior; use Context7 for <strong>upstream library</strong> semantics.</li>
+<li>Default <strong>OSS / Docker</strong> profile: JSON logs + <code>/metrics</code> on the API container.</li>
+<li>Ship <strong>stdout/stderr</strong> to your platform log sink; correlate with <strong><code>job_id</code></strong> and <strong><code>X-Request-ID</code></strong>.</li>
+<li>For multi-replica setups, see <a href="../http-api/">HTTP API</a> queue modes and <a href="../http-api-workers/">HTTP API workers</a>.</li>
 </ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Logs apply <strong>redaction</strong> for common secret keys and long strings when <code>DOCTRANSLATE_LOG_REDACT_USER_TEXT</code> is true.</li>
+<li>Do not enable verbose logging of raw document text in production.</li>
+</ul>
+<h2 id="phased-rollout-contributors">Phased rollout (contributors)</h2>
+<p>Suggested PR sequence to keep risk bounded:</p>
+<ol>
+<li><strong>Foundation</strong> — <code>doctranslate.observability</code> package, settings, structured logging, request-id middleware.</li>
+<li><strong>HTTP metrics</strong> — <code>/metrics</code>, HTTP + job queue gauges, error envelope correlation.</li>
+<li><strong>Worker tracing</strong> — persist <code>traceparent</code>, <code>job.execute</code> / warmup spans, terminal job metrics.</li>
+<li><strong>Translator</strong> — router Prometheus instruments while preserving <code>metrics_output</code> / <code>metrics_json_path</code>.</li>
+<li><strong>PDF stages</strong> — <code>ProgressMonitor</code> stage timings and pipeline spans.</li>
+<li><strong>Docs/tests</strong> — expand coverage and deployment guides (this page, HTTP API, Docker/serverless).</li>
+</ol>
 
 
 
@@ -2476,7 +2622,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../package-layers/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Package layers">
+          <a href="../library-api/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Stable library API">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
@@ -2486,20 +2632,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Package layers
+                Stable library API
               </div>
             </div>
           </a>
         
         
           
-          <a href="../phase2-skills/" class="md-footer__link md-footer__link--next" aria-label="Next: Phase 2 (optional)">
+          <a href="../http-api/" class="md-footer__link md-footer__link--next" aria-label="Next: HTTP API">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Phase 2 (optional)
+                HTTP API
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2567,10 +2713,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["announce.dismiss","content.action.edit","content.action.view","content.code.annotate","content.code.copy","content.code.select","content.tooltips","navigation.footer","navigation.indexes","navigation.sections","navigation.tabs","navigation.top","navigation.tracking","search.highlight","search.share","search.suggest","toc.follow"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["announce.dismiss","content.action.edit","content.action.view","content.code.annotate","content.code.copy","content.code.select","content.tooltips","navigation.footer","navigation.indexes","navigation.sections","navigation.tabs","navigation.top","navigation.tracking","search.highlight","search.share","search.suggest","toc.follow"],"search":"../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.63456bd9.min.js"></script>
+      <script src="../assets/javascripts/bundle.63456bd9.min.js"></script>
       
     
   </body>
