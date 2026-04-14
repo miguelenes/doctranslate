@@ -5,8 +5,10 @@ Run the smallest set that covers your change. CI reference: `.github/workflows/t
 ## Environment
 
 ```bash
-uv sync --group dev
+uv sync --locked --group dev
 ```
+
+If you change `pyproject.toml` dependencies, run **`uv lock`** and commit **`uv.lock`** so CI (`uv sync --locked`) stays in sync.
 
 ## Always safe for local iteration
 
@@ -28,7 +30,8 @@ uv sync --group dev
 
 ## Docs changes
 
-- After editing `docs/` or `mkdocs.yml`: `uv run mkdocs build --strict` from an env with dev deps. **Note:** git metadata plugins may warn on `--strict` for **brand-new, uncommitted** Markdown files; commit them or run `uv run mkdocs build` (non-strict) for a quick smoke check.
+- After editing `docs/` or `mkdocs.yml`: `NO_MKDOCS_2_WARNING=1 uv run mkdocs build --strict` from an env with dev deps (suppresses the upstream MkDocs 2.0 advisory once you rely on the `mkdocs<2` pin). **Note:** git metadata plugins may warn on `--strict` for **brand-new, uncommitted** Markdown files; commit them or run `uv run mkdocs build` (non-strict) for a quick smoke check.
+- To match the **GitHub Pages** build locally: `uv run zensical build --clean` (output in `site/`).
 
 ## PDF / IL changes
 

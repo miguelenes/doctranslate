@@ -21,33 +21,38 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          persist-credentials: true
-
-      - name: Configure Git Credentials
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          persist-credentials: false
 
       - name: Setup uv with Python 3.12
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
         with:
           python-version: "3.12"
           enable-cache: true
-          cache-dependency-glob: "pyproject.toml"
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
           activate-environment: true
 
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
 
       - uses: actions/cache@v5
         with:
-          key: mkdocs-material-${{ env.cache_id }}
+          key: docs-build-${{ env.cache_id }}
           path: .cache
           restore-keys: |
-            mkdocs-material-
+            docs-build-
 
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --locked --group dev
+
+      - name: Build documentation (Zensical)
+        run: uv run zensical build --clean
 
       - name: Deploy to GitHub Pages (gh-pages branch)
-        run: |
-          uv run mkdocs gh-deploy --force --strict -m "docs: deploy ${GITHUB_SHA}"
+        uses: peaceiris/actions-gh-pages@v4.0.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          commit_message: "docs: deploy ${{ github.sha }}"

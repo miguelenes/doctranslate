@@ -39,7 +39,9 @@ jobs:
         with:
           python-version: "3.12"
           enable-cache: true
-          cache-dependency-glob: "pyproject.toml"
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
           activate-environment: true
 
       - name: Check if there is a parent commit
@@ -57,7 +59,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          uv sync
+          uv sync --locked
 
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"

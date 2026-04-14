@@ -40,8 +40,7 @@ babeldoc/format/txt
 /profile.svg
 
 
-# uv
-uv.lock
+# uv — lockfile is committed for reproducible CI installs
 
 # Claude Code memory file
 CLAUDE.md

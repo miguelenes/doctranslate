@@ -11,7 +11,7 @@ This documentation site tracks the **[miguelenes/doctranslate](https://github.co
 ```bash
 git clone https://github.com/miguelenes/doctranslate.git
 cd doctranslate
-uv sync --group dev
+uv sync --locked --group dev
 uv run doctranslate --help
 ```
 

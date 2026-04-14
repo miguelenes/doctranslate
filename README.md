@@ -42,7 +42,7 @@ DocTranslate is a specialized document translation system designed for **high-qu
 # Clone and install
 git clone https://github.com/miguelenes/doctranslate.git
 cd doctranslate
-uv sync --group dev
+uv sync --locked --group dev
 
 # Verify installation
 uv run doctranslate --version
@@ -200,16 +200,17 @@ python -m venv venv
 source venv/bin/activate  # on Windows: venv\Scripts\activate
 
 # Install project + dev dependencies (pytest, ruff, …)
-uv sync --group dev
+uv sync --locked --group dev
 
 # Run tests
 uv run pytest tests/ -v
 
 # Build docs locally
-uv run mkdocs serve  # http://127.0.0.1:8000
+uv run mkdocs serve  # http://127.0.0.1:8000 — live preview
+# Same static output as CI (Zensical → site/)
+uv run zensical build --clean
 
-# Publishing to GitHub Pages (see docs/github-pages.md for one-time repo settings)
-# uv run mkdocs gh-deploy --force
+# Publishing to GitHub Pages is automated on push to main; see docs/github-pages.md
 ```
 
 ### Running Tests
