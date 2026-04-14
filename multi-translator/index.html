@@ -314,7 +314,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../ImplementationDetails/AsyncTranslate/AsyncTranslate/" class="md-tabs__link">
+        <a href="../library-api/" class="md-tabs__link">
           
   
   API
@@ -735,6 +735,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -779,6 +783,62 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../library-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stable library API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../public-api-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public API policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1969,8 +2029,9 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>doctranslate<span class="w"> </span>--translator<span class="w"> </span>router<span class="w"> </span>--config<span class="w"> </span>doctranslate.toml<span class="w"> </span>--validate-translators
 </span></code></pre></div>
 <h2 id="programmatic-use">Programmatic use</h2>
-<p>Prefer <code>doctranslate.translator.factory.build_translators</code> with <code>translator_mode="router"</code> and a config path, or construct <code>TranslatorRouter</code> with pre-built <code>LiteLLMProviderExecutor</code> instances for tests.</p>
-<p>The public PDF pipeline still calls <strong><code>translate</code> / <code>llm_translate</code> synchronously</strong> on the translator instance; there is no requirement to use <code>async</code> in your own code for translation itself. Progress reporting uses <code>async_translate</code> in <code>doctranslate.format.pdf.high_level</code> around thread-pooled work (see <a href="../ImplementationDetails/AsyncTranslate/AsyncTranslate/">Async Translation API</a>).</p>
+<p>For <strong>application embedding</strong>, prefer <code>doctranslate.api</code> with a <code>TranslationRequest</code> whose <code>translator.mode</code> is <code>router</code> or <code>local</code>, or use <code>doctranslate.api.build_translators</code> when you need low-level <code>BaseTranslator</code> instances (see <a href="../library-api/">Stable library API</a>).</p>
+<p>For <strong>tests or advanced composition</strong>, you may call <code>doctranslate.translator.factory.build_translators</code> with <code>translator_mode="router"</code> and a config path, or construct <code>TranslatorRouter</code> with pre-built <code>LiteLLMProviderExecutor</code> instances.</p>
+<p>The public PDF pipeline still calls <strong><code>translate</code> / <code>llm_translate</code> synchronously</strong> on the translator instance; there is no requirement to use <code>async</code> in your own code for translation itself. Progress reporting uses <code>doctranslate.api.async_translate</code> around thread-pooled work (see <a href="../ImplementationDetails/AsyncTranslate/AsyncTranslate/">Async Translation API</a>).</p>
 
 
 

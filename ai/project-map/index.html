@@ -312,7 +312,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../ImplementationDetails/AsyncTranslate/AsyncTranslate/" class="md-tabs__link">
+        <a href="../../library-api/" class="md-tabs__link">
           
   
   API
@@ -599,6 +599,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -643,6 +647,62 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../library-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stable library API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../public-api-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public API policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1863,11 +1923,19 @@
 </tr>
 <tr>
 <td><code>doctranslate/api.py</code></td>
-<td>Stable public API (<code>translate</code>, <code>build_translators</code>, …); see <a href="../package-layers/">Package layers</a>.</td>
+<td>Stable public API (<code>translate</code>, <code>async_translate</code>, <code>validate_request</code>, <code>inspect_input</code>, <code>build_translators</code>, …); see <a href="../../library-api/">library API</a>.</td>
 </tr>
 <tr>
 <td><code>doctranslate/schemas/</code></td>
-<td>Config/settings types with minimal deps (optional extra <code>schemas</code>).</td>
+<td>Pydantic public contracts (<code>TranslationRequest</code>, …) + router/TOML types; minimal deps.</td>
+</tr>
+<tr>
+<td><code>doctranslate/engine/service.py</code></td>
+<td>Orchestrates public requests → PDF pipeline (full extra).</td>
+</tr>
+<tr>
+<td><code>doctranslate/engine/adapters.py</code></td>
+<td>Maps public models ↔ runtime <code>TranslationSettings</code> / <code>TranslationConfig</code>.</td>
 </tr>
 <tr>
 <td><code>doctranslate/bootstrap.py</code></td>

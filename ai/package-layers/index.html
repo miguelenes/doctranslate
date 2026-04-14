@@ -312,7 +312,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../ImplementationDetails/AsyncTranslate/AsyncTranslate/" class="md-tabs__link">
+        <a href="../../library-api/" class="md-tabs__link">
           
   
   API
@@ -599,6 +599,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -643,6 +647,62 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../library-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stable library API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../public-api-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public API policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1860,28 +1920,33 @@
 <tbody>
 <tr>
 <td><code>doctranslate.schemas</code></td>
-<td>Pydantic/TOML config types and translation settings</td>
+<td>Pydantic models: router/TOML, <code>TranslationRequest</code>, results, events</td>
 <td><em>none</em> (base install)</td>
 </tr>
 <tr>
 <td><code>doctranslate.api</code></td>
-<td>Stable <code>translate</code> / <code>async_translate</code> / <code>build_translators</code></td>
+<td>Stable <code>translate</code> / <code>async_translate</code> / <code>validate_request</code> / <code>inspect_input</code> / <code>build_translators</code></td>
 <td><code>full</code></td>
 </tr>
 <tr>
 <td><code>doctranslate.engine</code></td>
-<td>Same engine entrypoints + <code>init</code></td>
+<td>Deprecated shim: pipeline entrypoints + <code>init</code> — prefer <code>doctranslate.api</code></td>
 <td><code>full</code></td>
 </tr>
 <tr>
 <td><code>doctranslate.pdf</code></td>
-<td>Re-exports PDF/IL pipeline</td>
+<td>Deprecated shim: re-exports PDF/IL pipeline — prefer <code>doctranslate.api</code></td>
 <td><code>full</code> (or <code>pdf</code> + peers)</td>
 </tr>
 <tr>
 <td><code>doctranslate.vision</code></td>
 <td>Layout model types</td>
 <td><code>vision</code> or <code>full</code></td>
+</tr>
+<tr>
+<td><code>doctranslate.experimental</code></td>
+<td>Unstable experiments — <strong>not</strong> semver</td>
+<td>varies</td>
 </tr>
 </tbody>
 </table>
