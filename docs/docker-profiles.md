@@ -6,6 +6,7 @@ Build from the repository root with `-f Dockerfile`. The [`Dockerfile`](https://
 |--------------|---------------|-------------|
 | `runtime-base` | (none) | Schemas, `doctranslate config`, light tooling |
 | `runtime-cpu` | `pdf`, `cli`, `llm`, `tm`, `vision` | CLI/API translation without `full` OCR/Hyperscan stack |
+| `runtime-api` | same as `runtime-cpu` + `api` | HTTP API service (`doctranslate serve`, port **8000**) |
 | `runtime-cpu-warm` | same as `runtime-cpu` | Pre-downloaded fonts/models/cmaps under `~/.cache/doctranslate` |
 | `runtime-vision` | `full` | Parity with default CI install (OCR, glossary acceleration, vision) |
 | `runtime-vision-warm` | same as `runtime-vision` | Warm asset cache baked in |
@@ -25,6 +26,7 @@ CPU runtime **omits** `libhyperscan5` by default. Use `runtime-vision` for Hyper
 
 ```bash
 docker build --target runtime-cpu -t doctranslater:cpu .
+docker build --target runtime-api -t doctranslater:api .
 docker build --target runtime-vision-warm -t doctranslater:vision-warm .
 docker build --target runtime-dev -t doctranslater:dev .
 ```

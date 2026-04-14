@@ -42,6 +42,7 @@ Tests that need the PDF / IL stack should be marked `@pytest.mark.requires_pdf` 
 | Check | Command |
 |-------|---------|
 | CLI parses | `uv run doctranslate --help` and `uv run doc-translate --help` |
+| HTTP API (if touched) | `uv sync --locked --group dev --extra full` then `uv run pytest tests/test_http_api_*.py -q` |
 | Assets (if touching models/assets) | `uv run doctranslate assets warmup` |
 | Unit tests | `uv run pytest tests/ -q` |
 | Skip PDF-stack tests (fast) | `uv run pytest tests/ -q -m "not requires_pdf"` |

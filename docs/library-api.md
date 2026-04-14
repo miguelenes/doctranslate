@@ -120,5 +120,6 @@ Existing code may still pass `TranslationConfig` to `translate` / `async_transla
 
 ## Further reading
 
+- [HTTP API](http-api.md) — optional FastAPI service for containers (`DocTranslater[api]`).
 - [Public API policy](public-api-policy.md) — semver boundaries and breaking-change rules.
 - [Package layers](ai/package-layers.md) — optional extras and minimal installs.

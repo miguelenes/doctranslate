@@ -35,6 +35,10 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     if [ "$INCLUDE_GLOSSARY" = "1" ]; then extras="$extras --extra glossary"; fi; \
     uv sync --locked --no-dev --no-editable $extras
 
+FROM builder-cpu-sync AS builder-api
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-dev --no-editable --extra api
+
 FROM builder-cpu-sync AS builder-cpu-warm
 USER root
 RUN apt-get update \
@@ -124,6 +128,35 @@ ENTRYPOINT ["/docker/entrypoint.sh"]
 CMD ["--help"]
 HEALTHCHECK --interval=30s --timeout=15s --start-period=20s --retries=3 \
     CMD doctranslate --version || exit 1
+
+# --- Runtime: CPU translate + HTTP API (FastAPI / Uvicorn)
+FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime-api
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        tini \
+        fontconfig \
+        fonts-dejavu-core \
+        libglib2.0-0 \
+        libgomp1 \
+        libspatialindex6 \
+        libstdc++6 \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --uid 1000 --shell /bin/bash doctranslater
+COPY --from=builder-api /opt/venv /opt/venv
+COPY docker/entrypoint.sh /docker/entrypoint.sh
+RUN chmod +x /docker/entrypoint.sh
+ENV PATH="/opt/venv/bin:${PATH}" \
+    VIRTUAL_ENV=/opt/venv \
+    HOME=/home/doctranslater \
+    PYTHONUNBUFFERED=1
+WORKDIR /work
+USER doctranslater
+EXPOSE 8000
+ENTRYPOINT ["/docker/entrypoint.sh"]
+CMD ["serve", "--host", "0.0.0.0", "--port", "8000"]
+HEALTHCHECK --interval=30s --timeout=15s --start-period=25s --retries=3 \
+    CMD /opt/venv/bin/python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/health/live', timeout=5).read()" || exit 1
 
 FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime-cpu-warm
 RUN apt-get update \

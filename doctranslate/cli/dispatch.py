@@ -117,6 +117,22 @@ def build_vnext_parser() -> argparse.ArgumentParser:
     d_s = dbg.add_subparsers(dest="debug_cmd", required=True)
     d_s.add_parser("info", help="Print runtime information.")
 
+    srv = sub.add_parser(
+        "serve",
+        help="Run the HTTP API server (install DocTranslater[api]).",
+    )
+    srv.add_argument(
+        "--host",
+        default="0.0.0.0",  # noqa: S104
+        help="Bind address (use 127.0.0.1 for local-only).",
+    )
+    srv.add_argument("--port", type=int, default=8000, help="Listen port.")
+    srv.add_argument(
+        "--reload",
+        action="store_true",
+        help="Development auto-reload (do not use in production).",
+    )
+
     cfg = sub.add_parser("config", help="Project configuration utilities.")
     c_s = cfg.add_subparsers(dest="cfg_cmd", required=True)
     cv = c_s.add_parser(
@@ -173,8 +189,17 @@ async def run_vnext_async(argv: Sequence[str]) -> int:
     if not args.command:
         parser.print_help()
         ctx.emit_result(
-            True, {"hint": "Subcommands: translate, assets, config, inspect, ..."}
+            True,
+            {
+                "hint": ("Subcommands: translate, assets, config, inspect, serve, ..."),
+            },
         )
+        return EXIT_OK
+
+    if args.command == "serve":
+        from doctranslate.http_api.serve import run_serve
+
+        run_serve(host=args.host, port=args.port, reload=args.reload)
         return EXIT_OK
 
     if args.command == "translate":

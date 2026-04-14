@@ -16,6 +16,7 @@ On push to `main`, [`.github/workflows/docker.yml`](https://github.com/miguelene
 | `ghcr.io/OWNER/doctranslater-base` | `runtime-base` | Schemas / minimal CLI |
 | `ghcr.io/OWNER/doctranslater-cpu` | `runtime-cpu` | Default translate path (PDF + LLM + layout ONNX) |
 | `ghcr.io/OWNER/doctranslater-vision` | `runtime-vision` | Full optional stack (OCR, Hyperscan glossary path, …) |
+| `ghcr.io/OWNER/doctranslater-api` | `runtime-api` | HTTP API (`serve` on port 8000); see [HTTP API](http-api.md). |
 | `ghcr.io/OWNER/doctranslater-dev` | `runtime-dev` | Development / CI parity |
 
 **Tags**
@@ -40,6 +41,7 @@ Private packages require `docker login ghcr.io` (PAT with `read:packages`, or `G
 | `runtime-base` | Base PyPI dependencies only (`doctranslate.schemas`, minimal CLI). |
 | `runtime-cpu` | PDF + CLI + LLM + TM + **vision** (layout ONNX). No `full` meta-extra; no Hyperscan in the default runtime layer. |
 | `runtime-cpu-warm` | Same as `runtime-cpu` with fonts/models/cmaps pre-populated under `/home/doctranslater/.cache/doctranslate`. |
+| `runtime-api` | Same Python extras as `runtime-cpu` plus **`api`** (FastAPI/Uvicorn); default `CMD` is `serve` on port **8000**. See [HTTP API](http-api.md). |
 | `runtime-vision` | `DocTranslater[full]` — matches default CI optional stack (OCR, Hyperscan glossary path, etc.). |
 | `runtime-vision-warm` | Same as `runtime-vision` with warm cache. |
 | `runtime-dev` | `full` + dev dependencies (pytest, ruff, mkdocs, …). |
@@ -108,7 +110,7 @@ Air-gapped or pinned asset trees: use `doctranslate assets pack-offline` / `rest
 
 The image entrypoint runs [`tini`](https://github.com/krallin/tini) so PID 1 forwards `SIGTERM`/`SIGINT` to the CLI. Override the command after the image name as usual.
 
-There is **no** HTTP API server in the OSS package; embed with `doctranslate.api` from your own process or wrap the CLI.
+An **optional** HTTP API is included (`DocTranslater[api]`); see [HTTP API](http-api.md) and the `runtime-api` image target. You can still embed with `doctranslate.api` from your own process or wrap the CLI.
 
 ## Health checks
 

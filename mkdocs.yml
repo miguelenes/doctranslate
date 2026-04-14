@@ -148,6 +148,7 @@ nav:
   - Local translation: local-translation.md
   - API:
     - Stable library API: library-api.md
+    - HTTP API: http-api.md
     - Public API policy: public-api-policy.md
     - Async Translation API: ImplementationDetails/AsyncTranslate/AsyncTranslate.md
   - Implementation Details:

@@ -8,6 +8,7 @@ DocTranslater ships as **one PyPI distribution** (`DocTranslater`) with **option
 |--------|---------|------------------|
 | `doctranslate.schemas` | Pydantic models: router/TOML, `TranslationRequest`, results, events | *none* (base install) |
 | `doctranslate.api` | Stable `translate` / `async_translate` / `validate_request` / `inspect_input` / `build_translators` | `full` |
+| `doctranslate.http_api` | Optional ASGI app (`create_app`, `serve`); not imported by default CLI | `api` (+ same extras as your translate install) |
 | `doctranslate.engine` | Deprecated shim: pipeline entrypoints + `init` — prefer `doctranslate.api` | `full` |
 | `doctranslate.pdf` | Deprecated shim: re-exports PDF/IL pipeline — prefer `doctranslate.api` | `full` (or `pdf` + peers) |
 | `doctranslate.vision` | Layout model types | `vision` or `full` |
@@ -39,6 +40,7 @@ Python **3.10–3.13** are supported (`requires-python = ">=3.10,<3.14"` in `pyp
 | `glossary` | Hyperscan-backed glossary scanning |
 | `cli` | Rich, tqdm, psutil (CLI UX); `main.cli()` falls back to stdlib logging if Rich is missing |
 | `full` | Meta-extra listing everything needed for the default CLI translate path |
+| `api` | FastAPI, Uvicorn, `python-multipart` for the optional HTTP service (`doctranslate serve`) |
 | `tm_semantic` | sentence-transformers + torch (semantic TM tier) |
 | `cuda` / `directml` | Alternate ONNXRuntime wheels |
 

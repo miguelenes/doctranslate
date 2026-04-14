@@ -120,6 +120,11 @@ tm_semantic = [
     "sentence-transformers>=3.3.0",
     "torch>=2.2.0",
 ]
+api = [
+    "fastapi>=0.115.0",
+    "python-multipart>=0.0.9",
+    "uvicorn[standard]>=0.32.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/miguelenes/doctranslate"
@@ -212,6 +217,10 @@ max-complexity = 10 # 函数圈复杂度阈值
 "doctranslate/pdfminer/*" =["A","F", "I", "N", "S", "B", "C", "COM", "ARG", "PTH", "UP"]
 [dependency-groups]
 dev = [
+    "fastapi>=0.115.0",
+    "httpx>=0.27.0",
+    "python-multipart>=0.0.9",
+    "uvicorn[standard]>=0.32.0",
     "bumpver>=2024.1130",
     "markdown-callouts>=0.4.0",
     "markdown-include>=0.8.1",

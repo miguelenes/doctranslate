@@ -32,6 +32,7 @@ uv run doctranslate translate input.pdf --provider openai \
 | Topic | Description |
 |-------|-------------|
 | [Stable library API](library-api.md) | Python embedding, `TranslationRequest`, JSON CLI |
+| [HTTP API](http-api.md) | Optional container service (`serve`, OpenAPI) |
 | [Configuration](configuration.md) | CLI flags, TOML `[doctranslate]`, env vars, cache |
 | [Docker](docker.md) | Container images, volumes, warm vs slim builds |
 | [Troubleshooting](troubleshooting.md) | Common install and runtime failures |

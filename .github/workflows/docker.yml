@@ -51,6 +51,10 @@ jobs:
             smoke: vision
             ghcr_suffix: vision
             ghcr_latest: "false"
+          - target: runtime-api
+            smoke: api
+            ghcr_suffix: api
+            ghcr_latest: "false"
           - target: runtime-dev
             smoke: dev
             ghcr_suffix: dev
@@ -62,7 +66,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: GHCR owner (lowercase)
         id: regowner
@@ -71,7 +75,7 @@ jobs:
 
       - name: Log in to GHCR
         if: github.ref == 'refs/heads/main'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -80,7 +84,7 @@ jobs:
       - name: Docker metadata (GHCR)
         id: meta
         if: github.ref == 'refs/heads/main'
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ steps.regowner.outputs.lowercase }}/doctranslater-${{ matrix.ghcr_suffix }}
           tags: |
@@ -90,7 +94,7 @@ jobs:
 
       - name: Build image (PR / non-main)
         if: github.ref != 'refs/heads/main'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile
@@ -102,7 +106,7 @@ jobs:
 
       - name: Build and push image (main → GHCR)
         if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile
@@ -149,6 +153,17 @@ jobs:
           fi
           docker run --rm --entrypoint "" "$IMAGE" \
             /opt/venv/bin/python -c "import doctranslate.api as a; assert callable(a.translate)"
+
+      - name: Smoke (api)
+        if: matrix.smoke == 'api'
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          else
+            IMAGE="doctranslater:ci-${{ matrix.target }}"
+          fi
+          docker run --rm --entrypoint "" "$IMAGE" \
+            /opt/venv/bin/python -c "from doctranslate.http_api.app import app; assert app.title"
 
       - name: Smoke (dev)
         if: matrix.smoke == 'dev'

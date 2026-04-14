@@ -1,0 +1,39 @@
+"""Asset warmup jobs."""
+
+from __future__ import annotations
+
+from fastapi import APIRouter
+from fastapi import status
+
+from doctranslate.http_api.deps import JobManagerDep
+from doctranslate.http_api.errors import http_error
+from doctranslate.http_api.models import JobCreateResponse
+from doctranslate.schemas.enums import PublicErrorCode
+from doctranslate.schemas.public_api import TranslationErrorPayload
+
+router = APIRouter(tags=["assets"])
+
+
+@router.post(
+    "/v1/assets/warmup",
+    response_model=JobCreateResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def post_warmup(job_manager: JobManagerDep) -> JobCreateResponse:
+    try:
+        job_id = await job_manager.create_warmup_job()
+    except RuntimeError:
+        raise http_error(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            error=TranslationErrorPayload(
+                code=PublicErrorCode.INTERNAL_ERROR,
+                message="Server busy; too many active or queued jobs.",
+                retryable=True,
+            ),
+        ) from None
+    return JobCreateResponse(
+        job_id=job_id,
+        kind="warmup",
+        state="queued",
+        status_url=f"/v1/jobs/{job_id}",
+    )
