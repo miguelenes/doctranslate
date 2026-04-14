@@ -1,98 +1,117 @@
 # DocTranslate
 
-**A powerful, extensible document translation engine with multi-translator orchestration and advanced PDF handling.**
+Translate **PDFs** while keeping layout, figures, and structure as intact as possible. DocTranslate turns pages into an intermediate representation, sends text to your chosen LLM backend, then typesets the result back into a new PDF.
 
-> **This repository:** [miguelenes/doctranslate](https://github.com/miguelenes/doctranslate) — a maintained fork of upstream [DocTranslate](https://github.com/funstory-ai/DocTranslate) (funstory-ai). See [Attribution](#attribution) for lineage and license.
-
----
-
-## 🎯 Overview
-
-DocTranslate is a specialized document translation system designed for **high-quality, accurate translation of complex PDFs** with preservation of layout, formatting, and visual elements.
-
-### Key Features
-
-- **Multi-Translator Backend Routing**: Automatically failover between OpenAI, Anthropic, local LLMs, and more
-- **Smart Document Analysis**: YOLO-based layout detection for figures, tables, formulas, and text regions
-- **Advanced PDF Handling**: Pixel-perfect text positioning, font subsetting, watermarking, dual-language output
-- **Glossary System**: Automatic term extraction and custom glossary management
-- **Parallel Processing**: Split large documents and process pages in parallel
-- **Cost Optimization**: Track per-translator costs and route to cheapest available backend
-- **Translation memory** (optional): normalized, fuzzy, or semantic reuse of prior segments — see [docs/translation-memory.md](docs/translation-memory.md)
-- **Extensible Architecture**: Easy to add custom translators, post-processors, and quality scorers
-
-### Typical Use Cases
-
-- Technical documentation (whitepapers, research papers, academic PDFs)
-- Regulatory documents (contracts, compliance reports)
-- Marketing materials (brochures, datasheets)
-- Multilingual project management (translating to 50+ languages)
+**This repo:** [miguelenes/doctranslate](https://github.com/miguelenes/doctranslate) — a maintained fork of [funstory-ai/DocTranslate](https://github.com/funstory-ai/DocTranslate). Fork lineage and license notes live under [Attribution](#attribution) at the end of this file so they do not slow you down.
 
 ---
 
-## 🚀 Installation
+## Where to go next
 
-### Requirements
-- Python 3.10+
-- [uv](https://docs.astral.sh/uv/) (recommended) or pip
+Pick what you need — you can always come back here.
 
-### Quick Start
+| I want to… | Start here |
+|------------|------------|
+| Install and run my first translation | [Start here (~5 minutes)](#start-here-5-minutes) |
+| See every CLI flag and config option | [Configuration](docs/configuration.md) |
+| Use several providers (failover, cost-aware routing) | [Multi-translator setup](docs/multi-translator.md) |
+| Run without a hosted API (Ollama, vLLM, …) | [Local translation](docs/local-translation.md) |
+| Browse the full docs site | [Getting started](docs/index.md) |
+| Contribute code or report issues | [Contributing](docs/CONTRIBUTING.md) |
+| Dig into pipeline stages | [Implementation details](docs/ImplementationDetails/) |
+
+---
+
+## Start here (~5 minutes)
+
+You will: clone the project, install dependencies, and produce one translated PDF (using OpenAI as the simplest hosted path).
+
+**Requirements:** Python 3.10+ and [uv](https://docs.astral.sh/uv/) (recommended).
 
 ```bash
-# Clone and install
 git clone https://github.com/miguelenes/doctranslate.git
 cd doctranslate
 uv sync --locked --group dev
 
-# Verify installation
 uv run doctranslate --version
 uv run doctranslate --help
-# Optional kebab-case entry point (same CLI)
+# Same CLI, alternate entry point:
 uv run doc-translate --help
 ```
 
----
-
-## 📖 Usage
-
-### Basic translation (legacy OpenAI path)
+Set your API key and translate a file (replace paths and languages as needed):
 
 ```bash
-export OPENAI_API_KEY=sk-...
+export OPENAI_API_KEY="sk-..."
 
-doctranslate --openai \
+uv run doctranslate --openai \
   --files input.pdf \
   --lang-in en --lang-out zh \
   --output output_zh.pdf
 ```
 
-Use `--openai-model`, `--openai-base-url`, and optional `--openai-term-extraction-*` flags as documented in `doctranslate --help`. With the default OpenAI API host, the legacy path may use the **Responses** API for simple `translate()` calls and **structured parse** for JSON-heavy `llm_translate()` flows (term extraction, batched IL translation); custom `--openai-base-url` gateways use chat completions only.
+**When it works:** you should see a new PDF at `--output`. If something fails, check [Troubleshooting](#troubleshooting) below or run `uv run doctranslate --help` for flags specific to your setup.
+
+**Scanned or messy PDFs?** Try OCR before layout (still PDF → IL → LLM → PDF):
+
+```bash
+uv run doctranslate --openai --files scan.pdf --lang-in en --lang-out zh --ocr-mode auto
+```
+
+Details: [Configuration](docs/configuration.md) (`--ocr-mode`, `--ocr-pages`, `--ocr-debug`).
+
+---
+
+## What you get
+
+DocTranslate is aimed at **technical and layout-heavy PDFs**: papers, manuals, specs, and reports where you care about paragraphs, tables, and figures staying readable.
+
+**Highlights**
+
+- **Several backends:** route across OpenAI, Anthropic, local models, and more (router mode).
+- **Layout-aware processing:** YOLO-based regions for figures, tables, formulas, and body text.
+- **Strong PDF output:** reflow into page geometry, font handling, optional watermarking, single- or dual-language PDFs.
+- **Glossaries:** term extraction and custom glossary workflows.
+- **Scale:** split large jobs and process pages in parallel when it helps.
+- **Cost and reliability:** per-provider metrics and strategies like failover or cost-aware routing.
+- **Translation memory (optional):** reuse prior segments — [docs/translation-memory.md](docs/translation-memory.md).
+
+**Typical uses:** research PDFs, compliance packs, datasheets, internal docs, anything where “plain text dump” is not enough.
+
+---
+
+## Usage (pick your path)
+
+The sections below assume you already ran `uv sync --locked --group dev` and use `uv run doctranslate …`. If you installed the package into an active environment, you can call `doctranslate` directly instead.
+
+### OpenAI (quick path)
+
+```bash
+export OPENAI_API_KEY="sk-..."
+
+uv run doctranslate --openai \
+  --files input.pdf \
+  --lang-in en --lang-out zh \
+  --output output_zh.pdf
+```
+
+Use `--openai-model`, `--openai-base-url`, and optional `--openai-term-extraction-*` as documented in `doctranslate --help`.
+
+**API behavior note:** on the default OpenAI host, simple `translate()` calls may use the **Responses** API, while JSON-heavy `llm_translate()` flows (term extraction, batched IL translation) may use **structured parse**. If you set a custom `--openai-base-url` gateway, chat completions are used throughout.
 
 ### Multi-provider router (TOML)
 
+Best when you want **profiles**, **failover**, or **mixing providers**. Point the CLI at a config file:
+
 ```bash
-doctranslate --translator router \
+uv run doctranslate --translator router \
   --config doctranslate.toml \
   --files input.pdf \
   --lang-in en --lang-out es \
   --output output.pdf
 ```
 
-### Local translation (Ollama, vLLM, llama.cpp server)
-
-No hosted API key required. Example with [Ollama](https://ollama.com/):
-
-```bash
-doctranslate --translator local \
-  --local-backend ollama \
-  --local-model qwen2.5:7b \
-  --files input.pdf --lang-in en --lang-out zh \
-  --output output.pdf
-```
-
-See **[Local translation](docs/local-translation.md)** for vLLM / OpenAI-compatible URLs, TOML options, batch tuning, and troubleshooting.
-
-**Example `doctranslate.toml`** (nested providers + profiles; secrets via env):
+**Example `doctranslate.toml`** (nested providers + profiles; secrets via environment variables):
 
 ```toml
 [doctranslate]
@@ -124,31 +143,37 @@ model = "claude-3-5-sonnet-latest"
 api_key_env = "ANTHROPIC_API_KEY"
 ```
 
-Validate configuration without running a job:
+Validate configuration without running a full job:
 
 ```bash
-doctranslate --translator router --config doctranslate.toml --validate-translators
+uv run doctranslate --translator router --config doctranslate.toml --validate-translators
 ```
 
-### Scanned or low-quality PDFs (OCR fallback)
+More examples and JSON metrics export: [docs/multi-translator.md](docs/multi-translator.md).
 
-For pages where text extraction is poor or the document is treated as scanned, you can enable **RapidOCR** before layout (still IL → LLM → typesetting). Example:
+### Local translation (no hosted API key)
+
+Example with [Ollama](https://ollama.com/):
 
 ```bash
-doctranslate --openai --files scan.pdf --lang-in en --lang-out zh --ocr-mode auto
+uv run doctranslate --translator local \
+  --local-backend ollama \
+  --local-model qwen2.5:7b \
+  --files input.pdf --lang-in en --lang-out zh \
+  --output output.pdf
 ```
 
-See **[Configuration](docs/configuration.md)** for `--ocr-mode`, `--ocr-pages`, and `--ocr-debug`.
+vLLM, OpenAI-compatible URLs, batch tuning, and troubleshooting: **[Local translation](docs/local-translation.md)**.
 
-### Programmatic setup
+### Using DocTranslate from Python
 
-Use `doctranslate.translator.factory.build_translators` with `translator_mode="router"` and a config path, or construct `TranslatorRouter` with `LiteLLMProviderExecutor` instances for advanced/testing scenarios (see `tests/test_translator_router.py`).
+For router mode from code, use `doctranslate.translator.factory.build_translators` with `translator_mode="router"` and a config path, or build a `TranslatorRouter` with `LiteLLMProviderExecutor` instances for advanced or test scenarios — see `tests/test_translator_router.py`.
 
 ---
 
-## 🏗️ Architecture
+## Architecture (short version)
 
-DocTranslate uses a multi-stage **Intermediate Language (IL)** compilation pipeline:
+DocTranslate is a **PDF → intermediate language (IL) → LLM → PDF** pipeline. In plain terms: it understands page structure, translates text in context, then lays translated text back onto the page instead of pasting a single blob of text.
 
 ```
 PDF Input
@@ -157,8 +182,8 @@ PDF Input
     ↓
 [Midend]  LayoutParser       → Detect layout regions (YOLO)
           ParagraphFinder    → Group characters into paragraphs
-          ILTranslator       → Translate via LLM (multi-translator router)
-          Typesetting        → Re-flow text into page geometry
+          ILTranslator         → Translate via LLM (incl. multi-translator router)
+          Typesetting          → Reflow text into page geometry
     ↓
 [Backend] PDFCreater         → Render IL to PDF
     ↓
@@ -167,7 +192,7 @@ PDF Output (single/dual-language, watermarked)
 
 ### Multi-provider routing
 
-**`TranslatorRouter`** (`doctranslate/translator/router.py`) — sync, `BaseTranslator`-compatible:
+**`TranslatorRouter`** (`doctranslate/translator/router.py`) — synchronous and `BaseTranslator`-compatible:
 
 - LiteLLM-backed providers: OpenAI, Anthropic, OpenRouter, OpenAI-compatible gateways, Ollama
 - Strategies: `failover`, `round_robin`, `least_loaded`, `cost_aware`
@@ -175,160 +200,154 @@ PDF Output (single/dual-language, watermarked)
 
 ---
 
-## 📚 Documentation
+## Metrics and monitoring
 
-- **[Getting Started](docs/index.md)** — Installation and first steps
-- **[Configuration Guide](docs/configuration.md)** — All command-line options and config file format
-- **[Multi-Translator Setup](docs/multi-translator.md)** — Using the router with multiple backends
-- **[Supported Languages](docs/supported_languages.md)** — Full list of supported language pairs
-- **[Implementation Details](docs/ImplementationDetails/)** — Deep dives into each pipeline stage
-- **[Contributing](docs/CONTRIBUTING.md)** — How to contribute improvements
+After a run with `--translator router`, the CLI logs per-provider metrics when `metrics_output` includes `log`. In application code, a `TranslatorRouter` exposes metrics you can record with `logging` (avoid `print()` in libraries and tools — see [Contributing](docs/CONTRIBUTING.md)):
+
+```python
+import logging
+
+log = logging.getLogger(__name__)
+
+for pid, stats in router.get_metrics().items():
+    log.debug(
+        "%s success=%.3f cost_usd=%.4f avg_latency_ms=%.1f",
+        pid,
+        stats.success_rate,
+        stats.total_cost_usd,
+        stats.avg_latency_ms,
+    )
+log.debug("%s", router.print_metrics())
+```
+
+JSON export and router options: [docs/multi-translator.md](docs/multi-translator.md).
 
 ---
 
-## 🔧 Development
-
-### Setting Up Development Environment
+## Development
 
 ```bash
-# Clone the repo
 git clone https://github.com/miguelenes/doctranslate.git
 cd doctranslate
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # on Windows: venv\Scripts\activate
+# Optional: classic venv (uv still manages deps below)
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-# Install project + dev dependencies (pytest, ruff, …)
 uv sync --locked --group dev
-
-# Run tests
 uv run pytest tests/ -v
 
-# Build docs locally
-uv run mkdocs serve  # http://127.0.0.1:8000 — live preview
-# Same static output as CI (Zensical → site/)
+# Docs: live preview
+uv run mkdocs serve   # http://127.0.0.1:8000
+
+# Same static output as CI
 uv run zensical build --clean
-
-# Publishing to GitHub Pages is automated on push to main; see docs/github-pages.md
 ```
 
-### Running Tests
+GitHub Pages publishing on push to `main` is described in [docs/github-pages.md](docs/github-pages.md).
+
+**Focused tests**
 
 ```bash
-# All tests
-pytest tests/
-
-# Specific test file
-pytest tests/test_translator_router.py -v
-
-# With coverage
-pytest --cov=doctranslate tests/
+uv run pytest tests/ -q
+uv run pytest tests/test_translator_router.py -v
+uv run pytest --cov=doctranslate tests/
 ```
 
 ---
 
-## 📄 Attribution
+## Performance (indicative)
 
-**DocTranslate** is a customized fork of **[DocTranslate](https://github.com/funstory-ai/DocTranslate)** by **funstory-ai Limited**, licensed under AGPL-3.0.
+Rough benchmarks on typical PDFs (GPT-4-era models; your mileage will vary):
 
-### What's the Same (from DocTranslate)
-- Core IL (Intermediate Language) pipeline
-- Document layout detection (YOLO-based)
+| Document type        | Pages | Time (minutes) | Cost (USD) |
+|----------------------|-------|----------------|------------|
+| Technical whitepaper | 15    | 3.5            | 0.45       |
+| Research paper       | 25    | 6.2            | 0.78       |
+| Regulatory doc       | 50    | 12.1           | 1.52       |
+
+Times include layout detection, translation, and PDF rendering. Actual cost depends on backend, model, and token usage.
+
+---
+
+## Troubleshooting
+
+**`No module named 'doctranslate'`**
+
+```bash
+uv sync --locked --group dev
+uv run python -c "import doctranslate; print(doctranslate.__version__)"
+```
+
+If you use pip in an editable install: `pip install -e .`
+
+**Translation is slow**
+
+- Router: try `least_loaded` or `cost_aware` where appropriate.
+- Enable parallel page processing with `--split-pages N` when suitable.
+- Use a faster (sometimes lower-quality) model for drafts.
+
+**Layout looks wrong after translation**
+
+- Check `--font-fallback` for scripts your fonts must cover.
+- Try disabling `--watermark` to rule out overlap.
+- Confirm the source is not an image-only scan without OCR — see `--ocr-mode` above.
+
+**Getting help**
+
+- Guidelines: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+- [Open an issue](https://github.com/miguelenes/doctranslate/issues) or search existing ones
+
+---
+
+## Documentation index
+
+- [Getting started](docs/index.md) — install and first steps
+- [Configuration](docs/configuration.md) — CLI and config file
+- [Multi-translator setup](docs/multi-translator.md) — router and providers
+- [Supported languages](docs/supported_languages.md)
+- [Implementation details](docs/ImplementationDetails/) — pipeline deep dives
+- [Contributing](docs/CONTRIBUTING.md)
+
+---
+
+## Attribution
+
+**DocTranslate** (this fork) builds on **[DocTranslate](https://github.com/funstory-ai/DocTranslate)** by **funstory-ai Limited**, under **AGPL-3.0**.
+
+**Shared with upstream**
+
+- Core IL pipeline
+- YOLO-based layout detection
 - PDF parsing and rendering utilities
-- Glossary system
-- Translation caching
+- Glossary system and translation caching
 
-### What's New (in DocTranslate)
-- **Multi-Translator Router**: Flexible orchestration across multiple LLM backends
-- **Rebranding**: New user-facing CLI, package name, and documentation
-- **Architecture Improvements**: Enhanced configuration, better extensibility
+**Notable additions in this fork**
 
-### License Compliance
-This fork and upstream DocTranslate are licensed under **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+- Multi-translator router and richer configuration
+- Rebranded CLI, package layout, and documentation refresh
+- General architecture and extensibility improvements
 
-If you run DocTranslate as a service, you must provide source code to users (AGPL §13). See `LICENSE` and `LICENSE.ADDITIONS` for full terms.
+**License compliance:** this fork and upstream are **GNU Affero General Public License v3.0 (AGPL-3.0)**. If you run DocTranslate as a service, you must offer corresponding source to users (AGPL §13). Full text: `LICENSE` and `LICENSE.ADDITIONS`.
 
 ---
 
-## 📈 Performance
+## License
 
-Benchmarks on typical PDF documents (tested with GPT-4):
+DocTranslate is licensed under **GNU Affero General Public License v3.0 (AGPL-3.0)**.
 
-| Document Type | Pages | Time (minutes) | Cost |
-|---------------|-------|----------------|------|
-| Technical whitepaper | 15 | 3.5 | $0.45 |
-| Research paper | 25 | 6.2 | $0.78 |
-| Regulatory doc | 50 | 12.1 | $1.52 |
-
-*Times include layout detection, translation, and PDF rendering. Actual costs depend on translator backend and token usage.*
+- You may use, modify, and distribute this software under the license terms.
+- Modifications must remain under AGPL-3.0.
+- Network use as a service triggers source-offer obligations — read `LICENSE`.
+- Preserve upstream copyright notices as required.
 
 ---
 
-## 🐛 Troubleshooting
+## Credits
 
-### Common Issues
-
-**Q: "No module named 'doctranslate'"**
-```bash
-# Ensure installation completed
-pip install -e .
-
-# Check import
-python -c "import doctranslate; print(doctranslate.__version__)"
-```
-
-**Q: Translation is slow**
-- Use the router with `least_loaded` or `cost_aware` strategy where appropriate
-- Enable parallel processing with `--split-pages N`
-- Consider switching to faster (but possibly lower-quality) LLM backend
-
-**Q: PDF layout is broken after translation**
-- Check that `--font-fallback` is set correctly
-- Try disabling `--watermark` to rule out watermark overlap issues
-- Verify source PDF is not a scanned image
-
-### Getting Help
-
-- Check `docs/CONTRIBUTING.md` for guidelines
-- Open an issue on GitHub
-- Review existing issues for solutions
+- **Original project:** [DocTranslate](https://github.com/funstory-ai/DocTranslate) — funstory-ai Limited  
+- **This fork:** Miguel Enes (2025)
 
 ---
 
-## 📊 Metrics & monitoring
-
-After a run with `--translator router`, the CLI logs per-provider metrics when `metrics_output` includes `log`. In code, a `TranslatorRouter` exposes:
-
-```python
-for pid, stats in router.get_metrics().items():
-    print(pid, stats.success_rate, stats.total_cost_usd, stats.avg_latency_ms)
-print(router.print_metrics())
-```
-
-See [docs/multi-translator.md](docs/multi-translator.md) for JSON export options.
-
----
-
-## 📝 License
-
-DocTranslate is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
-
-- You can use, modify, and distribute this software
-- If you modify it, you must share your modifications under AGPL-3.0
-- If you run this as a service, you must provide source to users
-- The original DocTranslate copyright notice must be preserved
-
-See `LICENSE` and `LICENSE.ADDITIONS` for full details.
-
----
-
-## 🙏 Credits
-
-**Original Project:** [DocTranslate](https://github.com/funstory-ai/DocTranslate) by **funstory-ai Limited**
-
-**Customized By:** Miguel Enes (2025)
-
----
-
-**Questions?** Open an issue on [GitHub](https://github.com/miguelenes/doctranslate/issues) or browse the [documentation](docs/).
+**Questions?** Open an [issue](https://github.com/miguelenes/doctranslate/issues) or browse the [docs/](docs/) folder.
