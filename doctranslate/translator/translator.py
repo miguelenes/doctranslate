@@ -16,9 +16,16 @@ from tenacity import wait_exponential
 
 from doctranslate.babeldoc_exception.BabelDOCException import ContentFilterError
 from doctranslate.translator.cache import TranslationCache
+from doctranslate.translator.types import TranslatorCapabilities
 from doctranslate.utils.atomic_integer import AtomicInteger
 
 logger = logging.getLogger(__name__)
+
+
+class TranslationError(RuntimeError):
+    """Raised when all translation backends in a router fail."""
+
+    pass
 
 
 def remove_control_characters(s):
@@ -77,9 +84,9 @@ def set_translate_rate_limiter(max_qps):
 
 
 class BaseTranslator(ABC):
-    # Due to cache limitations, name should be within 20 characters.
-    # cache.py: translate_engine = CharField(max_length=20)
+    # Cache engine id: keep short; v2 schema allows up to 128 chars in DB.
     name = "base"
+    model = "base"
     lang_map = {}
 
     def __init__(self, lang_in, lang_out, ignore_cache):
@@ -99,6 +106,18 @@ class BaseTranslator(ABC):
 
         self.translate_call_count = 0
         self.translate_cache_call_count = 0
+
+    @property
+    def translator_capabilities(self) -> TranslatorCapabilities:
+        """Declare what this translator supports (replaces ``do_llm_translate(None)`` probing)."""
+        return TranslatorCapabilities(
+            supports_llm=False,
+            supports_json_mode=False,
+            supports_reasoning=False,
+            supports_streaming=False,
+            max_output_tokens=0,
+            provider_id=self.name,
+        )
 
     def __del__(self):
         with contextlib.suppress(Exception):
@@ -255,6 +274,17 @@ class OpenAITranslator(BaseTranslator):
         self.prompt_token_count = AtomicInteger()
         self.completion_token_count = AtomicInteger()
         self.cache_hit_prompt_token_count = AtomicInteger()
+
+    @property
+    def translator_capabilities(self) -> TranslatorCapabilities:
+        return TranslatorCapabilities(
+            supports_llm=True,
+            supports_json_mode=self.enable_json_mode_if_requested,
+            supports_reasoning=bool(self.reasoning),
+            supports_streaming=False,
+            max_output_tokens=2048,
+            provider_id=self.name,
+        )
 
     @retry(
         retry=retry_if_exception_type(openai.RateLimitError),

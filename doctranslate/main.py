@@ -22,11 +22,31 @@ from doctranslate.const import enable_process_pool
 from doctranslate.format.pdf.translation_config import TranslationConfig
 from doctranslate.format.pdf.translation_config import WatermarkOutputMode
 from doctranslate.glossary import Glossary
-from doctranslate.translator.translator import OpenAITranslator
+from doctranslate.translator.config import load_nested_translator_config
+from doctranslate.translator.config import merge_cli_router_overrides_from_mapping
+from doctranslate.translator.config import validate_router_config
+from doctranslate.translator.factory import build_translators
+from doctranslate.translator.factory import resolve_openai_api_key
 from doctranslate.translator.translator import set_translate_rate_limiter
 
 logger = logging.getLogger(__name__)
 __version__ = "0.5.24"
+
+
+def _cli_router_override_dict(args: Any) -> dict[str, Any]:
+    """Build optional CLI overrides for nested router TOML."""
+    out: dict[str, Any] = {}
+    if getattr(args, "routing_profile", None):
+        out["routing_profile"] = args.routing_profile
+    if getattr(args, "term_extraction_profile", None):
+        out["term_extraction_profile"] = args.term_extraction_profile
+    if getattr(args, "routing_strategy", None):
+        out["routing_strategy"] = args.routing_strategy
+    if getattr(args, "metrics_output", None):
+        out["metrics_output"] = args.metrics_output
+    if getattr(args, "metrics_json_path", None):
+        out["metrics_json_path"] = args.metrics_json_path
+    return out
 
 
 def create_parser():
@@ -454,6 +474,44 @@ def create_parser():
         default=None,
         help="Reasoning string for the OpenAI term extraction translator. If not set, no reasoning field is sent for term extraction requests.",
     )
+    translation_group.add_argument(
+        "--translator",
+        choices=["openai", "router"],
+        default="openai",
+        help="Translation backend: openai (legacy) or router (multi-provider TOML).",
+    )
+    translation_group.add_argument(
+        "--routing-profile",
+        default=None,
+        help="Router mode: override profile name for paragraph translation (default from TOML).",
+    )
+    translation_group.add_argument(
+        "--term-extraction-profile",
+        default=None,
+        help="Router mode: override profile name for automatic term extraction (default from TOML).",
+    )
+    translation_group.add_argument(
+        "--routing-strategy",
+        choices=["failover", "round_robin", "least_loaded", "cost_aware"],
+        default=None,
+        help="Router mode: override routing strategy from config.",
+    )
+    translation_group.add_argument(
+        "--metrics-output",
+        choices=["log", "json", "both"],
+        default=None,
+        help="Router mode: where to emit per-provider metrics (default from TOML).",
+    )
+    translation_group.add_argument(
+        "--metrics-json-path",
+        default=None,
+        help="Router mode: write metrics JSON to this path (when metrics-output includes json).",
+    )
+    translation_group.add_argument(
+        "--validate-translators",
+        action="store_true",
+        help="Validate router TOML configuration and exit (no PDF input required).",
+    )
 
     return parser
 
@@ -484,59 +542,70 @@ async def main():
         logger.info("Warmup completed, exiting...")
         return
 
-    # 验证翻译服务选择
-    if not args.openai:
-        parser.error("必须选择一个翻译服务：--openai")
+    if getattr(args, "validate_translators", False):
+        if args.translator != "router":
+            parser.error("--validate-translators is only valid with --translator router")
+        if not args.config:
+            parser.error("Router validation requires --config")
+        nested = load_nested_translator_config(Path(args.config))
+        overrides = _cli_router_override_dict(args)
+        nested = merge_cli_router_overrides_from_mapping(nested, overrides)
+        validate_router_config(nested)
+        logger.info("Translator configuration is valid.")
+        return
 
-    # 验证 OpenAI 参数
-    if args.openai and not args.openai_api_key:
-        parser.error("使用 OpenAI 服务时必须提供 API key")
+    if args.translator == "openai":
+        if not args.openai:
+            parser.error("必须选择一个翻译服务：--openai")
+        api_key = resolve_openai_api_key(args.openai_api_key)
+        if not api_key:
+            parser.error("使用 OpenAI 服务时必须提供 API key（或设置 OPENAI_API_KEY）")
+        args.openai_api_key = api_key
+    elif args.translator == "router":
+        if not args.config:
+            parser.error("Router mode requires --config with [doctranslate] providers and profiles")
+    else:
+        parser.error(f"Unknown translator mode: {args.translator}")
 
     if args.enable_process_pool:
         enable_process_pool()
 
-    # 实例化翻译器
-    if args.openai:
+    if args.translator == "openai":
         translator_kwargs: dict[str, Any] = {}
         if args.openai_reasoning is not None:
             translator_kwargs["reasoning"] = args.openai_reasoning
-        translator = OpenAITranslator(
+        built = build_translators(
+            translator_mode="openai",
+            config_path=args.config,
             lang_in=args.lang_in,
             lang_out=args.lang_out,
-            model=args.openai_model,
-            base_url=args.openai_base_url,
-            api_key=args.openai_api_key,
             ignore_cache=args.ignore_cache,
-            enable_json_mode_if_requested=args.enable_json_mode_if_requested,
-            send_dashscope_header=args.send_dashscope_header,
-            send_temperature=not args.no_send_temperature,
-            **translator_kwargs,
+            openai_args={
+                "model": args.openai_model,
+                "base_url": args.openai_base_url,
+                "api_key": args.openai_api_key,
+                "enable_json_mode_if_requested": args.enable_json_mode_if_requested,
+                "send_dashscope_header": args.send_dashscope_header,
+                "send_temperature": not args.no_send_temperature,
+                "reasoning": args.openai_reasoning,
+                "term_model": args.openai_term_extraction_model,
+                "term_base_url": args.openai_term_extraction_base_url,
+                "term_api_key": args.openai_term_extraction_api_key,
+                "term_reasoning": args.openai_term_extraction_reasoning,
+            },
         )
-        term_extraction_translator = translator
-        if (
-            args.openai_term_extraction_model
-            or args.openai_term_extraction_base_url
-            or args.openai_term_extraction_api_key
-        ):
-            term_translator_kwargs: dict[str, Any] = {}
-            if args.openai_term_extraction_reasoning is not None:
-                term_translator_kwargs["reasoning"] = (
-                    args.openai_term_extraction_reasoning
-                )
-            term_extraction_translator = OpenAITranslator(
-                lang_in=args.lang_in,
-                lang_out=args.lang_out,
-                model=args.openai_term_extraction_model or args.openai_model,
-                base_url=(args.openai_term_extraction_base_url or args.openai_base_url),
-                api_key=args.openai_term_extraction_api_key or args.openai_api_key,
-                ignore_cache=args.ignore_cache,
-                enable_json_mode_if_requested=args.enable_json_mode_if_requested,
-                send_dashscope_header=args.send_dashscope_header,
-                send_temperature=not args.no_send_temperature,
-                **term_translator_kwargs,
-            )
     else:
-        raise ValueError("Invalid translator type")
+        overrides = _cli_router_override_dict(args)
+        built = build_translators(
+            translator_mode="router",
+            config_path=args.config,
+            lang_in=args.lang_in,
+            lang_out=args.lang_out,
+            ignore_cache=args.ignore_cache,
+            cli_router_overrides=overrides or None,
+        )
+    translator = built.translator
+    term_extraction_translator = built.term_extraction_translator
 
     # 设置翻译速率限制
     set_translate_rate_limiter(args.qps)
@@ -781,6 +850,19 @@ async def main():
             term_extraction_translator.completion_token_count.value,
             term_extraction_translator.cache_hit_prompt_token_count.value,
         )
+    if hasattr(translator, "print_metrics"):
+        logger.info("%s", translator.print_metrics())
+    if term_extraction_translator is not translator and hasattr(
+        term_extraction_translator,
+        "print_metrics",
+    ):
+        logger.info("Term extraction metrics:\n%s", term_extraction_translator.print_metrics())
+    if hasattr(translator, "flush_metrics_json") and getattr(
+        args,
+        "metrics_json_path",
+        None,
+    ):
+        translator.flush_metrics_json(args.metrics_json_path)
 
 
 def create_progress_handler(

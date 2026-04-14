@@ -39,7 +39,7 @@ DocTranslate is a specialized document translation system designed for **high-qu
 
 ```bash
 # Clone and install
-git clone https://github.com/YOUR_USERNAME/doctranslate.git
+git clone https://github.com/miguelenes/doctranslate.git
 cd doctranslate
 pip install -e .
 
@@ -52,57 +52,70 @@ doctranslate --help
 
 ## 📖 Usage
 
-### Basic Translation
+### Basic translation (legacy OpenAI path)
 
 ```bash
-# Translate a PDF to Chinese
-doctranslate input.pdf \
-  --output-language zh \
-  --api-key sk-... \
+export OPENAI_API_KEY=sk-...
+
+doctranslate --openai \
+  --files input.pdf \
+  --lang-in en --lang-out zh \
   --output output_zh.pdf
 ```
 
-### Multi-Translator with Failover
+Use `--openai-model`, `--openai-base-url`, and optional `--openai-term-extraction-*` flags as documented in `doctranslate --help`.
+
+### Multi-provider router (TOML)
 
 ```bash
-# Use configuration file for multiple translators
-doctranslate input.pdf \
+doctranslate --translator router \
   --config doctranslate.toml \
+  --files input.pdf \
+  --lang-in en --lang-out es \
   --output output.pdf
 ```
 
-**doctranslate.toml:**
+**Example `doctranslate.toml`** (nested providers + profiles; secrets via env):
+
 ```toml
 [doctranslate]
-output_language = "es"
-output_file = "output.pdf"
-translator = "router"  # Use multi-translator router
+translator = "router"
+routing_profile = "translate"
+term_extraction_profile = "terms"
+routing_strategy = "failover"
+metrics_output = "log"
 
-# Primary: OpenAI (fast, expensive)
-openai_api_key = "sk-..."
+[doctranslate.profiles.translate]
+providers = ["openai_fast", "anthropic_backup"]
+strategy = "failover"
+max_attempts = 4
+require_json_mode = false
 
-# Fallback: Anthropic (slower, cheaper)
-anthropic_api_key = "sk-ant-..."
+[doctranslate.profiles.terms]
+providers = ["openai_fast"]
+strategy = "failover"
+require_json_mode = true
+
+[doctranslate.providers.openai_fast]
+provider = "openai"
+model = "gpt-4o-mini"
+api_key_env = "OPENAI_API_KEY"
+
+[doctranslate.providers.anthropic_backup]
+provider = "anthropic"
+model = "claude-3-5-sonnet-latest"
+api_key_env = "ANTHROPIC_API_KEY"
 ```
 
-### Advanced: Custom Routing Strategy
+Validate configuration without running a job:
 
-```python
-from doctranslate.translator.router import TranslatorRouter, RouterStrategy
-from doctranslate.translator import OpenAITranslator, AnthropicTranslator
-
-# Create router with multiple backends
-router = TranslatorRouter([
-    OpenAITranslator(model="gpt-4", api_key=...),
-    AnthropicTranslator(model="claude-3-opus", api_key=...),
-])
-
-# Use cost-aware routing
-router.set_strategy(RouterStrategy.COST_AWARE)
-
-# Print metrics
-print(router.print_metrics())
+```bash
+doctranslate --translator router --config doctranslate.toml --validate-translators
 ```
+
+### Programmatic setup
+
+Use `doctranslate.translator.factory.build_translators` with `translator_mode="router"` and a config path, or construct `TranslatorRouter` with `LiteLLMProviderExecutor` instances for advanced/testing scenarios (see `tests/test_translator_router.py`).
 
 ---
 
@@ -125,13 +138,13 @@ PDF Input
 PDF Output (single/dual-language, watermarked)
 ```
 
-### New in DocTranslate
+### Multi-provider routing
 
-**Multi-Translator Router** (`doctranslate/translator/router.py`):
-- Coordinates multiple translation backends
-- Implements strategies: failover, round-robin, least-loaded, cost-aware
-- Tracks per-translator metrics: success rate, cost, latency
-- Automatic quality scoring via back-translation
+**`TranslatorRouter`** (`doctranslate/translator/router.py`) — sync, `BaseTranslator`-compatible:
+
+- LiteLLM-backed providers: OpenAI, Anthropic, OpenRouter, OpenAI-compatible gateways, Ollama
+- Strategies: `failover`, `round_robin`, `least_loaded`, `cost_aware`
+- Per-provider metrics (requests, latency, tokens, estimated cost) and optional JSON export
 
 ---
 
@@ -159,11 +172,11 @@ cd doctranslate
 python -m venv venv
 source venv/bin/activate  # on Windows: venv\Scripts\activate
 
-# Install in development mode with test dependencies
-pip install -e ".[dev]"
+# Install project + dev dependencies (pytest, ruff, …)
+uv sync --group dev
 
 # Run tests
-pytest tests/ -v
+uv run pytest tests/ -v
 
 # Build docs
 mkdocs serve  # http://localhost:8000
@@ -235,7 +248,7 @@ python -c "import doctranslate; print(doctranslate.__version__)"
 ```
 
 **Q: Translation is slow**
-- Use multi-translator router with `LEAST_LOADED` strategy to distribute load
+- Use the router with `least_loaded` or `cost_aware` strategy where appropriate
 - Enable parallel processing with `--split-pages N`
 - Consider switching to faster (but possibly lower-quality) LLM backend
 
@@ -252,22 +265,17 @@ python -c "import doctranslate; print(doctranslate.__version__)"
 
 ---
 
-## 📊 Metrics & Monitoring
+## 📊 Metrics & monitoring
 
-DocTranslate's multi-translator router provides detailed metrics:
+After a run with `--translator router`, the CLI logs per-provider metrics when `metrics_output` includes `log`. In code, a `TranslatorRouter` exposes:
 
 ```python
-router = TranslatorRouter([...])
-metrics = router.get_metrics()
-
-for name, stats in metrics.items():
-    print(f"{name}:")
-    print(f"  Success rate: {stats.success_rate:.1f}%")
-    print(f"  Cost: ${stats.total_cost:.4f}")
-    print(f"  Latency: {stats.avg_latency_ms:.2f}ms")
+for pid, stats in router.get_metrics().items():
+    print(pid, stats.success_rate, stats.total_cost_usd, stats.avg_latency_ms)
+print(router.print_metrics())
 ```
 
-Monitor these metrics to optimize your translation pipeline and reduce costs.
+See [docs/multi-translator.md](docs/multi-translator.md) for JSON export options.
 
 ---
 

@@ -30,7 +30,8 @@ _cleanup_lock = threading.Lock()
 
 class _TranslationCache(Model):
     id = AutoField()
-    translate_engine = CharField(max_length=20)
+    # v2: longer engine ids for multi-provider router cache keys (was 20 in v1).
+    translate_engine = CharField(max_length=128)
     translate_engine_params = TextField()
     original_text = TextField()
     translation = TextField()
@@ -148,7 +149,7 @@ class TranslationCache:
 def init_db(remove_exists=False):
     CACHE_FOLDER.mkdir(parents=True, exist_ok=True)
     # The current version does not support database migration, so add the version number to the file name.
-    cache_db_path = CACHE_FOLDER / "cache.v1.db"
+    cache_db_path = CACHE_FOLDER / "cache.v2.db"
     logger.info(f"Initializing cache database at {cache_db_path}")
     if remove_exists and cache_db_path.exists():
         cache_db_path.unlink()

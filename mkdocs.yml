@@ -134,6 +134,8 @@ not_in_nav: |
 nav:
   - Home: index.md
   - Supported Languages: supported_languages.md
+  - Configuration: configuration.md
+  - Multi-Provider Routing: multi-translator.md
   - API:
     - Async Translation API: ImplementationDetails/AsyncTranslate/AsyncTranslate.md
   - Implementation Details:

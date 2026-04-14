@@ -3,12 +3,19 @@
 > [!NOTE]
 > This documentation may contain AI-generated content. While we strive for accuracy, there might be inaccuracies. Please report any issues via:
 >
-> - [GitHub Issues](https://github.com/funstory-ai/yadt/issues)
+> - [GitHub Issues](https://github.com/funstory-ai/DocTranslate/issues)
 > - Community contribution (PRs welcome!)
 
 ## Overview
 
-The `yadt.high_level.async_translate` function provides an asynchronous interface for translating PDF files with real-time progress reporting. This function yields progress events that can be used to update progress bars or other UI elements.
+The `doctranslate.format.pdf.high_level.async_translate` coroutine provides an **asynchronous progress API** around the same **synchronous** PDF translation pipeline: workers still run blocking `translate` / `llm_translate` calls (often via thread pools). Use this entry point when you need `async for` progress events (CLI and UIs), not because the LLM stack is natively async end-to-end.
+
+Import:
+
+```python
+from doctranslate.format.pdf.high_level import async_translate
+from doctranslate.format.pdf.translation_config import TranslationConfig
+```
 
 ## Usage
 

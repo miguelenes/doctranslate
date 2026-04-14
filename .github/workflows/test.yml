@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   test:
-    name: Run Python Tests
+    name: Run Python Tests (no paid APIs)
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -34,17 +34,15 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
           activate-environment: true
+      - name: Install project and dev tools (pytest)
+        run: uv sync --group dev
       - name: Warm up cache
         run: |
           uv run doctranslate --warmup
-      - name: Run tests
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAIAPIKEY }}
-          OPENAI_BASE_URL: ${{ secrets.OPENAIAPIURL }}
-          OPENAI_MODEL: ${{ secrets.OPENAIMODEL }}
+      - name: Run unit tests
         run: |
           uv run doctranslate --help
-          uv run doctranslate --openai --files examples/ci/test.pdf --openai-api-key ${{ env.OPENAI_API_KEY }} --openai-base-url ${{ env.OPENAI_BASE_URL }} --openai-model ${{ env.OPENAI_MODEL }}
+          uv run pytest tests/ -q
       - name: Generate offline assets package
         run: |
           uv run doctranslate --generate-offline-assets /tmp/offline_assets
@@ -56,4 +54,36 @@ jobs:
         run: |
           rm -rf /tmp/offline_assets
           rm -rf ~/.cache/doctranslate/cache.v1.db
+          rm -rf ~/.cache/doctranslate/cache.v2.db
           rm -rf ~/.cache/doctranslate/working
+
+  # Optional: real LLM smoke (requires repository secrets). Skipped on forks / missing secrets.
+  smoke-openai:
+    name: Optional OpenAI end-to-end smoke
+    runs-on: ubuntu-latest
+    if: ${{ secrets.OPENAIAPIKEY != '' && secrets.OPENAIAPIURL != '' && secrets.OPENAIMODEL != '' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Setup uv with Python 3.12
+        uses: astral-sh/setup-uv@85856786d1ce8acfbcc2f13a5f3fbd6b938f9f41 # v7.1.2
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+          activate-environment: true
+      - name: Install project
+        run: uv sync --group dev
+      - name: Warm up cache
+        run: uv run doctranslate --warmup
+      - name: Translate sample PDF (OpenAI)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAIAPIKEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAIAPIURL }}
+          OPENAI_MODEL: ${{ secrets.OPENAIMODEL }}
+        run: |
+          uv run doctranslate --openai --files examples/ci/test.pdf \
+            --openai-api-key "$OPENAI_API_KEY" \
+            --openai-base-url "$OPENAI_BASE_URL" \
+            --openai-model "$OPENAI_MODEL"

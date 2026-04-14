@@ -141,10 +141,15 @@ class ILTranslatorLLMOnly:
             tokenizer=self.tokenizer,
         )
         self.il_translator.use_as_fallback = True
-        try:
-            self.translate_engine.do_llm_translate(None)
-        except NotImplementedError as e:
-            raise ValueError("LLM translator not supported") from e
+        caps = getattr(self.translate_engine, "translator_capabilities", None)
+        if caps is not None:
+            if not caps.supports_llm:
+                raise ValueError("LLM translator not supported")
+        else:
+            try:
+                self.translate_engine.do_llm_translate(None)
+            except NotImplementedError as e:
+                raise ValueError("LLM translator not supported") from e
 
         self.ok_count = 0
         self.fallback_count = 0

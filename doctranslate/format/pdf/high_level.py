@@ -193,7 +193,12 @@ def verify_file_hash(file_path: str, expected_hash: str) -> bool:
 
 
 def translator_supports_llm(translator) -> bool:
-    if not translator or not hasattr(translator, "do_llm_translate"):
+    if not translator:
+        return False
+    caps = getattr(translator, "translator_capabilities", None)
+    if caps is not None:
+        return bool(getattr(caps, "supports_llm", False))
+    if not hasattr(translator, "do_llm_translate"):
         return False
     try:
         translator.do_llm_translate(None)

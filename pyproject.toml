@@ -43,6 +43,7 @@ dependencies = [
     "freetype-py>=2.5.1",
     "tiktoken>=0.9.0",
     "Levenshtein>=0.27.1",
+    "litellm>=1.55.0",
     "opencv-python-headless>=4.10.0.84",
     "rapidocr-onnxruntime>=1.4.4",
     "pyzstd>=0.17.0",

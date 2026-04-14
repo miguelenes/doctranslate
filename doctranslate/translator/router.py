@@ -1,395 +1,367 @@
 """
-Multi-Translator Orchestration Engine
+Multi-provider translation router (sync, ``BaseTranslator``-compatible).
 
-This module provides advanced routing and fallback capabilities across multiple
-translation backends (OpenAI, Anthropic, local Ollama, etc.). It allows:
-
-- Automatic failover when primary translator hits rate limits or errors
-- Per-backend cost tracking and quota management
-- Quality scoring via back-translation similarity (optional)
-- Balanced load distribution across available translators
-
-Architecture:
-    TranslatorRouter: Main router that implements BaseTranslator interface
-    ├── Multiple backend instances (OpenAITranslator, AnthropicTranslator, etc.)
-    ├── Router strategy (round-robin, least-loaded, quality-based)
-    └── Per-backend metrics (cost, latency, error rate)
-
-Usage Example:
-    router = TranslatorRouter([
-        OpenAITranslator(model="gpt-4", api_key=...),
-        AnthropicTranslator(model="claude-3-opus", api_key=...),
-    ])
-    router.set_strategy("failover")  # Use first available, fallback on error
-    translated = await router.translate("Hello", "en", "zh")
+Uses LiteLLM for provider normalization; applies failover, round-robin,
+least-loaded, and cost-aware strategies with health and cooldown tracking.
 """
 
-import asyncio
-import logging
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from __future__ import annotations
 
-from .translator import BaseTranslator, TranslationError
+import json
+import logging
+import threading
+import time
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
+
+from doctranslate.babeldoc_exception.BabelDOCException import ContentFilterError
+from doctranslate.translator.config import (
+    NestedTranslatorConfig,
+    ProviderConfigModel,
+    RouteProfileConfig,
+)
+from doctranslate.translator.providers.litellm_provider import (
+    LiteLLMProviderExecutor,
+    MalformedLLMResponseError,
+    classify_exception,
+)
+from doctranslate.translator.translator import BaseTranslator, TranslationError
+from doctranslate.translator.types import (
+    FailureCategory,
+    RouterStrategy,
+    TranslatorCapabilities,
+)
+from doctranslate.utils.atomic_integer import AtomicInteger
 
 logger = logging.getLogger(__name__)
 
-
-class RouterStrategy(str, Enum):
-    """Translation routing strategies."""
-
-    FAILOVER = "failover"  # Use first available, fallback on error
-    ROUND_ROBIN = "round_robin"  # Cycle through translators
-    LEAST_LOADED = "least_loaded"  # Pick translator with lowest concurrent load
-    COST_AWARE = "cost_aware"  # Pick cheapest option that meets quality threshold
+_COOLDOWN_RATE_LIMIT_S = 30.0
+_COOLDOWN_AUTH_S = 86400.0 * 365
 
 
 @dataclass
-class TranslatorMetrics:
-    """Per-translator metrics for monitoring and decision-making."""
+class ProviderMetrics:
+    """Per-provider metrics for observability."""
 
-    name: str
+    provider_id: str
     total_requests: int = 0
     successful_requests: int = 0
     failed_requests: int = 0
-    total_cost: float = 0.0
+    failures_by_category: dict[str, int] = field(default_factory=dict)
+    total_cost_usd: float = 0.0
     total_tokens: int = 0
-    avg_latency_ms: float = 0.0
+    total_latency_ms: float = 0.0
     concurrent_requests: int = 0
-    last_error: Optional[str] = None
-    last_error_time: Optional[datetime] = None
-    error_rate_window: Dict[str, int] = field(default_factory=dict)  # Rolling window of errors
+    last_error: str | None = None
+    last_error_time: datetime | None = None
 
     @property
     def success_rate(self) -> float:
-        """Return success rate as percentage (0-100)."""
         if self.total_requests == 0:
             return 100.0
-        return (self.successful_requests / self.total_requests) * 100
+        return (self.successful_requests / self.total_requests) * 100.0
+
+    @property
+    def avg_latency_ms(self) -> float:
+        if self.successful_requests == 0:
+            return 0.0
+        return self.total_latency_ms / self.successful_requests
 
     @property
     def cost_per_token(self) -> float:
-        """Return average cost per token."""
         if self.total_tokens == 0:
             return 0.0
-        return self.total_cost / self.total_tokens
+        return self.total_cost_usd / self.total_tokens
 
-    @property
-    def is_healthy(self) -> bool:
-        """Check if translator is in good health (success rate > 80%)."""
-        return self.success_rate >= 80.0
-
-
-class QualityScorer(ABC):
-    """Abstract base for translation quality scoring."""
-
-    @abstractmethod
-    async def score(self, original: str, translation: str, target_lang: str) -> float:
-        """
-        Score translation quality (0.0 to 1.0).
-
-        Args:
-            original: Original text
-            translation: Translated text
-            target_lang: Target language code
-
-        Returns:
-            Quality score between 0.0 (poor) and 1.0 (excellent)
-        """
-        pass
-
-
-class SimpleBackTranslationScorer(QualityScorer):
-    """
-    Score translations by back-translating and comparing similarity to original.
-
-    This is a simple implementation. In production, consider using:
-    - BLEU score for statistical similarity
-    - Semantic similarity (embeddings-based)
-    - Native speaker ratings
-    """
-
-    def __init__(self, scorer_translator: BaseTranslator):
-        """
-        Initialize with a translator to perform back-translation.
-
-        Args:
-            scorer_translator: A translator instance for back-translation
-        """
-        self.scorer_translator = scorer_translator
-
-    async def score(self, original: str, translation: str, target_lang: str) -> float:
-        """
-        Score by back-translating from target_lang back to original language.
-
-        Simple approach: calculate character overlap ratio.
-        """
-        try:
-            # Back-translate: target_lang → original language (assume "en")
-            back_translated = await self.scorer_translator.translate(
-                translation,
-                target_lang,
-                "en",  # Assume original is English; make this configurable in production
-            )
-
-            # Simple similarity: normalized character overlap
-            original_chars = set(original.lower().replace(" ", ""))
-            back_chars = set(back_translated.lower().replace(" ", ""))
-
-            if not original_chars:
-                return 1.0
-
-            overlap = len(original_chars & back_chars)
-            similarity = overlap / len(original_chars)
-
-            # Clamp to [0, 1] and apply quality thresholds
-            return min(1.0, max(0.0, similarity))
-
-        except Exception as e:
-            logger.warning(f"Back-translation scoring failed: {e}")
-            return 0.5  # Neutral score if scoring fails
+    def health_score(self) -> float:
+        return self.successful_requests / max(self.total_requests, 1)
 
 
 class TranslatorRouter(BaseTranslator):
     """
-    Multi-translator router with failover, load balancing, and cost awareness.
-
-    This router implements the BaseTranslator interface, so it can be used
-    as a drop-in replacement for single-translator setups.
+    Sync router implementing ``do_translate`` / ``do_llm_translate`` for the PDF pipeline.
     """
+
+    name = "router"
 
     def __init__(
         self,
-        translators: List[BaseTranslator],
-        strategy: RouterStrategy = RouterStrategy.FAILOVER,
-        quality_scorer: Optional[QualityScorer] = None,
+        lang_in: str,
+        lang_out: str,
+        ignore_cache: bool,
+        profile_name: str,
+        route_profile: RouteProfileConfig,
+        global_strategy: RouterStrategy,
+        executors: dict[str, LiteLLMProviderExecutor],
+        capabilities_by_id: dict[str, TranslatorCapabilities],
+        provider_configs: dict[str, ProviderConfigModel],
+        nested_settings: NestedTranslatorConfig,
     ):
-        """
-        Initialize router with multiple translators.
-
-        Args:
-            translators: List of BaseTranslator instances to route between
-            strategy: Routing strategy to use
-            quality_scorer: Optional QualityScorer for quality-based routing
-        """
-        if not translators:
-            raise ValueError("At least one translator is required")
-
-        self.translators = translators
-        self.strategy = strategy
-        self.quality_scorer = quality_scorer
-        self._current_index = 0  # For round-robin
-        self.metrics: Dict[str, TranslatorMetrics] = {
-            t.__class__.__name__: TranslatorMetrics(name=t.__class__.__name__) for t in translators
+        super().__init__(lang_in, lang_out, ignore_cache)
+        self.model = profile_name
+        self.profile_name = profile_name
+        self.route_profile = route_profile
+        self.strategy = global_strategy
+        self._executors = executors
+        self._capabilities = capabilities_by_id
+        self._provider_cfgs = provider_configs
+        self._nested = nested_settings
+        self._metrics: dict[str, ProviderMetrics] = {
+            pid: ProviderMetrics(provider_id=pid) for pid in route_profile.providers
         }
+        self._cooldown_until: dict[str, float] = {}
+        self._rr_lock = threading.Lock()
+        self._rr_index = 0
 
-    async def translate(
-        self,
-        text: str,
-        source_lang: str,
-        target_lang: str,
-        **kwargs,
-    ) -> str:
-        """
-        Translate text using the selected routing strategy.
+        self.add_cache_impact_parameters("profile", profile_name)
+        self.add_cache_impact_parameters("strategy", global_strategy.value)
 
-        Args:
-            text: Text to translate
-            source_lang: Source language code
-            target_lang: Target language code
-            **kwargs: Additional arguments passed to translator
+        self.token_count = AtomicInteger()
+        self.prompt_token_count = AtomicInteger()
+        self.completion_token_count = AtomicInteger()
+        self.cache_hit_prompt_token_count = AtomicInteger()
 
-        Returns:
-            Translated text
-
-        Raises:
-            TranslationError: If all translators fail
-        """
-        if self.strategy == RouterStrategy.FAILOVER:
-            return await self._translate_failover(text, source_lang, target_lang, **kwargs)
-        elif self.strategy == RouterStrategy.ROUND_ROBIN:
-            return await self._translate_round_robin(text, source_lang, target_lang, **kwargs)
-        elif self.strategy == RouterStrategy.LEAST_LOADED:
-            return await self._translate_least_loaded(text, source_lang, target_lang, **kwargs)
-        elif self.strategy == RouterStrategy.COST_AWARE:
-            return await self._translate_cost_aware(text, source_lang, target_lang, **kwargs)
-        else:
-            raise ValueError(f"Unknown strategy: {self.strategy}")
-
-    async def _translate_failover(
-        self,
-        text: str,
-        source_lang: str,
-        target_lang: str,
-        **kwargs,
-    ) -> str:
-        """Try each translator in order until one succeeds."""
-        last_error = None
-
-        for translator in self.translators:
-            translator_name = translator.__class__.__name__
-            metrics = self.metrics[translator_name]
-
-            try:
-                metrics.concurrent_requests += 1
-                result = await translator.translate(text, source_lang, target_lang, **kwargs)
-
-                metrics.successful_requests += 1
-                metrics.total_requests += 1
-                metrics.concurrent_requests -= 1
-
-                logger.info(f"Translation succeeded with {translator_name}")
-                return result
-
-            except Exception as e:
-                metrics.failed_requests += 1
-                metrics.total_requests += 1
-                metrics.last_error = str(e)
-                metrics.last_error_time = datetime.now()
-                metrics.concurrent_requests -= 1
-
-                last_error = e
-                logger.warning(f"Translation failed with {translator_name}: {e}. Trying next...")
-
-        # All translators failed
-        raise TranslationError(f"All translators failed. Last error: {last_error}")
-
-    async def _translate_round_robin(
-        self,
-        text: str,
-        source_lang: str,
-        target_lang: str,
-        **kwargs,
-    ) -> str:
-        """Cycle through translators in round-robin fashion."""
-        for attempt in range(len(self.translators)):
-            translator = self.translators[self._current_index % len(self.translators)]
-            self._current_index += 1
-            translator_name = translator.__class__.__name__
-            metrics = self.metrics[translator_name]
-
-            try:
-                metrics.concurrent_requests += 1
-                result = await translator.translate(text, source_lang, target_lang, **kwargs)
-
-                metrics.successful_requests += 1
-                metrics.total_requests += 1
-                metrics.concurrent_requests -= 1
-
-                return result
-
-            except Exception as e:
-                metrics.failed_requests += 1
-                metrics.total_requests += 1
-                metrics.concurrent_requests -= 1
-
-                if attempt == len(self.translators) - 1:
-                    raise TranslationError(f"All translators failed in round-robin. Last error: {e}")
-
-        raise TranslationError("Round-robin failed")
-
-    async def _translate_least_loaded(
-        self,
-        text: str,
-        source_lang: str,
-        target_lang: str,
-        **kwargs,
-    ) -> str:
-        """Pick translator with fewest concurrent requests."""
-        translator = min(
-            self.translators,
-            key=lambda t: self.metrics[t.__class__.__name__].concurrent_requests,
+    @property
+    def translator_capabilities(self) -> TranslatorCapabilities:
+        """Union of capabilities across providers in this profile (conservative)."""
+        ids = self.route_profile.providers
+        if not ids:
+            return TranslatorCapabilities(supports_llm=False, provider_id="router")
+        caps = [self._capabilities[pid] for pid in ids if pid in self._capabilities]
+        if not caps:
+            return TranslatorCapabilities(supports_llm=True, provider_id="router")
+        return TranslatorCapabilities(
+            supports_llm=all(c.supports_llm for c in caps),
+            supports_json_mode=all(c.supports_json_mode for c in caps),
+            supports_reasoning=any(c.supports_reasoning for c in caps),
+            supports_streaming=any(c.supports_streaming for c in caps),
+            max_output_tokens=max(c.max_output_tokens for c in caps),
+            provider_id=f"router:{self.profile_name}",
         )
-        translator_name = translator.__class__.__name__
-        metrics = self.metrics[translator_name]
 
-        try:
-            metrics.concurrent_requests += 1
-            result = await translator.translate(text, source_lang, target_lang, **kwargs)
-
-            metrics.successful_requests += 1
-            metrics.total_requests += 1
-            metrics.concurrent_requests -= 1
-
-            return result
-
-        except Exception as e:
-            metrics.failed_requests += 1
-            metrics.total_requests += 1
-            metrics.concurrent_requests -= 1
-
-            # Fallback to failover on least-loaded failure
-            logger.warning(f"Least-loaded translator failed, falling back to failover: {e}")
-            return await self._translate_failover(text, source_lang, target_lang, **kwargs)
-
-    async def _translate_cost_aware(
-        self,
-        text: str,
-        source_lang: str,
-        target_lang: str,
-        **kwargs,
-    ) -> str:
-        """Select cheapest healthy translator (success rate > 80%)."""
-        healthy_translators = [
-            t for t in self.translators if self.metrics[t.__class__.__name__].is_healthy
+    def _simple_messages(self, text: str) -> list[dict[str, str]]:
+        return [
+            {
+                "role": "system",
+                "content": "You are a professional,authentic machine translation engine.",
+            },
+            {
+                "role": "user",
+                "content": (
+                    f";; Treat next line as plain text input and translate it into {self.lang_out}, "
+                    "output translation ONLY. If translation is unnecessary (e.g. proper nouns, codes, "
+                    f"{{{{1}}}}, etc. ), return the original text. NO explanations. NO notes. Input:\n\n{text}"
+                ),
+            },
         ]
 
-        if not healthy_translators:
-            # Fall back to all translators if none are healthy
-            healthy_translators = self.translators
+    def _in_cooldown(self, pid: str) -> bool:
+        until = self._cooldown_until.get(pid)
+        return until is not None and time.monotonic() < until
 
-        # Sort by cost per token
-        sorted_translators = sorted(
-            healthy_translators,
-            key=lambda t: self.metrics[t.__class__.__name__].cost_per_token,
-        )
+    def _set_cooldown(self, pid: str, category: FailureCategory) -> None:
+        if category == FailureCategory.RATE_LIMIT:
+            self._cooldown_until[pid] = time.monotonic() + _COOLDOWN_RATE_LIMIT_S
+        elif category == FailureCategory.AUTHENTICATION:
+            self._cooldown_until[pid] = time.monotonic() + _COOLDOWN_AUTH_S
 
-        for translator in sorted_translators:
-            translator_name = translator.__class__.__name__
-            metrics = self.metrics[translator_name]
+    def _eligible_ids(self, require_json: bool, require_reasoning: bool) -> list[str]:
+        out: list[str] = []
+        for pid in self.route_profile.providers:
+            if self._in_cooldown(pid):
+                continue
+            cap = self._capabilities.get(pid)
+            if not cap:
+                continue
+            if require_json and not cap.supports_json_mode:
+                continue
+            if require_reasoning and not cap.supports_reasoning:
+                continue
+            if self.route_profile.min_health_score > 0:
+                m = self._metrics.get(pid)
+                if m and m.total_requests >= 3:
+                    if m.health_score() < self.route_profile.min_health_score:
+                        continue
+            out.append(pid)
+        return out
 
+    def _order_provider_ids(self, candidates: list[str]) -> list[str]:
+        if self.strategy == RouterStrategy.FAILOVER:
+            return list(candidates)
+        if self.strategy == RouterStrategy.ROUND_ROBIN:
+            with self._rr_lock:
+                n = len(candidates)
+                if n == 0:
+                    return []
+                start = self._rr_index % n
+                self._rr_index += 1
+            return candidates[start:] + candidates[:start]
+        if self.strategy == RouterStrategy.LEAST_LOADED:
+            return sorted(
+                candidates,
+                key=lambda pid: self._metrics[pid].concurrent_requests,
+            )
+        if self.strategy == RouterStrategy.COST_AWARE:
+            healthy = [
+                pid
+                for pid in candidates
+                if self._metrics[pid].total_requests == 0
+                or self._metrics[pid].health_score() >= 0.5
+            ]
+            pool = healthy or candidates
+
+            def cost_key(pid: str) -> float:
+                m = self._metrics[pid]
+                cfg = self._provider_cfgs.get(pid)
+                if m.total_tokens > 0 and m.total_cost_usd > 0:
+                    return m.cost_per_token
+                if cfg and cfg.input_cost_per_million_tokens is not None:
+                    return cfg.input_cost_per_million_tokens / 1_000_000.0
+                return 1e9
+
+            return sorted(pool, key=cost_key)
+        return list(candidates)
+
+    def _record_success(self, pid: str, latency_ms: float, usage: Any, cost: float) -> None:
+        m = self._metrics[pid]
+        m.total_requests += 1
+        m.successful_requests += 1
+        m.concurrent_requests = max(0, m.concurrent_requests - 1)
+        m.total_latency_ms += latency_ms
+        m.total_cost_usd += cost
+        m.total_tokens += int(usage.total_tokens or 0)
+        self.token_count.inc(int(usage.total_tokens or 0))
+        self.prompt_token_count.inc(int(usage.prompt_tokens or 0))
+        self.completion_token_count.inc(int(usage.completion_tokens or 0))
+        self.cache_hit_prompt_token_count.inc(int(usage.cache_hit_prompt_tokens or 0))
+
+    def _record_failure_only(self, pid: str, exc: BaseException) -> FailureCategory:
+        cat = classify_exception(exc)
+        m = self._metrics[pid]
+        m.total_requests += 1
+        m.failed_requests += 1
+        m.concurrent_requests = max(0, m.concurrent_requests - 1)
+        m.failures_by_category[cat.value] = m.failures_by_category.get(cat.value, 0) + 1
+        m.last_error = str(exc)
+        m.last_error_time = datetime.now()
+        self._set_cooldown(pid, cat)
+        return cat
+
+    def _route(
+        self,
+        *,
+        messages: list[dict[str, str]],
+        json_mode: bool,
+    ) -> str:
+        rp = self.route_profile
+        require_json = json_mode or rp.require_json_mode
+        require_reasoning = rp.require_reasoning
+        candidates = self._eligible_ids(require_json, require_reasoning)
+        ordered = self._order_provider_ids(candidates)
+        if not ordered:
+            ordered = self._order_provider_ids(
+                [p for p in rp.providers if p in self._executors],
+            )
+
+        last_exc: BaseException | None = None
+        attempts = 0
+        max_attempts = max(1, rp.max_attempts)
+
+        for pid in ordered:
+            if attempts >= max_attempts:
+                break
+            if pid not in self._executors:
+                continue
+            m = self._metrics.setdefault(pid, ProviderMetrics(provider_id=pid))
+            m.concurrent_requests += 1
             try:
-                metrics.concurrent_requests += 1
-                result = await translator.translate(text, source_lang, target_lang, **kwargs)
-
-                metrics.successful_requests += 1
-                metrics.total_requests += 1
-                metrics.concurrent_requests -= 1
-
-                return result
-
+                ex = self._executors[pid]
+                result = ex.complete(messages, json_mode=json_mode)
+                self._record_success(pid, result.latency_ms, result.usage, result.estimated_cost_usd)
+                logger.info("Translation OK provider=%s profile=%s", pid, self.profile_name)
+                return result.text
+            except ContentFilterError:
+                m.concurrent_requests = max(0, m.concurrent_requests - 1)
+                raise
+            except MalformedLLMResponseError as e:
+                self._record_failure_only(pid, e)
+                last_exc = e
+                attempts += 1
+                if FailureCategory.MALFORMED_RESPONSE not in rp.fallback_on:
+                    raise
+                logger.warning("Malformed response from %s: %s", pid, e)
             except Exception as e:
-                metrics.failed_requests += 1
-                metrics.total_requests += 1
-                metrics.concurrent_requests -= 1
+                cat = self._record_failure_only(pid, e)
+                last_exc = e
+                attempts += 1
+                if cat == FailureCategory.CONTENT_FILTER and not rp.allow_content_filter_fallback:
+                    raise
+                if cat not in rp.fallback_on:
+                    logger.warning(
+                        "Provider %s error not in fallback_on (%s), stopping: %s",
+                        pid,
+                        cat,
+                        e,
+                    )
+                    raise TranslationError(f"Routing failed on {pid}: {e}") from e
+                logger.warning("Provider %s failed (%s): %s", pid, cat, e)
 
-                logger.warning(f"Cost-aware selection failed with {translator_name}: {e}")
+        raise TranslationError(f"All providers failed for profile={self.profile_name}: {last_exc}")
 
-        raise TranslationError("Cost-aware routing: all translators failed")
+    def do_translate(self, text, rate_limit_params: dict = None):
+        return self._route(messages=self._simple_messages(text), json_mode=False)
+
+    def do_llm_translate(self, text, rate_limit_params: dict = None):
+        if text is None:
+            return None
+        rlp = rate_limit_params or {}
+        json_mode = bool(rlp.get("request_json_mode", False))
+        messages = [{"role": "user", "content": text}]
+        return self._route(messages=messages, json_mode=json_mode)
 
     def set_strategy(self, strategy: RouterStrategy) -> None:
-        """Change routing strategy at runtime."""
         self.strategy = strategy
-        logger.info(f"Router strategy changed to: {strategy.value}")
+        logger.info("Router strategy changed to: %s", strategy.value)
 
-    def get_metrics(self) -> Dict[str, TranslatorMetrics]:
-        """Return current metrics for all translators."""
-        return dict(self.metrics)
+    def get_metrics(self) -> dict[str, ProviderMetrics]:
+        return dict(self._metrics)
+
+    def get_metrics_summary_dict(self) -> dict[str, Any]:
+        """Structured metrics for optional JSON export."""
+        out: dict[str, Any] = {"profile": self.profile_name, "providers": {}}
+        for pid, m in self._metrics.items():
+            out["providers"][pid] = {
+                "total_requests": m.total_requests,
+                "successful_requests": m.successful_requests,
+                "failed_requests": m.failed_requests,
+                "failures_by_category": dict(m.failures_by_category),
+                "total_cost_usd": round(m.total_cost_usd, 6),
+                "total_tokens": m.total_tokens,
+                "avg_latency_ms": round(m.avg_latency_ms, 2),
+                "success_rate_pct": round(m.success_rate, 2),
+            }
+        return out
 
     def print_metrics(self) -> str:
-        """Return formatted metrics string for logging."""
-        lines = ["TranslatorRouter Metrics:", "-" * 70]
-
-        for name, metrics in self.metrics.items():
-            lines.append(f"{name}:")
-            lines.append(f"  Requests: {metrics.total_requests} (✓ {metrics.successful_requests}, ✗ {metrics.failed_requests})")
-            lines.append(f"  Success Rate: {metrics.success_rate:.1f}%")
-            lines.append(f"  Avg Latency: {metrics.avg_latency_ms:.2f}ms")
-            lines.append(f"  Total Cost: ${metrics.total_cost:.4f}")
-            lines.append(f"  Cost/Token: ${metrics.cost_per_token:.6f}")
-            if metrics.last_error:
-                lines.append(f"  Last Error: {metrics.last_error} ({metrics.last_error_time})")
-
+        lines = ["TranslatorRouter Metrics:", "-" * 70, f"Profile: {self.profile_name}"]
+        for pid, m in self._metrics.items():
+            lines.append(f"{pid}:")
+            lines.append(
+                f"  Requests: {m.total_requests} (OK {m.successful_requests}, FAIL {m.failed_requests})",
+            )
+            lines.append(f"  Success rate: {m.success_rate:.1f}%")
+            lines.append(f"  Avg latency: {m.avg_latency_ms:.2f}ms")
+            lines.append(f"  Total cost USD: ${m.total_cost_usd:.4f}")
+            lines.append(f"  Cost/token: ${m.cost_per_token:.8f}")
+            if m.last_error:
+                lines.append(f"  Last error: {m.last_error}")
         return "\n".join(lines)
+
+    def flush_metrics_json(self, path: str | None) -> None:
+        """Write metrics JSON if configured."""
+        if not path or self._nested.metrics_output not in ("json", "both"):
+            return
+        payload = self.get_metrics_summary_dict()
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2)

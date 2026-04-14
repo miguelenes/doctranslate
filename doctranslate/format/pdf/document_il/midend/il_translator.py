@@ -354,12 +354,16 @@ class ILTranslator:
         )
 
         self.support_llm_translate = False
-        try:
-            if translate_engine and hasattr(translate_engine, "do_llm_translate"):
-                translate_engine.do_llm_translate(None)
-                self.support_llm_translate = True
-        except NotImplementedError:
-            self.support_llm_translate = False
+        caps = getattr(translate_engine, "translator_capabilities", None)
+        if caps is not None:
+            self.support_llm_translate = bool(caps.supports_llm)
+        else:
+            try:
+                if translate_engine and hasattr(translate_engine, "do_llm_translate"):
+                    translate_engine.do_llm_translate(None)
+                    self.support_llm_translate = True
+            except NotImplementedError:
+                self.support_llm_translate = False
 
         self.use_as_fallback = False
         self.add_content_filter_hint_lock = threading.Lock()
