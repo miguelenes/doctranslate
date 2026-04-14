@@ -65,3 +65,5 @@ Base dependencies are intentionally small: charset detection, Pydantic, TOML, an
 - **Docs (PR):** Zensical build when `docs/**` or `mkdocs.yml` changes (`.github/workflows/docs-pr.yml`).
 
 See [Verification](verification.md) for day-to-day commands.
+
+For **OCI images** and which extras each target installs, see [Docker](../docker.md) and [Docker image profiles](../docker-profiles.md).

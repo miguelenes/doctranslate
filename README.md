@@ -13,6 +13,7 @@ Pick what you need — you can always come back here.
 | I want to… | Start here |
 |------------|------------|
 | Install and run my first translation | [Start here (~5 minutes)](#start-here-5-minutes) |
+| Run in Docker (Linux images) | [Docker](docs/docker.md) |
 | See every CLI flag and config option | [Configuration](docs/configuration.md) |
 | Use several providers (failover, cost-aware routing) | [Multi-translator setup](docs/multi-translator.md) |
 | Run without a hosted API (Ollama, vLLM, …) | [Local translation](docs/local-translation.md) |

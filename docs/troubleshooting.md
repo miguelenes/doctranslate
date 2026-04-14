@@ -13,6 +13,11 @@ Common problems when installing, translating, or contributing. For CLI flags and
 
 - The minimal PyPI install is small on purpose. Use extras: [Package layers](ai/package-layers.md). For the full CLI path, install **`DocTranslater[full]`**.
 
+**Docker: wrong image profile or missing native libraries**
+
+- Use the target that matches your workload: see [Docker](docker.md) and [Docker image profiles](docker-profiles.md). OCR and Hyperscan-backed glossary paths need **`runtime-vision`** (or a custom build) rather than the default **`runtime-cpu`** layer set.
+- Warm builds need outbound HTTPS during `docker build`; use non-warm targets and `doctranslate assets warmup` at runtime if the build network is restricted.
+
 **Tracked `examples/` or `*.pdf` missing locally**
 
 - The repo `.gitignore` ignores `examples/` and `*.pdf` for **untracked** files. CI and clones still include committed paths such as `examples/ci/test.pdf`. If you need that file, ensure you did a full `git clone` (not a sparse checkout that omits `examples/`).

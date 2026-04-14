@@ -1,0 +1,101 @@
+name: Docker images
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - docker/**
+      - pyproject.toml
+      - uv.lock
+      - doctranslate/**
+      - docs/docker.md
+      - docs/docker-profiles.md
+      - .github/workflows/docker.yml
+  pull_request:
+    branches: ["main"]
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - docker/**
+      - pyproject.toml
+      - uv.lock
+      - doctranslate/**
+      - docs/docker.md
+      - docs/docker-profiles.md
+      - .github/workflows/docker.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-smoke:
+    name: Build ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: runtime-base
+            smoke: base
+          - target: runtime-cpu
+            smoke: cpu
+          - target: runtime-vision
+            smoke: vision
+          - target: runtime-dev
+            smoke: dev
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          target: ${{ matrix.target }}
+          tags: doctranslater:ci-${{ matrix.target }}
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke (base)
+        if: matrix.smoke == 'base'
+        run: |
+          docker run --rm doctranslater:ci-runtime-base --help
+          docker run --rm --entrypoint "" doctranslater:ci-runtime-base \
+            /opt/venv/bin/python -c "import doctranslate.schemas as s; assert s.NestedTranslatorConfig is not None"
+
+      - name: Smoke (cpu)
+        if: matrix.smoke == 'cpu'
+        run: |
+          docker run --rm doctranslater:ci-runtime-cpu --version
+          docker run --rm \
+            -v "${{ github.workspace }}/examples/ci:/in:ro" \
+            doctranslater:ci-runtime-cpu \
+            inspect /in/test.pdf
+
+      - name: Smoke (vision)
+        if: matrix.smoke == 'vision'
+        run: |
+          docker run --rm --entrypoint "" doctranslater:ci-runtime-vision \
+            /opt/venv/bin/python -c "import doctranslate.api as a; assert callable(a.translate)"
+
+      - name: Smoke (dev)
+        if: matrix.smoke == 'dev'
+        run: |
+          docker run --rm --user root --entrypoint "" \
+            -v "${{ github.workspace }}:/work" \
+            -w /work \
+            doctranslater:ci-runtime-dev \
+            /opt/venv/bin/pytest \
+              tests/test_install_profiles.py::test_minimal_schemas_import \
+              tests/test_install_profiles.py::test_public_api_import \
+              -q

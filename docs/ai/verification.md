@@ -1,6 +1,6 @@
 # Verification checklist
 
-Run the smallest set that covers your change. CI reference: [.github/workflows/test.yml](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/test.yml), [.github/workflows/lint.yml](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/lint.yml), [.github/workflows/docs-pr.yml](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/docs-pr.yml).
+Run the smallest set that covers your change. CI reference: [.github/workflows/test.yml](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/test.yml), [.github/workflows/lint.yml](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/lint.yml), [.github/workflows/docs-pr.yml](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/docs-pr.yml), [.github/workflows/docker.yml](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/docker.yml).
 
 ## Environment
 
@@ -9,6 +9,19 @@ uv sync --locked --group dev --extra full
 ```
 
 For a **minimal** environment (schemas types only), `uv sync --locked --group dev` is enough; see [Package layers](package-layers.md).
+
+## Docker images
+
+After changing the `Dockerfile` or `docker/` helpers, validate locally:
+
+```bash
+docker build --target runtime-base -t doctranslater:base .
+docker build --target runtime-cpu -t doctranslater:cpu .
+docker build --target runtime-vision -t doctranslater:vision .
+docker build --target runtime-dev -t doctranslater:dev .
+```
+
+Smoke examples: [Docker](../docker.md).
 
 If you change `pyproject.toml` dependencies, run **`uv lock`** and commit **`uv.lock`** so CI (`uv sync --locked`) stays in sync.
 

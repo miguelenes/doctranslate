@@ -139,6 +139,9 @@ nav:
   - Supported Languages: supported_languages.md
   - Configuration: configuration.md
   - Troubleshooting: troubleshooting.md
+  - Docker:
+      - Overview: docker.md
+      - Image profiles: docker-profiles.md
   - Benchmarks: benchmarks.md
   - Translation memory: translation-memory.md
   - Multi-Provider Routing: multi-translator.md

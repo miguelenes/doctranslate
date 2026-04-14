@@ -1,0 +1,32 @@
+# Git and CI (not needed in build context)
+.git
+.github
+
+# Local environments and caches
+.venv
+**/__pycache__
+**/*.py[cod]
+*$py.class
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.hypothesis
+
+# Build / docs artifacts
+dist
+build
+*.egg-info
+site
+htmlcov
+.coverage
+coverage.xml
+
+# Editor and tooling
+.idea
+.vscode
+*.swp
+*.swo
+
+# Optional: shrink build context when local trees contain large sample PDFs
+# (runtime mounts PDFs from the host; the image does not COPY examples/).
+examples/
