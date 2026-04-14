@@ -1,6 +1,7 @@
 """Tests for LiteLLM provider wrapper (mocked)."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 from doctranslate.translator.config import ProviderConfigModel
 from doctranslate.translator.providers.litellm_provider import LiteLLMProviderExecutor

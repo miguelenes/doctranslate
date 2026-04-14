@@ -1279,7 +1279,9 @@ class ILCreater:
         import json
 
         from doctranslate.format.pdf.babelpdf.utils import guarded_bbox
-        from doctranslate.format.pdf.document_il.utils.matrix_helper import decompose_ctm
+        from doctranslate.format.pdf.document_il.utils.matrix_helper import (
+            decompose_ctm,
+        )
         from doctranslate.pdfminer.utils import apply_matrix_pt
         from doctranslate.pdfminer.utils import get_bound
 

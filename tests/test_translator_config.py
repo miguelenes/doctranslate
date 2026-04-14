@@ -3,13 +3,10 @@
 from pathlib import Path
 
 import pytest
-
-from doctranslate.translator.config import (
-    NestedTranslatorConfig,
-    load_nested_translator_config,
-    merge_cli_router_overrides_from_mapping,
-    validate_router_config,
-)
+from doctranslate.translator.config import NestedTranslatorConfig
+from doctranslate.translator.config import load_nested_translator_config
+from doctranslate.translator.config import merge_cli_router_overrides_from_mapping
+from doctranslate.translator.config import validate_router_config
 from doctranslate.translator.types import RouterStrategy
 
 
@@ -52,7 +49,8 @@ def test_validate_router_rejects_unknown_provider():
 
 
 def test_validate_json_requirement():
-    from doctranslate.translator.config import ProviderConfigModel, RouteProfileConfig
+    from doctranslate.translator.config import ProviderConfigModel
+    from doctranslate.translator.config import RouteProfileConfig
 
     cfg = NestedTranslatorConfig(
         profiles={

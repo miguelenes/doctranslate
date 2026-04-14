@@ -7,9 +7,13 @@ from pathlib import Path
 from typing import Any
 
 import toml
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel
+from pydantic import ConfigDict
+from pydantic import Field
+from pydantic import field_validator
 
-from doctranslate.translator.types import FailureCategory, RouterStrategy
+from doctranslate.translator.types import FailureCategory
+from doctranslate.translator.types import RouterStrategy
 
 
 class RouteProfileConfig(BaseModel):
@@ -110,6 +114,20 @@ class NestedTranslatorConfig(BaseModel):
     providers: dict[str, ProviderConfigModel] = Field(default_factory=dict)
     metrics_output: str = "log"
     metrics_json_path: str = ""
+    # When ``translator = "local"``, these drive a synthetic router (see ``local_config``).
+    local_backend: str | None = None
+    local_model: str | None = None
+    local_base_url: str | None = None
+    local_term_model: str | None = None
+    local_term_base_url: str | None = None
+    local_api_key: str | None = None
+    local_timeout_seconds: float | None = None
+    local_max_retries: int | None = None
+    local_context_window: int | None = None
+    local_translation_batch_tokens: int | None = None
+    local_translation_batch_paragraphs: int | None = None
+    local_term_batch_tokens: int | None = None
+    local_term_batch_paragraphs: int | None = None
 
     @field_validator("routing_strategy", mode="before")
     @classmethod
@@ -149,6 +167,44 @@ def _coerce_doctranslate_table(dt: dict[str, Any]) -> dict[str, Any]:
     providers = dt.get("providers")
     if isinstance(providers, dict):
         out["providers"] = providers
+    local_flat_keys = (
+        "local_backend",
+        "local_model",
+        "local_base_url",
+        "local_term_model",
+        "local_term_base_url",
+        "local_api_key",
+        "local_timeout_seconds",
+        "local_max_retries",
+        "local_context_window",
+        "local_translation_batch_tokens",
+        "local_translation_batch_paragraphs",
+        "local_term_batch_tokens",
+        "local_term_batch_paragraphs",
+    )
+    for k in local_flat_keys:
+        if k in dt and dt[k] is not None:
+            out[k] = dt[k]
+    loc = dt.get("local")
+    if isinstance(loc, dict):
+        nested_map = {
+            "backend": "local_backend",
+            "model": "local_model",
+            "base_url": "local_base_url",
+            "term_model": "local_term_model",
+            "term_base_url": "local_term_base_url",
+            "api_key": "local_api_key",
+            "timeout_seconds": "local_timeout_seconds",
+            "max_retries": "local_max_retries",
+            "context_window": "local_context_window",
+            "translation_batch_tokens": "local_translation_batch_tokens",
+            "translation_batch_paragraphs": "local_translation_batch_paragraphs",
+            "term_batch_tokens": "local_term_batch_tokens",
+            "term_batch_paragraphs": "local_term_batch_paragraphs",
+        }
+        for src, dest in nested_map.items():
+            if src in loc and loc[src] is not None:
+                out[dest] = loc[src]
     return out
 
 

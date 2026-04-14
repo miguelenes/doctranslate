@@ -27,3 +27,19 @@ def test_parser_default_translator_openai():
     p = create_parser()
     args = p.parse_args(["--openai", "--openai-api-key", "k", "--files", "a.pdf"])
     assert args.translator == "openai"
+
+
+def test_parser_accepts_translator_local_flags():
+    p = create_parser()
+    args = p.parse_args(
+        [
+            "--translator",
+            "local",
+            "--local-model",
+            "qwen2.5:7b",
+            "--files",
+            "x.pdf",
+        ],
+    )
+    assert args.translator == "local"
+    assert args.local_model == "qwen2.5:7b"

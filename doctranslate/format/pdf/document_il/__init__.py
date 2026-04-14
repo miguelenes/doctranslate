@@ -24,7 +24,9 @@ from doctranslate.format.pdf.document_il.il_version_1 import PdfParagraphComposi
 from doctranslate.format.pdf.document_il.il_version_1 import PdfPath
 from doctranslate.format.pdf.document_il.il_version_1 import PdfRectangle
 from doctranslate.format.pdf.document_il.il_version_1 import PdfSameStyleCharacters
-from doctranslate.format.pdf.document_il.il_version_1 import PdfSameStyleUnicodeCharacters
+from doctranslate.format.pdf.document_il.il_version_1 import (
+    PdfSameStyleUnicodeCharacters,
+)
 from doctranslate.format.pdf.document_il.il_version_1 import PdfStyle
 from doctranslate.format.pdf.document_il.il_version_1 import PdfXobject
 from doctranslate.format.pdf.document_il.il_version_1 import PdfXobjForm

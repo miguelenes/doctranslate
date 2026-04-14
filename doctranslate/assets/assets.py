@@ -20,7 +20,9 @@ from doctranslate.assets.embedding_assets_metadata import FONT_URL_BY_UPSTREAM
 from doctranslate.assets.embedding_assets_metadata import (
     TABLE_DETECTION_RAPIDOCR_MODEL_SHA3_256,
 )
-from doctranslate.assets.embedding_assets_metadata import TABLE_DETECTION_RAPIDOCR_MODEL_URL
+from doctranslate.assets.embedding_assets_metadata import (
+    TABLE_DETECTION_RAPIDOCR_MODEL_URL,
+)
 from doctranslate.assets.embedding_assets_metadata import TIKTOKEN_CACHES
 from doctranslate.const import get_cache_file_path
 from tenacity import retry

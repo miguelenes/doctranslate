@@ -3,7 +3,9 @@
 import json
 
 import doctranslate.tools.italic_assistance as italic_assistance
-from doctranslate.format.pdf.document_il.midend.styles_and_formulas import StylesAndFormulas
+from doctranslate.format.pdf.document_il.midend.styles_and_formulas import (
+    StylesAndFormulas,
+)
 from doctranslate.format.pdf.translation_config import TranslationConfig
 from rich.console import Console
 from rich.table import Table

@@ -2,6 +2,10 @@
 
 DocTranslate can route LLM calls through a **sync** `TranslatorRouter` that selects among several LiteLLM-backed providers using a TOML-defined **profile** (ordered provider list + strategy + failure policy).
 
+## When to use `--translator local`
+
+Use **local** mode when you want a single-machine or LAN **Ollama**, **vLLM**, or **OpenAI-compatible** server without editing nested `profiles` / `providers` tables. It expands internally to the same router + LiteLLM path as multi-provider mode. See [Local translation](local-translation.md).
+
 ## When to use `--translator router`
 
 Use router mode when you want:

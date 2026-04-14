@@ -27,10 +27,47 @@ from doctranslate.translator.config import merge_cli_router_overrides_from_mappi
 from doctranslate.translator.config import validate_router_config
 from doctranslate.translator.factory import build_translators
 from doctranslate.translator.factory import resolve_openai_api_key
+from doctranslate.translator.local_config import (
+    convert_local_translator_to_router_nested,
+)
+from doctranslate.translator.local_config import local_cli_dict_from_args
+from doctranslate.translator.local_config import merge_local_cli_into_nested
+from doctranslate.translator.local_config import validate_local_nested
+from doctranslate.translator.providers.local_preflight import LocalPreflightError
+from doctranslate.translator.providers.local_preflight import run_local_preflight
 from doctranslate.translator.translator import set_translate_rate_limiter
 
 logger = logging.getLogger(__name__)
 __version__ = "0.5.24"
+
+
+def _llm_batch_kwargs_for_translation_config(
+    args: Any,
+    nested_cfg: Any | None,
+) -> dict[str, Any | None]:
+    """Resolve LLM batch limits from CLI or nested translator config (local mode)."""
+    out: dict[str, Any | None] = {
+        "llm_translation_batch_max_tokens": None,
+        "llm_translation_batch_max_paragraphs": None,
+        "llm_term_extraction_batch_max_tokens": None,
+        "llm_term_extraction_batch_max_paragraphs": None,
+    }
+    pairs = (
+        ("local_translation_batch_tokens", "llm_translation_batch_max_tokens"),
+        ("local_translation_batch_paragraphs", "llm_translation_batch_max_paragraphs"),
+        ("local_term_batch_tokens", "llm_term_extraction_batch_max_tokens"),
+        ("local_term_batch_paragraphs", "llm_term_extraction_batch_max_paragraphs"),
+    )
+    for arg_attr, out_key in pairs:
+        v = getattr(args, arg_attr, None)
+        if v is not None:
+            out[out_key] = v
+            continue
+        if nested_cfg is not None:
+            nv = getattr(nested_cfg, arg_attr, None)
+            if nv is not None:
+                out[out_key] = nv
+    return out
 
 
 def _cli_router_override_dict(args: Any) -> dict[str, Any]:
@@ -476,9 +513,9 @@ def create_parser():
     )
     translation_group.add_argument(
         "--translator",
-        choices=["openai", "router"],
+        choices=["openai", "router", "local"],
         default="openai",
-        help="Translation backend: openai (legacy) or router (multi-provider TOML).",
+        help="Translation backend: openai (legacy), router (multi-provider TOML), or local (Ollama / OpenAI-compatible server).",
     )
     translation_group.add_argument(
         "--routing-profile",
@@ -510,7 +547,89 @@ def create_parser():
     translation_group.add_argument(
         "--validate-translators",
         action="store_true",
-        help="Validate router TOML configuration and exit (no PDF input required).",
+        help="Validate router or local translator configuration and exit (no PDF input required).",
+    )
+    local_group = parser.add_argument_group(
+        "Translation - Local mode",
+        "Used with --translator local (Ollama, vLLM, llama-cpp-python server, or any OpenAI-compatible local URL).",
+    )
+    local_group.add_argument(
+        "--local-backend",
+        default=None,
+        choices=[
+            "ollama",
+            "vllm",
+            "llama-cpp",
+            "openai-compatible",
+        ],
+        help="Local inference backend preset (default: ollama when unset).",
+    )
+    local_group.add_argument(
+        "--local-model",
+        default=None,
+        help="Model id for paragraph translation (required unless set in TOML).",
+    )
+    local_group.add_argument(
+        "--local-base-url",
+        default=None,
+        help="Base URL for OpenAI-compatible servers (e.g. http://127.0.0.1:8000/v1). For Ollama, optional (default http://127.0.0.1:11434).",
+    )
+    local_group.add_argument(
+        "--local-term-model",
+        default=None,
+        help="Optional different model for automatic term extraction.",
+    )
+    local_group.add_argument(
+        "--local-term-base-url",
+        default=None,
+        help="Optional separate base URL for term extraction (OpenAI-compatible).",
+    )
+    local_group.add_argument(
+        "--local-api-key",
+        default=None,
+        help="Optional API key for OpenAI-compatible local servers (vLLM often uses EMPTY).",
+    )
+    local_group.add_argument(
+        "--local-timeout-seconds",
+        type=float,
+        default=None,
+        help="HTTP timeout for local LLM requests (default: 120).",
+    )
+    local_group.add_argument(
+        "--local-max-retries",
+        type=int,
+        default=None,
+        help="Retries passed to the HTTP client for local completions (default: 2).",
+    )
+    local_group.add_argument(
+        "--local-context-window",
+        type=int,
+        default=None,
+        help="Hint for max context (documentation / tuning; optional).",
+    )
+    local_group.add_argument(
+        "--local-translation-batch-tokens",
+        type=int,
+        default=None,
+        help="Flush a paragraph batch when estimated tokens exceed this (default: 200).",
+    )
+    local_group.add_argument(
+        "--local-translation-batch-paragraphs",
+        type=int,
+        default=None,
+        help="Flush a paragraph batch when this many paragraphs accumulate (default: 5).",
+    )
+    local_group.add_argument(
+        "--local-term-batch-tokens",
+        type=int,
+        default=None,
+        help="Term extraction batch token threshold (default: 600).",
+    )
+    local_group.add_argument(
+        "--local-term-batch-paragraphs",
+        type=int,
+        default=None,
+        help="Term extraction batch paragraph threshold (default: 12).",
     )
 
     return parser
@@ -543,16 +662,33 @@ async def main():
         return
 
     if getattr(args, "validate_translators", False):
-        if args.translator != "router":
-            parser.error("--validate-translators is only valid with --translator router")
-        if not args.config:
-            parser.error("Router validation requires --config")
-        nested = load_nested_translator_config(Path(args.config))
-        overrides = _cli_router_override_dict(args)
-        nested = merge_cli_router_overrides_from_mapping(nested, overrides)
-        validate_router_config(nested)
-        logger.info("Translator configuration is valid.")
-        return
+        if args.translator == "router":
+            if not args.config:
+                parser.error("Router validation requires --config")
+            nested = load_nested_translator_config(Path(args.config))
+            overrides = _cli_router_override_dict(args)
+            nested = merge_cli_router_overrides_from_mapping(nested, overrides)
+            validate_router_config(nested)
+            logger.info("Translator configuration is valid.")
+            return
+        if args.translator == "local":
+            nested = load_nested_translator_config(
+                Path(args.config) if args.config else None,
+            )
+            nested = merge_local_cli_into_nested(nested, local_cli_dict_from_args(args))
+            nested = nested.model_copy(update={"translator": "local"})
+            err = validate_local_nested(nested)
+            if err:
+                parser.error(err)
+            try:
+                run_local_preflight(nested)
+            except LocalPreflightError as e:
+                parser.error(str(e))
+            converted = convert_local_translator_to_router_nested(nested)
+            validate_router_config(converted)
+            logger.info("Local translator configuration is valid and preflight succeeded.")
+            return
+        parser.error("--validate-translators requires --translator router or --translator local")
 
     if args.translator == "openai":
         if not args.openai:
@@ -564,6 +700,22 @@ async def main():
     elif args.translator == "router":
         if not args.config:
             parser.error("Router mode requires --config with [doctranslate] providers and profiles")
+    elif args.translator == "local":
+        nested_chk = load_nested_translator_config(
+            Path(args.config) if args.config else None,
+        )
+        nested_chk = merge_local_cli_into_nested(
+            nested_chk,
+            local_cli_dict_from_args(args),
+        )
+        nested_chk = nested_chk.model_copy(update={"translator": "local"})
+        err = validate_local_nested(nested_chk)
+        if err:
+            parser.error(err)
+        try:
+            run_local_preflight(nested_chk)
+        except LocalPreflightError as e:
+            parser.error(str(e))
     else:
         parser.error(f"Unknown translator mode: {args.translator}")
 
@@ -594,6 +746,17 @@ async def main():
                 "term_reasoning": args.openai_term_extraction_reasoning,
             },
         )
+    elif args.translator == "local":
+        overrides = _cli_router_override_dict(args)
+        built = build_translators(
+            translator_mode="local",
+            config_path=args.config,
+            lang_in=args.lang_in,
+            lang_out=args.lang_out,
+            ignore_cache=args.ignore_cache,
+            cli_router_overrides=overrides or None,
+            local_cli=local_cli_dict_from_args(args),
+        )
     else:
         overrides = _cli_router_override_dict(args)
         built = build_translators(
@@ -606,6 +769,10 @@ async def main():
         )
     translator = built.translator
     term_extraction_translator = built.term_extraction_translator
+    llm_batch_kwargs = _llm_batch_kwargs_for_translation_config(
+        args,
+        built.nested_config,
+    )
 
     # 设置翻译速率限制
     set_translate_rate_limiter(args.qps)
@@ -798,6 +965,18 @@ async def main():
             skip_formula_offset_calculation=args.skip_formula_offset_calculation,
             metadata_extra_data=args.metadata_extra_data,
             term_pool_max_workers=args.term_pool_max_workers,
+            llm_translation_batch_max_tokens=llm_batch_kwargs[
+                "llm_translation_batch_max_tokens"
+            ],
+            llm_translation_batch_max_paragraphs=llm_batch_kwargs[
+                "llm_translation_batch_max_paragraphs"
+            ],
+            llm_term_extraction_batch_max_tokens=llm_batch_kwargs[
+                "llm_term_extraction_batch_max_tokens"
+            ],
+            llm_term_extraction_batch_max_paragraphs=llm_batch_kwargs[
+                "llm_term_extraction_batch_max_paragraphs"
+            ],
         )
 
         def nop(_x):

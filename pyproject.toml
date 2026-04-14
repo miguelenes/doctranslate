@@ -134,6 +134,7 @@ max-complexity = 10 # 函数圈复杂度阈值
 
 [tool.ruff.lint.per-file-ignores]
 "doctranslate/babeldoc_exception/BabelDOCException.py" = ["N999"]
+"doctranslate/doctranslate_exception/BabelDOCException.py" = ["N999"]
 "doctranslate/format/pdf/pdfinterp.py" = ["N"] # 忽略命名规范
 "tests/*" = ["S101"]            # 在测试文件中允许 assert
 "**/__init__.py" = ["F401"]     # 允许未使用的导入

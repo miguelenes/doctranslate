@@ -29,7 +29,9 @@ from doctranslate.const import close_process_pool
 from doctranslate.format.pdf.converter import TranslateConverter
 from doctranslate.format.pdf.document_il import il_version_1
 from doctranslate.format.pdf.document_il.backend.pdf_creater import SAVE_PDF_STAGE_NAME
-from doctranslate.format.pdf.document_il.backend.pdf_creater import SUBSET_FONT_STAGE_NAME
+from doctranslate.format.pdf.document_il.backend.pdf_creater import (
+    SUBSET_FONT_STAGE_NAME,
+)
 from doctranslate.format.pdf.document_il.backend.pdf_creater import PDFCreater
 from doctranslate.format.pdf.document_il.backend.pdf_creater import reproduce_cmap
 from doctranslate.format.pdf.document_il.frontend.il_creater import ILCreater
@@ -39,14 +41,18 @@ from doctranslate.format.pdf.document_il.midend.add_debug_information import (
 from doctranslate.format.pdf.document_il.midend.automatic_term_extractor import (
     AutomaticTermExtractor,
 )
-from doctranslate.format.pdf.document_il.midend.detect_scanned_file import DetectScannedFile
+from doctranslate.format.pdf.document_il.midend.detect_scanned_file import (
+    DetectScannedFile,
+)
 from doctranslate.format.pdf.document_il.midend.il_translator import ILTranslator
 from doctranslate.format.pdf.document_il.midend.il_translator_llm_only import (
     ILTranslatorLLMOnly,
 )
 from doctranslate.format.pdf.document_il.midend.layout_parser import LayoutParser
 from doctranslate.format.pdf.document_il.midend.paragraph_finder import ParagraphFinder
-from doctranslate.format.pdf.document_il.midend.styles_and_formulas import StylesAndFormulas
+from doctranslate.format.pdf.document_il.midend.styles_and_formulas import (
+    StylesAndFormulas,
+)
 from doctranslate.format.pdf.document_il.midend.table_parser import TableParser
 from doctranslate.format.pdf.document_il.midend.typesetting import Typesetting
 from doctranslate.format.pdf.document_il.utils.fontmap import FontMapper

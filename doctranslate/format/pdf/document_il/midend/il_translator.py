@@ -24,8 +24,12 @@ from doctranslate.format.pdf.document_il import PdfSameStyleCharacters
 from doctranslate.format.pdf.document_il import PdfSameStyleUnicodeCharacters
 from doctranslate.format.pdf.document_il import PdfStyle
 from doctranslate.format.pdf.document_il.utils.fontmap import FontMapper
-from doctranslate.format.pdf.document_il.utils.layout_helper import get_char_unicode_string
-from doctranslate.format.pdf.document_il.utils.layout_helper import get_paragraph_unicode
+from doctranslate.format.pdf.document_il.utils.layout_helper import (
+    get_char_unicode_string,
+)
+from doctranslate.format.pdf.document_il.utils.layout_helper import (
+    get_paragraph_unicode,
+)
 from doctranslate.format.pdf.document_il.utils.layout_helper import is_same_style
 from doctranslate.format.pdf.document_il.utils.layout_helper import (
     is_same_style_except_font,

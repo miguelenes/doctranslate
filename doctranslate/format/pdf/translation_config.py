@@ -200,6 +200,10 @@ class TranslationConfig:
         metadata_extra_data: str | None = None,
         term_pool_max_workers: int | None = None,
         disable_same_text_fallback: bool = False,
+        llm_translation_batch_max_tokens: int | None = None,
+        llm_translation_batch_max_paragraphs: int | None = None,
+        llm_term_extraction_batch_max_tokens: int | None = None,
+        llm_term_extraction_batch_max_paragraphs: int | None = None,
     ):
         self.translator = translator
         self.term_extraction_translator = term_extraction_translator or translator
@@ -356,6 +360,27 @@ class TranslationConfig:
             "cache_hit_prompt_tokens": 0,
         }
         self.disable_same_text_fallback = disable_same_text_fallback
+
+        self.llm_translation_batch_max_tokens = (
+            llm_translation_batch_max_tokens
+            if llm_translation_batch_max_tokens is not None
+            else 200
+        )
+        self.llm_translation_batch_max_paragraphs = (
+            llm_translation_batch_max_paragraphs
+            if llm_translation_batch_max_paragraphs is not None
+            else 5
+        )
+        self.llm_term_extraction_batch_max_tokens = (
+            llm_term_extraction_batch_max_tokens
+            if llm_term_extraction_batch_max_tokens is not None
+            else 600
+        )
+        self.llm_term_extraction_batch_max_paragraphs = (
+            llm_term_extraction_batch_max_paragraphs
+            if llm_term_extraction_batch_max_paragraphs is not None
+            else 12
+        )
 
         if self.ocr_workaround:
             self.remove_non_formula_lines = False

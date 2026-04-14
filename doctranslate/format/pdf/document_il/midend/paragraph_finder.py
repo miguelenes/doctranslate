@@ -22,10 +22,16 @@ from doctranslate.format.pdf.document_il.utils.layout_helper import (
 )
 from doctranslate.format.pdf.document_il.utils.layout_helper import SPACE_REGEX
 from doctranslate.format.pdf.document_il.utils.layout_helper import Layout
-from doctranslate.format.pdf.document_il.utils.layout_helper import add_space_dummy_chars
+from doctranslate.format.pdf.document_il.utils.layout_helper import (
+    add_space_dummy_chars,
+)
 from doctranslate.format.pdf.document_il.utils.layout_helper import build_layout_index
-from doctranslate.format.pdf.document_il.utils.layout_helper import calculate_iou_for_boxes
-from doctranslate.format.pdf.document_il.utils.layout_helper import get_char_unicode_string
+from doctranslate.format.pdf.document_il.utils.layout_helper import (
+    calculate_iou_for_boxes,
+)
+from doctranslate.format.pdf.document_il.utils.layout_helper import (
+    get_char_unicode_string,
+)
 from doctranslate.format.pdf.document_il.utils.layout_helper import get_character_layout
 from doctranslate.format.pdf.document_il.utils.layout_helper import is_bullet_point
 from doctranslate.format.pdf.document_il.utils.layout_helper import (

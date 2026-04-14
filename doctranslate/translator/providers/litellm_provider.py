@@ -8,8 +8,11 @@ from typing import Any
 
 import httpx
 
-from doctranslate.translator.config import ProviderConfigModel, resolve_provider_api_key
-from doctranslate.translator.types import CompletionResult, FailureCategory, TokenUsage
+from doctranslate.translator.config import ProviderConfigModel
+from doctranslate.translator.config import resolve_provider_api_key
+from doctranslate.translator.types import CompletionResult
+from doctranslate.translator.types import FailureCategory
+from doctranslate.translator.types import TokenUsage
 
 logger = logging.getLogger(__name__)
 
@@ -139,7 +142,7 @@ class LiteLLMProviderExecutor:
             "model": self.litellm_model,
             "messages": messages,
             "timeout": self.cfg.timeout_seconds,
-            "num_retries": 0,
+            "num_retries": max(0, int(self.cfg.max_retries)),
         }
         if api_key:
             kwargs["api_key"] = api_key

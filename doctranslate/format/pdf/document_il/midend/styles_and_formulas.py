@@ -18,12 +18,18 @@ from doctranslate.format.pdf.document_il.utils.formular_helper import (
 from doctranslate.format.pdf.document_il.utils.formular_helper import (
     is_formulas_middle_char,
 )
-from doctranslate.format.pdf.document_il.utils.formular_helper import is_formulas_start_char
-from doctranslate.format.pdf.document_il.utils.formular_helper import update_formula_data
+from doctranslate.format.pdf.document_il.utils.formular_helper import (
+    is_formulas_start_char,
+)
+from doctranslate.format.pdf.document_il.utils.formular_helper import (
+    update_formula_data,
+)
 from doctranslate.format.pdf.document_il.utils.layout_helper import LEFT_BRACKET
 from doctranslate.format.pdf.document_il.utils.layout_helper import RIGHT_BRACKET
 from doctranslate.format.pdf.document_il.utils.layout_helper import build_layout_index
-from doctranslate.format.pdf.document_il.utils.layout_helper import calculate_iou_for_boxes
+from doctranslate.format.pdf.document_il.utils.layout_helper import (
+    calculate_iou_for_boxes,
+)
 from doctranslate.format.pdf.document_il.utils.layout_helper import (
     calculate_y_true_iou_for_boxes,
 )

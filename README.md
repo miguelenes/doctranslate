@@ -75,6 +75,20 @@ doctranslate --translator router \
   --output output.pdf
 ```
 
+### Local translation (Ollama, vLLM, llama.cpp server)
+
+No hosted API key required. Example with [Ollama](https://ollama.com/):
+
+```bash
+doctranslate --translator local \
+  --local-backend ollama \
+  --local-model qwen2.5:7b \
+  --files input.pdf --lang-in en --lang-out zh \
+  --output output.pdf
+```
+
+See **[Local translation](docs/local-translation.md)** for vLLM / OpenAI-compatible URLs, TOML options, batch tuning, and troubleshooting.
+
 **Example `doctranslate.toml`** (nested providers + profiles; secrets via env):
 
 ```toml

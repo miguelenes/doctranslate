@@ -18,7 +18,9 @@ from doctranslate.format.pdf.document_il.midend.il_translator import (
     DocumentTranslateTracker,
 )
 from doctranslate.format.pdf.document_il.midend.il_translator import ILTranslator
-from doctranslate.format.pdf.document_il.midend.il_translator import PageTranslateTracker
+from doctranslate.format.pdf.document_il.midend.il_translator import (
+    PageTranslateTracker,
+)
 from doctranslate.format.pdf.document_il.midend.il_translator import (
     ParagraphTranslateTracker,
 )
@@ -154,6 +156,10 @@ class ILTranslatorLLMOnly:
         self.ok_count = 0
         self.fallback_count = 0
         self.total_count = 0
+        self._batch_max_tokens = int(translation_config.llm_translation_batch_max_tokens)
+        self._batch_max_paragraphs = int(
+            translation_config.llm_translation_batch_max_paragraphs,
+        )
 
     def calc_token_count(self, text: str) -> int:
         try:
@@ -590,7 +596,9 @@ class ILTranslatorLLMOnly:
                     copy.deepcopy(paragraph)
                 )
 
-            if total_token_count > 200 or len(paragraphs) > 5:
+            if total_token_count > self._batch_max_tokens or len(
+                paragraphs,
+            ) > self._batch_max_paragraphs:
                 self.mid += 1
                 executor.submit(
                     self.translate_paragraph,

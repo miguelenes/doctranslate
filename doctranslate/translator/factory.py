@@ -6,24 +6,24 @@ import logging
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-from doctranslate.translator.config import (
-    NestedTranslatorConfig,
-    ProviderConfigModel,
-    load_nested_translator_config,
-    merge_cli_router_overrides_from_mapping,
-    resolve_provider_api_key,
-    validate_router_config,
-)
+from doctranslate.translator.config import NestedTranslatorConfig
+from doctranslate.translator.config import ProviderConfigModel
+from doctranslate.translator.config import load_nested_translator_config
+from doctranslate.translator.config import merge_cli_router_overrides_from_mapping
+from doctranslate.translator.config import resolve_provider_api_key
+from doctranslate.translator.config import validate_router_config
 from doctranslate.translator.providers.litellm_provider import LiteLLMProviderExecutor
 from doctranslate.translator.translator import OpenAITranslator
-from doctranslate.translator.types import RouterStrategy, TranslatorCapabilities
-
-if TYPE_CHECKING:
-    from doctranslate.translator.router import TranslatorRouter
+from doctranslate.translator.types import TranslatorCapabilities
 
 logger = logging.getLogger(__name__)
+
+
+def _provider_requires_resolved_api_key(cfg: ProviderConfigModel) -> bool:
+    """Hosted providers that must have an API key (local Ollama / openai_compatible exempt)."""
+    return cfg.provider in ("openai", "anthropic", "openrouter")
 
 
 @dataclass
@@ -149,9 +149,7 @@ def build_translators_from_router_config(
     executors: dict[str, LiteLLMProviderExecutor] = {}
     cap_map: dict[str, TranslatorCapabilities] = {}
     for pid, pcfg in nested.providers.items():
-        if pcfg.provider == "ollama":
-            continue
-        if not resolve_provider_api_key(pcfg):
+        if _provider_requires_resolved_api_key(pcfg) and not resolve_provider_api_key(pcfg):
             env_hint = pcfg.api_key_env or "(inline api_key)"
             msg = f"Provider {pid!r} has no API key (check env {env_hint})"
             raise ValueError(msg)
@@ -204,8 +202,9 @@ def build_translators(
     ignore_cache: bool,
     openai_args: dict[str, Any] | None = None,
     cli_router_overrides: dict[str, Any] | None = None,
+    local_cli: dict[str, Any] | None = None,
 ) -> TranslatorBuildResult:
-    """Dispatch between legacy OpenAI CLI and multi-provider router."""
+    """Dispatch between legacy OpenAI CLI, multi-provider router, and local mode."""
     if translator_mode == "openai":
         oa = openai_args or {}
         return build_translators_from_openai_cli(
@@ -218,6 +217,26 @@ def build_translators(
         nested = load_nested_translator_config(
             Path(config_path) if config_path else None,
         )
+        if cli_router_overrides:
+            nested = merge_cli_router_overrides_from_mapping(nested, cli_router_overrides)
+        return build_translators_from_router_config(
+            lang_in=lang_in,
+            lang_out=lang_out,
+            ignore_cache=ignore_cache,
+            nested=nested,
+        )
+    if translator_mode == "local":
+        from doctranslate.translator.local_config import (
+            convert_local_translator_to_router_nested,
+        )
+        from doctranslate.translator.local_config import merge_local_cli_into_nested
+
+        nested = load_nested_translator_config(
+            Path(config_path) if config_path else None,
+        )
+        nested = merge_local_cli_into_nested(nested, local_cli or {})
+        nested = nested.model_copy(update={"translator": "local"})
+        nested = convert_local_translator_to_router_nested(nested)
         if cli_router_overrides:
             nested = merge_cli_router_overrides_from_mapping(nested, cli_router_overrides)
         return build_translators_from_router_config(

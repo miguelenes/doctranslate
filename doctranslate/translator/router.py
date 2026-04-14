@@ -11,27 +11,24 @@ import json
 import logging
 import threading
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from doctranslate.babeldoc_exception.BabelDOCException import ContentFilterError
-from doctranslate.translator.config import (
-    NestedTranslatorConfig,
-    ProviderConfigModel,
-    RouteProfileConfig,
-)
-from doctranslate.translator.providers.litellm_provider import (
-    LiteLLMProviderExecutor,
-    MalformedLLMResponseError,
-    classify_exception,
-)
-from doctranslate.translator.translator import BaseTranslator, TranslationError
-from doctranslate.translator.types import (
-    FailureCategory,
-    RouterStrategy,
-    TranslatorCapabilities,
-)
+from doctranslate.translator.config import NestedTranslatorConfig
+from doctranslate.translator.config import ProviderConfigModel
+from doctranslate.translator.config import RouteProfileConfig
+from doctranslate.translator.providers.litellm_provider import LiteLLMProviderExecutor
+from doctranslate.translator.providers.litellm_provider import MalformedLLMResponseError
+from doctranslate.translator.providers.litellm_provider import classify_exception
+from doctranslate.translator.translator import BaseTranslator
+from doctranslate.translator.translator import TranslationError
+from doctranslate.translator.types import FailureCategory
+from doctranslate.translator.types import RouterStrategy
+from doctranslate.translator.types import TranslatorCapabilities
 from doctranslate.utils.atomic_integer import AtomicInteger
 
 logger = logging.getLogger(__name__)
@@ -116,6 +113,22 @@ class TranslatorRouter(BaseTranslator):
 
         self.add_cache_impact_parameters("profile", profile_name)
         self.add_cache_impact_parameters("strategy", global_strategy.value)
+        for pid in route_profile.providers:
+            pcfg = provider_configs.get(pid)
+            if not pcfg:
+                continue
+            self.add_cache_impact_parameters(
+                f"provider.{pid}",
+                {
+                    "provider": pcfg.provider,
+                    "model": pcfg.model,
+                    "base_url": pcfg.base_url or "",
+                    "timeout_seconds": pcfg.timeout_seconds,
+                    "max_retries": pcfg.max_retries,
+                    "max_output_tokens": pcfg.max_output_tokens,
+                    "supports_json_mode": pcfg.supports_json_mode,
+                },
+            )
 
         self.token_count = AtomicInteger()
         self.prompt_token_count = AtomicInteger()
@@ -363,5 +376,5 @@ class TranslatorRouter(BaseTranslator):
         if not path or self._nested.metrics_output not in ("json", "both"):
             return
         payload = self.get_metrics_summary_dict()
-        with open(path, "w", encoding="utf-8") as f:
+        with Path(path).open("w", encoding="utf-8") as f:
             json.dump(payload, f, indent=2)

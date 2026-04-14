@@ -21,7 +21,9 @@ from doctranslate.format.pdf.document_il import PdfParagraphComposition
 from doctranslate.format.pdf.document_il import PdfStyle
 from doctranslate.format.pdf.document_il import il_version_1
 from doctranslate.format.pdf.document_il.utils.fontmap import FontMapper
-from doctranslate.format.pdf.document_il.utils.formular_helper import update_formula_data
+from doctranslate.format.pdf.document_il.utils.formular_helper import (
+    update_formula_data,
+)
 from doctranslate.format.pdf.document_il.utils.layout_helper import box_to_tuple
 from doctranslate.format.pdf.translation_config import TranslationConfig
 from doctranslate.format.pdf.translation_config import WatermarkOutputMode

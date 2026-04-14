@@ -11,7 +11,9 @@ from tqdm import tqdm
 from doctranslate.format.pdf.document_il import (
     Document as ILDocument,  # Renamed to avoid conflict
 )
-from doctranslate.format.pdf.document_il import PdfParagraph  # Renamed to avoid conflict
+from doctranslate.format.pdf.document_il import (
+    PdfParagraph,  # Renamed to avoid conflict
+)
 from doctranslate.format.pdf.document_il.midend.il_translator import Page
 from doctranslate.format.pdf.document_il.utils.paragraph_helper import is_cid_paragraph
 from doctranslate.format.pdf.document_il.utils.paragraph_helper import (
@@ -142,6 +144,12 @@ class AutomaticTermExtractor:
         self.translation_config = translation_config
         self.shared_context = translation_config.shared_context_cross_split_part
         self.tokenizer = tiktoken.encoding_for_model("gpt-4o")
+        self._term_batch_max_tokens = int(
+            translation_config.llm_term_extraction_batch_max_tokens,
+        )
+        self._term_batch_max_paragraphs = int(
+            translation_config.llm_term_extraction_batch_max_paragraphs,
+        )
 
         # Check if the translate_engine has llm_translate capability
         if not hasattr(self.translate_engine, "llm_translate") or not callable(
@@ -251,7 +259,9 @@ class AutomaticTermExtractor:
             #     continue
             total_token_count += self.calc_token_count(paragraph.unicode)
             paragraphs.append(paragraph)
-            if total_token_count > 600 or len(paragraphs) > 12:
+            if total_token_count > self._term_batch_max_tokens or len(
+                paragraphs,
+            ) > self._term_batch_max_paragraphs:
                 executor.submit(
                     self.extract_terms_from_paragraphs,
                     BatchParagraph(paragraphs, tracker),

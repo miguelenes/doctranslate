@@ -3,12 +3,14 @@
 from unittest.mock import MagicMock
 
 import pytest
-
-from doctranslate.translator.config import NestedTranslatorConfig, ProviderConfigModel
+from doctranslate.translator.config import NestedTranslatorConfig
+from doctranslate.translator.config import ProviderConfigModel
 from doctranslate.translator.config import RouteProfileConfig
 from doctranslate.translator.router import TranslatorRouter
 from doctranslate.translator.translator import TranslationError
-from doctranslate.translator.types import CompletionResult, RouterStrategy, TokenUsage
+from doctranslate.translator.types import CompletionResult
+from doctranslate.translator.types import RouterStrategy
+from doctranslate.translator.types import TokenUsage
 from doctranslate.translator.types import TranslatorCapabilities
 
 

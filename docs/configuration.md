@@ -11,6 +11,26 @@ DocTranslate reads CLI flags first (via `configargparse`), and can merge a TOML 
 
 Legacy **OpenAI-only** mode (`--translator openai`) does not require nested TOML; it uses `--openai*` flags and `OPENAI_*` environment variables.
 
+## Local translation CLI flags
+
+These apply when `--translator local` (see [Local translation](local-translation.md)):
+
+| Flag | Description |
+|------|-------------|
+| `--local-backend` | `ollama`, `vllm`, `llama-cpp`, or `openai-compatible` (default: ollama when unset in TOML). |
+| `--local-model` | Model id for paragraph translation (required unless set in TOML). |
+| `--local-base-url` | OpenAI-compatible base URL (optional for Ollama; required for other backends). |
+| `--local-term-model` | Optional separate model for automatic term extraction. |
+| `--local-term-base-url` | Optional separate base URL for term extraction. |
+| `--local-api-key` | Optional key for OpenAI-compatible servers. |
+| `--local-timeout-seconds` | Request timeout (default 120 in synthetic config). |
+| `--local-max-retries` | Passed to the HTTP client / LiteLLM retries (default 2). |
+| `--local-context-window` | Hint only (optional). |
+| `--local-translation-batch-tokens` / `--local-translation-batch-paragraphs` | Paragraph batching thresholds (defaults 200 / 5). |
+| `--local-term-batch-tokens` / `--local-term-batch-paragraphs` | Term extraction batching (defaults 600 / 12). |
+
+With `--validate-translators`, use `--translator local` to run configuration validation plus a quick reachability check (Ollama `/api/tags` or OpenAI-compatible `/v1/models`).
+
 ## Router CLI flags
 
 These apply when `--translator router` and a valid `--config` is provided:
