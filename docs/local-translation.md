@@ -15,17 +15,18 @@ DocTranslater’s PDF pipeline still expects an **LLM** that can follow structur
 2. Run DocTranslater:
 
    ```bash
-   doctranslate --translator local \
+   doctranslate translate input.pdf \
+     --translator local \
      --local-backend ollama \
      --local-model qwen2.5:7b \
-     --files input.pdf --lang-in en --lang-out zh \
-     --output ./out
+     --lang-in en --lang-out zh \
+     -o ./out
    ```
 
 3. Validate configuration and reachability (no PDF required):
 
    ```bash
-   doctranslate --translator local --validate-translators \
+   doctranslate config validate --translator local \
      --local-backend ollama --local-model qwen2.5:7b
    ```
 
@@ -59,11 +60,13 @@ python3 -m llama_cpp.server --model /path/to/model.gguf --host 0.0.0.0 --port 80
 Then run DocTranslater with a base URL that includes `/v1` (or omit `/v1`; DocTranslater normalizes it):
 
 ```bash
-doctranslate --translator local \
+doctranslate translate input.pdf \
+  --translator local \
   --local-backend vllm \
   --local-base-url http://127.0.0.1:8000 \
   --local-model Qwen/Qwen2.5-7B-Instruct \
-  --files input.pdf --lang-in en --lang-out de
+  --lang-in en --lang-out de \
+  -o ./out
 ```
 
 Many local servers accept a dummy API key; DocTranslater sends `EMPTY` when none is configured.
@@ -91,7 +94,7 @@ term_model = "qwen2.5:3b"
 Then:
 
 ```bash
-doctranslate --translator local -c doctranslate.toml --files input.pdf
+doctranslate -c doctranslate.toml translate input.pdf -o ./out
 ```
 
 CLI flags override TOML values when both are present.

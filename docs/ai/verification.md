@@ -1,6 +1,6 @@
 # Verification checklist
 
-Run the smallest set that covers your change. CI reference: `.github/workflows/test.yml`, `.github/workflows/lint.yml`.
+Run the smallest set that covers your change. CI reference: [.github/workflows/test.yml](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/test.yml), [.github/workflows/lint.yml](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/lint.yml), [.github/workflows/docs-pr.yml](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/docs-pr.yml).
 
 ## Environment
 
@@ -12,6 +12,18 @@ For a **minimal** environment (schemas types only), `uv sync --locked --group de
 
 If you change `pyproject.toml` dependencies, run **`uv lock`** and commit **`uv.lock`** so CI (`uv sync --locked`) stays in sync.
 
+## CI lanes (what runs where)
+
+| Lane | Workflow job | Typical command locally |
+|------|----------------|-------------------------|
+| **Minimal** | `test-minimal-schemas` | `uv sync --locked --group dev` then `pytest tests/test_install_profiles.py::test_minimal_schemas_import -q` |
+| **Fast** | `test-fast` | `uv sync --locked --group dev --extra full` then `pytest tests/ -q -m "not requires_pdf"` |
+| **Slim PDF** | `test-slim-pdf-cli` | `uv sync --locked --group dev --extra pdf --extra cli` then `pytest tests/test_install_profiles.py::test_pdf_stack_opens_ci_fixture -q` |
+| **Full matrix** | `test` | Full `pytest tests/ -q` plus assets warmup / offline pack smoke |
+| **Zensical (PR)** | `docs-pr` on `docs/**` or `mkdocs.yml` | `uv run zensical build --clean` |
+
+Tests that need the PDF / IL stack should be marked `@pytest.mark.requires_pdf` (see `pyproject.toml` `[tool.pytest.ini_options]` markers).
+
 ## Always safe for local iteration
 
 | Check | Command |
@@ -19,7 +31,9 @@ If you change `pyproject.toml` dependencies, run **`uv lock`** and commit **`uv.
 | CLI parses | `uv run doctranslate --help` and `uv run doc-translate --help` |
 | Assets (if touching models/assets) | `uv run doctranslate assets warmup` |
 | Unit tests | `uv run pytest tests/ -q` |
+| Skip PDF-stack tests (fast) | `uv run pytest tests/ -q -m "not requires_pdf"` |
 | Single file / test node | `uv run pytest tests/<file>::<test> -q` |
+| Import profile (warn-only) | `uv run python scripts/check_cli_import_time.py` |
 
 ## Lint (matches CI)
 
@@ -33,7 +47,7 @@ If you change `pyproject.toml` dependencies, run **`uv lock`** and commit **`uv.
 ## Docs changes
 
 - After editing `docs/` or `mkdocs.yml`: `NO_MKDOCS_2_WARNING=1 uv run mkdocs build --strict` from an env with dev deps (suppresses the upstream MkDocs 2.0 advisory once you rely on the `mkdocs<2` pin). **Note:** git metadata plugins may warn on `--strict` for **brand-new, uncommitted** Markdown files; commit them or run `uv run mkdocs build` (non-strict) for a quick smoke check.
-- To match the **GitHub Pages** build locally: `uv run zensical build --clean` (output in `site/`).
+- To match the **GitHub Pages** build locally: `uv run zensical build --clean` (output in `site/`). PRs that touch documentation also run **Zensical** in `docs-pr.yml`.
 
 ## PDF / IL changes
 

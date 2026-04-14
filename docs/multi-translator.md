@@ -53,14 +53,16 @@ With `metrics_output = "json"` or `both`, and `metrics_json_path` set (or overri
 ## Example
 
 ```bash
-doctranslate --translator router --config doctranslate.toml \
-  --files input.pdf --lang-in en --lang-out zh --output out.pdf
+doctranslate -c doctranslate.toml translate input.pdf \
+  --translator router \
+  --lang-in en --lang-out zh \
+  -o ./out
 ```
 
 Validate config without translating:
 
 ```bash
-doctranslate --translator router --config doctranslate.toml --validate-translators
+doctranslate config validate --translator router -c doctranslate.toml
 ```
 
 ## Programmatic use

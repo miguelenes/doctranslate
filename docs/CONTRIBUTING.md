@@ -17,7 +17,7 @@ Please pay special attention to:
 1. Known compatibility issues with pdf2zh - see [#20](https://github.com/miguelenes/doctranslate/issues/20) for details
 2. Reported edge cases and limitations from downstream applications - see [#23](https://github.com/miguelenes/doctranslate/issues/23) for discussion
 
-- If you're unable to find an open issue addressing the problem, [open a new one](https://github.com/miguelenes/doctranslate/issues/new?template=bug_report.md). Be sure to include a **title and clear description**, as much relevant information as possible.
+- If you're unable to find an open issue addressing the problem, [open a new one](https://github.com/miguelenes/doctranslate/issues/new?template=bug_report.md). For **install / Python environment** problems, use the [Installation / environment](https://github.com/miguelenes/doctranslate/issues/new?template=installation.yaml) template. Be sure to include a **title and clear description**, as much relevant information as possible.
 
 ### **If you wish to request changes or new features**
 
@@ -198,6 +198,22 @@ xsdata generate doctranslate/format/pdf/document_il/il_version_1.xsd --package d
 
 ##### Profile memory usage
 
+Use **0.6** subcommands (see [Migration](migration.md)). Example with a real input PDF and output directory:
+
 ```bash
-uv run memray run --native --aggregate doctranslate/main.py -c doctranslate.toml
+uv run memray run --native --aggregate doctranslate/main.py \
+  translate input.pdf -o ./memray_out --translator local --local-model qwen2.5:7b
 ```
+
+##### Documentation builds
+
+CI runs **MkDocs** with `--strict` on the full test job. **GitHub Pages** uses **Zensical** (see `.github/workflows/docs.yml`). After editing `docs/` or `mkdocs.yml`, verify both locally when possible:
+
+```bash
+NO_MKDOCS_2_WARNING=1 uv run mkdocs build --strict
+uv run zensical build --clean
+```
+
+##### Forks and PyPI
+
+The release workflow only publishes wheels from the configured upstream repositories. Forks still run tests and builds; see [Release and publishing](github-pages.md#release-and-publishing) for details.

@@ -1,5 +1,6 @@
 """Unit tests for OCR merge helpers (no RapidOCR / no PDF)."""
 
+import pytest
 from doctranslate.format.pdf.document_il import il_version_1
 from doctranslate.format.pdf.document_il.midend.ocr_merge import merge_hybrid_native_ocr
 from doctranslate.format.pdf.document_il.midend.ocr_merge import (
@@ -9,6 +10,8 @@ from doctranslate.format.pdf.document_il.midend.ocr_merge import (
     text_density_chars_per_sqpt,
 )
 from doctranslate.format.pdf.document_il.utils.style_helper import BLACK
+
+pytestmark = pytest.mark.requires_pdf
 
 
 def _char(x0, y0, x1, y1, u="a"):

@@ -272,7 +272,7 @@ uv run pytest --cov=doctranslate tests/
 
 ## Performance (indicative)
 
-Rough benchmarks on typical PDFs (GPT-4-era models; your mileage will vary):
+Rough **order-of-magnitude** figures on typical PDFs (hosted GPT-class models; your mileage will vary). These are **not** CI-enforced SLAs — for methodology, local timing, and automation limits see [docs/benchmarks.md](docs/benchmarks.md).
 
 | Document type        | Pages | Time (minutes) | Cost (USD) |
 |----------------------|-------|----------------|------------|
@@ -285,6 +285,8 @@ Times include layout detection, translation, and PDF rendering. Actual cost depe
 ---
 
 ## Troubleshooting
+
+Short answers below; the full guide is [docs/troubleshooting.md](docs/troubleshooting.md).
 
 **`No module named 'doctranslate'`**
 

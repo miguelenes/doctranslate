@@ -7,6 +7,8 @@ import pytest
 from doctranslate.format.pdf.translation_config import TranslationConfig
 from doctranslate.format.pdf.translation_settings import TranslationSettings
 
+pytestmark = pytest.mark.requires_pdf
+
 
 def _minimal_pdf(tmp_path: Path) -> Path:
     p = tmp_path / "x.pdf"

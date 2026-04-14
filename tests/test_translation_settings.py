@@ -3,8 +3,11 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import pytest
 from doctranslate.format.pdf.translation_config import TranslationConfig
 from doctranslate.format.pdf.translation_settings import TranslationSettings
+
+pytestmark = pytest.mark.requires_pdf
 
 
 def test_translation_config_from_default_settings(tmp_path: Path):

@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-import doctranslate.api as api
+import pytest
+
+pytestmark = pytest.mark.requires_full
+
+import doctranslate.api as api  # noqa: E402
 
 
 def test_public_api_all_exports() -> None:

@@ -32,3 +32,14 @@ After changing dependencies in `pyproject.toml`, refresh the lockfile with **`uv
 - **Push / deploy denied:** Ensure **Settings → Actions → General → Workflow permissions** allows **Read and write** for the default `GITHUB_TOKEN` (required for `peaceiris/actions-gh-pages` to update `gh-pages`).
 - **Strict build fails in CI:** Fix MkDocs warnings locally with `NO_MKDOCS_2_WARNING=1 uv run mkdocs build --strict`, then push again.
 - **`uv sync --locked` fails after pulling:** Run `uv lock` on a machine with network access and commit the updated `uv.lock`.
+
+## Release and publishing
+
+PyPI releases are driven by [.github/workflows/publish-to-pypi.yml](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/publish-to-pypi.yml):
+
+- **PyPI:** when `pyproject.toml` version changes on `main` / `master` and the workflow detects a new tag, the built wheel/sdist is published to PyPI (Trusted Publishing).
+- **TestPyPI:** pushes that do **not** correspond to a new tagged version get a **development** version (`bumpver` + timestamp) and publish to TestPyPI instead.
+
+The workflow only runs publishing steps for the repositories listed in the workflow’s `check-repository` job. **Forks** still benefit from tests and docs builds but do not publish packages from this workflow.
+
+Version bumps in-tree use **bumpver** (see `[tool.bumpver]` in `pyproject.toml`).

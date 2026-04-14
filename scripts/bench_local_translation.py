@@ -35,24 +35,24 @@ def main() -> int:
     if args.out_dir is not None:
         out.mkdir(parents=True, exist_ok=True)
 
-    # ``python -m doctranslate.main`` matches the package entrypoint behavior.
+    # 0.6+ CLI: subcommand ``translate`` (see docs/migration.md).
     cmd = [
         sys.executable,
         "-m",
         "doctranslate.main",
+        "translate",
+        str(args.pdf),
         "--translator",
         "local",
         "--local-backend",
         args.backend,
         "--local-model",
         args.model,
-        "--files",
-        str(args.pdf),
         "--lang-in",
         args.lang_in,
         "--lang-out",
         args.lang_out,
-        "--output",
+        "-o",
         str(out),
     ]
     if args.base_url:

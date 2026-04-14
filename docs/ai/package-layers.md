@@ -15,10 +15,22 @@ DocTranslater ships as **one PyPI distribution** (`DocTranslater`) with **option
 
 Deep imports under `doctranslate.format.pdf` remain valid but are **not** semver-guaranteed; prefer `doctranslate.api` for embedding.
 
+## Install matrix (quick)
+
+| Goal | Typical command |
+|------|-----------------|
+| Types / router TOML models only | `pip install DocTranslater` or `uv sync --locked --group dev` |
+| Explicit “schemas” label (same deps as base) | `pip install "DocTranslater[schemas]"` — the `schemas` extra is **intentionally empty** so docs and scripts can request a named slice without adding packages beyond the core dependency set. |
+| PDF + CLI, no hosted LLM (combine with `llm` as needed) | `pip install "DocTranslater[pdf,cli,llm]"` |
+| Default CLI translate path (matches CI) | `pip install "DocTranslater[full]"` or `uv sync --locked --group dev --extra full` |
+
+Python **3.10–3.13** are supported (`requires-python = ">=3.10,<3.14"` in `pyproject.toml`).
+
 ## Optional extras
 
 | Extra | Role |
 |-------|------|
+| `schemas` | **No extra packages** — reserved alias so install lines can say `DocTranslater[schemas]` when embedding only `doctranslate.schemas` (same as base). |
 | `pdf` | PyMuPDF, xsdata/IL, fonts, spatial indexes, scientific helpers |
 | `llm` | OpenAI client, httpx, LiteLLM, tiktoken, tenacity |
 | `vision` | ONNXRuntime, OpenCV, Hugging Face hub (doclayout assets) |
@@ -47,6 +59,9 @@ Base dependencies are intentionally small: charset detection, Pydantic, TOML, an
 ## CI
 
 - **Minimal lane:** `uv sync --locked --group dev` (no extras) + `pytest tests/test_install_profiles.py::test_minimal_schemas_import`.
-- **Full lane:** `uv sync --locked --group dev --extra full` + full `pytest`, MkDocs strict, assets warmup.
+- **Fast lane:** `uv sync --locked --group dev --extra full` + `pytest tests/ -m "not requires_pdf"` + MkDocs strict + wheel smoke + `scripts/check_cli_import_time.py`.
+- **Slim lane:** `uv sync --locked --group dev --extra pdf --extra cli` + `pytest tests/test_install_profiles.py::test_pdf_stack_opens_ci_fixture`.
+- **Full matrix:** `uv sync --locked --group dev --extra full` + full `pytest`, assets warmup, offline pack/restore.
+- **Docs (PR):** Zensical build when `docs/**` or `mkdocs.yml` changes (`.github/workflows/docs-pr.yml`).
 
 See [Verification](verification.md) for day-to-day commands.

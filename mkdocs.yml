@@ -138,6 +138,8 @@ nav:
   - Home: index.md
   - Supported Languages: supported_languages.md
   - Configuration: configuration.md
+  - Troubleshooting: troubleshooting.md
+  - Benchmarks: benchmarks.md
   - Translation memory: translation-memory.md
   - Multi-Provider Routing: multi-translator.md
   - Local translation: local-translation.md

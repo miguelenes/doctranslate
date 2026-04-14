@@ -107,7 +107,8 @@ For subprocess integration, write a `TranslationRequest` JSON file and run:
 ```bash
 doctranslate --output-format json translate \
   --request-json request.json \
-  --emit-progress-json
+  --emit-progress-json \
+  doc.pdf
 ```
 
 - With `--emit-progress-json`, stdout receives NDJSON lines with `stream: "progress"` followed by the usual final JSON envelope from `--output-format json`.

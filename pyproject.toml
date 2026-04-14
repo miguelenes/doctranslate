@@ -27,6 +27,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Empty on purpose: documented alias for ``pip install "DocTranslater[schemas]"`` (same as base).
 schemas = []
 pdf = [
     "bitstring>=4.3.0",

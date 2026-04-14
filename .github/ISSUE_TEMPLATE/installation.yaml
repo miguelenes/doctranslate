@@ -1,0 +1,49 @@
+name: Installation / environment
+description: Report install, dependency, or Python environment problems
+title: "[install] "
+labels: ["triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please include the outputs below so we can reproduce quickly.
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: e.g. Ubuntu 24.04, macOS 15, Windows 11
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: e.g. 3.12.7
+    validations:
+      required: true
+  - type: textarea
+    id: install_cmd
+    attributes:
+      label: Exact install command
+      description: e.g. `uv sync --locked --group dev --extra full` or `pip install "DocTranslater[full]"`
+    validations:
+      required: true
+  - type: textarea
+    id: pip_show
+    attributes:
+      label: Output of `pip show DocTranslater` (or `uv pip list` if using uv)
+    validations:
+      required: false
+  - type: textarea
+    id: error
+    attributes:
+      label: What happened (command + full error text / log)
+    validations:
+      required: true
+  - type: textarea
+    id: extras
+    attributes:
+      label: Optional extras intended
+      description: e.g. `full`, or `pdf`+`cli`+`llm` only — see docs/ai/package-layers.md
+    validations:
+      required: false
