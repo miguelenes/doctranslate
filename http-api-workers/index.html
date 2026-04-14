@@ -2483,6 +2483,7 @@
 
 <h1 id="http-api-workers-arq-redis">HTTP API workers (ARQ + Redis)</h1>
 <p>When <code>DOCTRANSLATE_API_QUEUE_BACKEND=arq</code>, the API process <strong>only enqueues</strong> jobs to Redis; a separate <strong>worker</strong> process runs translations and asset warmups. Job metadata stays in SQLite (<code>DOCTRANSLATE_API_METADATA_SQLITE_PATH</code> or default under <code>DOCTRANSLATE_API_DATA_ROOT</code>); artifacts use the same <a href="../http-api-storage-backends/">HTTP API storage</a> settings as the API.</p>
+<p><strong>Live progress:</strong> <code>GET /v1/jobs/{id}/stream</code> (SSE) and <code>GET /v1/jobs/{id}/events</code> read from the shared SQLite <code>job_events</code> table written by workers. There is no in-process fan-out across replicas—any API instance can serve the stream by polling metadata.</p>
 <h2 id="requirements">Requirements</h2>
 <ul>
 <li><code>DocTranslater[api]</code> (includes <code>arq</code> and <code>redis</code>).</li>

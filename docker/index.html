@@ -822,6 +822,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Security">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#http-api-runtime-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP API (runtime-api)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2531,6 +2548,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Security">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#http-api-runtime-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP API (runtime-api)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2801,6 +2835,18 @@
 <li>Images run as user <code>doctranslater</code> (UID <strong>1000</strong>).</li>
 <li>Do not bake API keys into images; use <code>-e</code> / secrets and <code>api_key_env</code> in TOML (<a href="../configuration/">Configuration</a>).</li>
 <li>For read-only root filesystems, mount writable volumes for <code>HOME/.cache/doctranslate</code>, job output (<code>-o</code>), and optional <code>--working-dir</code>.</li>
+</ul>
+<h3 id="http-api-runtime-api">HTTP API (<code>runtime-api</code>)</h3>
+<p>The optional HTTP API supports a <strong>shared secret</strong> for inbound requests (separate from LLM provider keys). See <a href="../http-api/#authentication">HTTP API — Authentication</a>.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-p<span class="w"> </span><span class="m">8000</span>:8000<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">DOCTRANSLATE_API_AUTH_MODE</span><span class="o">=</span>required<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span>-e<span class="w"> </span>DOCTRANSLATE_API_AUTH_TOKEN<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span>-e<span class="w"> </span>OPENAI_API_KEY<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span>ghcr.io/OWNER/doctranslater-api:main
+</span></code></pre></div>
+<ul>
+<li>With <code>DOCTRANSLATE_API_AUTH_MODE=disabled</code> (default), clients need no <code>Authorization</code> header.</li>
+<li>With <code>required</code>, pass <strong><code>Authorization: Bearer $DOCTRANSLATE_API_AUTH_TOKEN</code></strong> or <strong><code>X-API-Key</code></strong> on every protected call (see <a href="../http-api/">HTTP API</a> for probe exceptions and CORS).</li>
 </ul>
 <h2 id="local-llm-connectivity">Local LLM connectivity</h2>
 <p>Containers cannot reach <code>localhost</code> on the host. Point <code>--local-base-url</code> (or TOML) at:</p>
