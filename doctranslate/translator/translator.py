@@ -16,7 +16,6 @@ from tenacity import wait_exponential
 
 from doctranslate.translator.cache import TranslationCache
 from doctranslate.translator.llm.prompt_versions import PROMPT_VERSION_SIMPLE_TRANSLATE
-from doctranslate.translator.llm.usage import token_usage_from_chat_completion
 from doctranslate.translator.providers.openai_client import OpenAILLMTransport
 from doctranslate.translator.types import TokenUsage
 from doctranslate.translator.types import TranslatorCapabilities
@@ -385,13 +384,6 @@ class OpenAITranslator(BaseTranslator):
             if usage.cache_hit_prompt_tokens:
                 self.cache_hit_prompt_token_count.inc(usage.cache_hit_prompt_tokens)
         except Exception:
-            logger.exception("Error updating token count")
-
-    def update_token_count(self, response):
-        """Backward-compatible hook; prefer ``_inc_token_usage`` with ``TokenUsage``."""
-        try:
-            self._inc_token_usage(token_usage_from_chat_completion(response))
-        except Exception as e:
             logger.exception("Error updating token count")
 
     def get_formular_placeholder(self, placeholder_id: int | str):

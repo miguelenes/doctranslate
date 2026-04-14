@@ -82,8 +82,7 @@ def normalize_for_tm(text: str, *, lang_in: str = "") -> str:
 
 def _is_cjk_locale(lang: str) -> bool:
     return any(
-        lang.startswith(p)
-        for p in ("zh", "ja", "jp", "ko", "tw", "cn", "hk", "yue")
+        lang.startswith(p) for p in ("zh", "ja", "jp", "ko", "tw", "cn", "hk", "yue")
     )
 
 

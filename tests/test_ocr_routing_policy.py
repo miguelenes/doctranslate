@@ -7,6 +7,7 @@ import pytest
 from doctranslate.format.pdf.document_il import il_version_1
 from doctranslate.format.pdf.document_il.midend.ocr_routing import OcrRouting
 from doctranslate.format.pdf.translation_config import TranslationConfig
+from doctranslate.format.pdf.translation_settings import TranslationSettings
 
 
 def _minimal_pdf(tmp_path: Path) -> Path:
@@ -35,12 +36,14 @@ def test_route_force(tmp_path, mock_translator):
     cfg = TranslationConfig(
         mock_translator,
         pdf,
-        "en",
-        "zh",
-        doc_layout_model=object(),
-        output_dir=str(tmp_path),
-        working_dir=str(tmp_path),
-        ocr_mode="force",
+        object(),
+        TranslationSettings(
+            lang_in="en",
+            lang_out="zh",
+            output_dir=str(tmp_path),
+            working_dir=str(tmp_path),
+            ocr_mode="force",
+        ),
     )
     r = OcrRouting(cfg)
     route, sig = r._route_for_page(_page(0))
@@ -53,12 +56,14 @@ def test_route_auto_when_scanned_map_true(tmp_path, mock_translator):
     cfg = TranslationConfig(
         mock_translator,
         pdf,
-        "en",
-        "zh",
-        doc_layout_model=object(),
-        output_dir=str(tmp_path),
-        working_dir=str(tmp_path),
-        ocr_mode="auto",
+        object(),
+        TranslationSettings(
+            lang_in="en",
+            lang_out="zh",
+            output_dir=str(tmp_path),
+            working_dir=str(tmp_path),
+            ocr_mode="auto",
+        ),
     )
     cfg.shared_context_cross_split_part.page_scan_is_scanned[0] = True
     r = OcrRouting(cfg)
@@ -71,13 +76,15 @@ def test_route_auto_native_when_dense_text(tmp_path, mock_translator):
     cfg = TranslationConfig(
         mock_translator,
         pdf,
-        "en",
-        "zh",
-        doc_layout_model=object(),
-        output_dir=str(tmp_path),
-        working_dir=str(tmp_path),
-        ocr_mode="auto",
-        ocr_low_text_density_threshold=1e-9,
+        object(),
+        TranslationSettings(
+            lang_in="en",
+            lang_out="zh",
+            output_dir=str(tmp_path),
+            working_dir=str(tmp_path),
+            ocr_mode="auto",
+            ocr_low_text_density_threshold=1e-9,
+        ),
     )
     cfg.shared_context_cross_split_part.page_scan_is_scanned[0] = False
     page = _page(0)
@@ -116,12 +123,14 @@ def test_route_hybrid_label(tmp_path, mock_translator):
     cfg = TranslationConfig(
         mock_translator,
         pdf,
-        "en",
-        "zh",
-        doc_layout_model=object(),
-        output_dir=str(tmp_path),
-        working_dir=str(tmp_path),
-        ocr_mode="hybrid",
+        object(),
+        TranslationSettings(
+            lang_in="en",
+            lang_out="zh",
+            output_dir=str(tmp_path),
+            working_dir=str(tmp_path),
+            ocr_mode="hybrid",
+        ),
     )
     cfg.shared_context_cross_split_part.page_scan_is_scanned[0] = True
     r = OcrRouting(cfg)

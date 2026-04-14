@@ -75,7 +75,9 @@ class OcrRouting:
 
         return "native", signals
 
-    def process(self, docs: il_version_1.Document, mupdf_doc: Document) -> il_version_1.Document:
+    def process(
+        self, docs: il_version_1.Document, mupdf_doc: Document
+    ) -> il_version_1.Document:
         if self.translation_config.ocr_mode == "off":
             self.translation_config.last_ocr_routing_report = {
                 "skipped": True,

@@ -17,7 +17,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from doctranslate.babeldoc_exception.BabelDOCException import ContentFilterError
+from doctranslate.exceptions import ContentFilterError
 from doctranslate.translator.config import NestedTranslatorConfig
 from doctranslate.translator.config import ProviderConfigModel
 from doctranslate.translator.config import RouteProfileConfig
@@ -247,7 +247,9 @@ class TranslatorRouter(BaseTranslator):
             return sorted(pool, key=cost_key)
         return list(candidates)
 
-    def _record_success(self, pid: str, latency_ms: float, usage: Any, cost: float) -> None:
+    def _record_success(
+        self, pid: str, latency_ms: float, usage: Any, cost: float
+    ) -> None:
         m = self._metrics[pid]
         m.total_requests += 1
         m.successful_requests += 1
@@ -302,8 +304,12 @@ class TranslatorRouter(BaseTranslator):
             try:
                 ex = self._executors[pid]
                 result = ex.complete(messages, json_mode=json_mode)
-                self._record_success(pid, result.latency_ms, result.usage, result.estimated_cost_usd)
-                logger.info("Translation OK provider=%s profile=%s", pid, self.profile_name)
+                self._record_success(
+                    pid, result.latency_ms, result.usage, result.estimated_cost_usd
+                )
+                logger.info(
+                    "Translation OK provider=%s profile=%s", pid, self.profile_name
+                )
                 return result.text
             except ContentFilterError:
                 m.concurrent_requests = max(0, m.concurrent_requests - 1)
@@ -319,7 +325,10 @@ class TranslatorRouter(BaseTranslator):
                 cat = self._record_failure_only(pid, e)
                 last_exc = e
                 attempts += 1
-                if cat == FailureCategory.CONTENT_FILTER and not rp.allow_content_filter_fallback:
+                if (
+                    cat == FailureCategory.CONTENT_FILTER
+                    and not rp.allow_content_filter_fallback
+                ):
                     raise
                 if cat not in rp.fallback_on:
                     logger.warning(
@@ -331,7 +340,9 @@ class TranslatorRouter(BaseTranslator):
                     raise TranslationError(f"Routing failed on {pid}: {e}") from e
                 logger.warning("Provider %s failed (%s): %s", pid, cat, e)
 
-        raise TranslationError(f"All providers failed for profile={self.profile_name}: {last_exc}")
+        raise TranslationError(
+            f"All providers failed for profile={self.profile_name}: {last_exc}"
+        )
 
     def do_translate(self, text, rate_limit_params: dict = None):
         return self._route(messages=self._simple_messages(text), json_mode=False)

@@ -9,6 +9,7 @@ from typing import Any
 
 import openai
 
+from doctranslate.exceptions import ContentFilterError
 from doctranslate.translator.llm.usage import token_usage_from_chat_completion
 from doctranslate.translator.llm.usage import token_usage_from_openai_response
 from doctranslate.translator.types import CompletionResult
@@ -16,9 +17,7 @@ from doctranslate.translator.types import LLMTransportKind
 
 logger = logging.getLogger(__name__)
 
-_DASHSCOPE_FILTER = (
-    "系统检测到输入或生成内容可能包含不安全或敏感内容，请您避免输入易产生敏感内容的提示语，感谢您的配合。"
-)
+_DASHSCOPE_FILTER = "系统检测到输入或生成内容可能包含不安全或敏感内容，请您避免输入易产生敏感内容的提示语，感谢您的配合。"
 
 
 def _messages_to_instructions_and_input(
@@ -99,7 +98,9 @@ class OpenAILLMTransport:
                     t0=t0,
                 )
             except Exception as e:
-                logger.debug("Responses API failed, falling back to chat.completions: %s", e)
+                logger.debug(
+                    "Responses API failed, falling back to chat.completions: %s", e
+                )
 
         return self._complete_chat(
             messages,
@@ -138,10 +139,6 @@ class OpenAILLMTransport:
             response = self._client.chat.completions.parse(**kwargs)
         except openai.BadRequestError as e:
             if _DASHSCOPE_FILTER in str(e):
-                from doctranslate.babeldoc_exception.BabelDOCException import (
-                    ContentFilterError,
-                )
-
                 raise ContentFilterError(str(e)) from e
             raise
         latency_ms = (time.perf_counter() - t0) * 1000.0
@@ -189,10 +186,6 @@ class OpenAILLMTransport:
             response = self._client.responses.create(**kwargs)
         except openai.BadRequestError as e:
             if _DASHSCOPE_FILTER in str(e):
-                from doctranslate.babeldoc_exception.BabelDOCException import (
-                    ContentFilterError,
-                )
-
                 raise ContentFilterError(str(e)) from e
             raise
         latency_ms = (time.perf_counter() - t0) * 1000.0
@@ -235,10 +228,6 @@ class OpenAILLMTransport:
             response = self._client.chat.completions.create(**kwargs)
         except openai.BadRequestError as e:
             if _DASHSCOPE_FILTER in str(e):
-                from doctranslate.babeldoc_exception.BabelDOCException import (
-                    ContentFilterError,
-                )
-
                 raise ContentFilterError(str(e)) from e
             raise
         latency_ms = (time.perf_counter() - t0) * 1000.0

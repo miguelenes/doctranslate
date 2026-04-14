@@ -168,6 +168,5 @@ nav:
     - PDF pipeline: ai/pdf-pipeline.md
     - Translator stack: ai/translator-stack.md
     - Verification: ai/verification.md
-    - CLI vNext baseline: ai/cli-vnext-baseline.md
     - MCP suggestions: ai/mcp-suggestions.md
     - Phase 2 (optional): ai/phase2-skills.md

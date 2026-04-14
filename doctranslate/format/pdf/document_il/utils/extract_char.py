@@ -2,6 +2,7 @@ import logging
 import shutil
 from collections import defaultdict
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import cv2
 import numpy as np
@@ -13,6 +14,7 @@ import doctranslate.format.pdf.high_level
 import doctranslate.format.pdf.translation_config
 from doctranslate.const import get_process_pool
 from doctranslate.format.pdf.document_il import il_version_1
+from doctranslate.format.pdf.translation_settings import TranslationSettings
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +56,13 @@ MERGE_ADJACENCY_GAP_MULTIPLIER = 1.5
 
 
 def parse_pdf(pdf_path, page_ranges=None) -> il_version_1.Document:
+    _tr = MagicMock()
+    _tr.cache = None
     translation_config = doctranslate.format.pdf.translation_config.TranslationConfig(
-        *[None for _ in range(4)], doc_layout_model=None
+        _tr,
+        pdf_path,
+        None,
+        TranslationSettings(),
     )
     if page_ranges:
         translation_config.page_ranges = [page_ranges]

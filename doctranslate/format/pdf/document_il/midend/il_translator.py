@@ -12,7 +12,7 @@ import tiktoken
 from tqdm import tqdm
 
 import doctranslate.format.pdf.document_il.il_version_1 as il_version_1
-from doctranslate.babeldoc_exception.BabelDOCException import ContentFilterError
+from doctranslate.exceptions import ContentFilterError
 from doctranslate.format.pdf.document_il import Document
 from doctranslate.format.pdf.document_il import GraphicState
 from doctranslate.format.pdf.document_il import Page

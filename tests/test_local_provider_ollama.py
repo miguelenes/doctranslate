@@ -13,7 +13,9 @@ def test_build_router_with_ollama_provider():
         routing_profile="translate",
         term_extraction_profile="terms",
         profiles={
-            "translate": RouteProfileConfig(providers=["ollama_p"], require_json_mode=False),
+            "translate": RouteProfileConfig(
+                providers=["ollama_p"], require_json_mode=False
+            ),
             "terms": RouteProfileConfig(providers=["ollama_p"], require_json_mode=True),
         },
         providers={

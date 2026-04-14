@@ -19,13 +19,11 @@ from pymupdf import Font
 
 from doctranslate import asynchronize
 from doctranslate.assets.assets import warmup
-from doctranslate.babeldoc_exception.BabelDOCException import ExtractTextError
-from doctranslate.babeldoc_exception.BabelDOCException import (
-    InputFileGeneratedByBabelDOCError,
-)
 from doctranslate.const import CACHE_FOLDER
 from doctranslate.const import WATERMARK_VERSION
 from doctranslate.const import close_process_pool
+from doctranslate.exceptions import ExtractTextError
+from doctranslate.exceptions import PriorTranslatedInputError
 from doctranslate.format.pdf.converter import TranslateConverter
 from doctranslate.format.pdf.document_il import il_version_1
 from doctranslate.format.pdf.document_il.backend.pdf_creater import SAVE_PDF_STAGE_NAME
@@ -63,7 +61,7 @@ from doctranslate.format.pdf.result_merger import ResultMerger
 from doctranslate.format.pdf.split_manager import SplitManager
 from doctranslate.format.pdf.translation_config import TranslateResult
 from doctranslate.format.pdf.translation_config import TranslationConfig
-from doctranslate.format.pdf.translation_config import WatermarkOutputMode
+from doctranslate.format.pdf.translation_settings import WatermarkOutputMode
 from doctranslate.pdfminer.pdfdocument import PDFDocument
 from doctranslate.pdfminer.pdfinterp import PDFResourceManager
 from doctranslate.pdfminer.pdfpage import PDFPage
@@ -126,7 +124,7 @@ def check_metadata(pdf: Document):
         return
     producer = meta.get("producer", None)
     if producer and _producer_marks_prior_translation(producer):
-        raise InputFileGeneratedByBabelDOCError(
+        raise PriorTranslatedInputError(
             "Input file is marked as already translated by DocTranslater or DocTranslate; "
             "cannot translate files that have already been translated."
         )
@@ -137,10 +135,10 @@ def add_metadata(
 ):
     processed = []
     for attr in (
-        "mono_pdf_path",
-        "dual_pdf_path",
-        "no_watermark_mono_pdf_path",
-        "no_watermark_dual_pdf_path",
+        "mono_plain_pdf",
+        "mono_watermarked_pdf",
+        "dual_plain_pdf",
+        "dual_watermarked_pdf",
     ):
         path = getattr(translate_result, attr)
         if not path or path in processed:
@@ -182,10 +180,10 @@ def add_metadata(
 def fix_cmap(translate_result: TranslateResult, translate_config: TranslationConfig):
     processed = []
     for attr in (
-        "mono_pdf_path",
-        "dual_pdf_path",
-        "no_watermark_mono_pdf_path",
-        "no_watermark_dual_pdf_path",
+        "mono_plain_pdf",
+        "mono_watermarked_pdf",
+        "dual_plain_pdf",
+        "dual_watermarked_pdf",
     ):
         path = getattr(translate_result, attr)
         if not path or path in processed:
@@ -623,7 +621,7 @@ def do_translate(
         logger.info(f"start to translate: {original_pdf_path}")
         try:
             check_metadata(Document(original_pdf_path))
-        except InputFileGeneratedByBabelDOCError as e:
+        except PriorTranslatedInputError as e:
             logger.error(
                 f"input file {original_pdf_path} is marked as already translated "
                 "(DocTranslater or DocTranslate); cannot translate again."
@@ -863,10 +861,8 @@ def migrate_toc(
         should_removed_page = list(total_page - pages_to_translate)
 
     files = {
-        translate_result.dual_pdf_path,
-        # translate_result.mono_pdf_path,
-        translate_result.no_watermark_dual_pdf_path,
-        # translate_result.no_watermark_mono_pdf_path
+        translate_result.dual_watermarked_pdf,
+        translate_result.dual_plain_pdf,
     }
 
     for f in files:
@@ -1168,23 +1164,23 @@ def _do_translate_single(
     try:
         if mono_watermark_first_page_doc_bytes:
             mono_watermark_pdf = merge_watermark_doc(
-                result.mono_pdf_path,
+                result.mono_plain_pdf,
                 mono_watermark_first_page_doc_bytes,
                 translation_config,
             )
-            result.mono_pdf_path = mono_watermark_pdf
+            result.mono_watermarked_pdf = mono_watermark_pdf
     except Exception:
-        result.mono_pdf_path = result.no_watermark_mono_pdf_path
+        result.mono_watermarked_pdf = result.mono_plain_pdf
     try:
         if dual_watermark_first_page_doc_bytes:
             dual_watermark_pdf = merge_watermark_doc(
-                result.dual_pdf_path,
+                result.dual_plain_pdf,
                 dual_watermark_first_page_doc_bytes,
                 translation_config,
             )
-            result.dual_pdf_path = dual_watermark_pdf
+            result.dual_watermarked_pdf = dual_watermark_pdf
     except Exception:
-        result.dual_pdf_path = result.no_watermark_dual_pdf_path
+        result.dual_watermarked_pdf = result.dual_plain_pdf
 
     result.original_pdf_path = translation_config.input_file
 
@@ -1223,18 +1219,18 @@ def generate_first_page_with_watermark(
         result = pdf_creater.write(watermarked_config)
         mono_pdf_bytes = None
         dual_pdf_bytes = None
-        if result.mono_pdf_path:
+        if result.mono_watermarked_pdf:
             mono_pdf_bytes = io.BytesIO()
-            with Path(result.mono_pdf_path).open("rb") as f:
+            with Path(result.mono_watermarked_pdf).open("rb") as f:
                 mono_pdf_bytes.write(f.read())
-            result.mono_pdf_path.unlink()
+            result.mono_watermarked_pdf.unlink()
             mono_pdf_bytes.seek(0)
 
-        if result.dual_pdf_path:
+        if result.dual_watermarked_pdf:
             dual_pdf_bytes = io.BytesIO()
-            with Path(result.dual_pdf_path).open("rb") as f:
+            with Path(result.dual_watermarked_pdf).open("rb") as f:
                 dual_pdf_bytes.write(f.read())
-            result.dual_pdf_path.unlink()
+            result.dual_watermarked_pdf.unlink()
             dual_pdf_bytes.seek(0)
 
         return mono_pdf_bytes, dual_pdf_bytes

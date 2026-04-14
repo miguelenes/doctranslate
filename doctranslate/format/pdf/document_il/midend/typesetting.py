@@ -26,7 +26,7 @@ from doctranslate.format.pdf.document_il.utils.formular_helper import (
 )
 from doctranslate.format.pdf.document_il.utils.layout_helper import box_to_tuple
 from doctranslate.format.pdf.translation_config import TranslationConfig
-from doctranslate.format.pdf.translation_config import WatermarkOutputMode
+from doctranslate.format.pdf.translation_settings import WatermarkOutputMode
 
 logger = logging.getLogger(__name__)
 

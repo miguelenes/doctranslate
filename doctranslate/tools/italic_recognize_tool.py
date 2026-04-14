@@ -1,12 +1,15 @@
 # Identify non-formula italic fonts that were incorrectly classified as formulas in BableDOC translation results (intermediate)
 
 import json
+from pathlib import Path
+from unittest.mock import MagicMock
 
 import doctranslate.tools.italic_assistance as italic_assistance
 from doctranslate.format.pdf.document_il.midend.styles_and_formulas import (
     StylesAndFormulas,
 )
 from doctranslate.format.pdf.translation_config import TranslationConfig
+from doctranslate.format.pdf.translation_settings import TranslationSettings
 from rich.console import Console
 from rich.table import Table
 
@@ -49,8 +52,13 @@ for page_index, page in enumerate(pdf_data["page"]):
                     )
 
 # Initialize checker
+_tr = MagicMock()
+_tr.cache = None
 translation_config = TranslationConfig(
-    *[None for _ in range(3)], lang_out="zh_cn", doc_layout_model=1
+    _tr,
+    Path(),
+    1,
+    TranslationSettings(lang_out="zh_cn"),
 )
 checker = StylesAndFormulas(translation_config)
 

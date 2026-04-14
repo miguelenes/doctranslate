@@ -20,17 +20,33 @@ FONT_METADATA_URL = {
 }
 
 FONT_URL_BY_UPSTREAM = {
-    "github": lambda name: f"https://raw.githubusercontent.com/funstory-ai/BabelDOC-Assets/refs/heads/main/fonts/{name}",
-    "huggingface": lambda name: f"https://huggingface.co/datasets/awwaawwa/BabelDOC-Assets/resolve/main/fonts/{name}?download=true",
-    "hf-mirror": lambda name: f"https://hf-mirror.com/datasets/awwaawwa/BabelDOC-Assets/resolve/main/fonts/{name}?download=true",
-    "modelscope": lambda name: f"https://www.modelscope.cn/datasets/awwaawwa/BabelDOCAssets/resolve/master/fonts/{name}",
+    "github": lambda name: (
+        f"https://raw.githubusercontent.com/funstory-ai/BabelDOC-Assets/refs/heads/main/fonts/{name}"
+    ),
+    "huggingface": lambda name: (
+        f"https://huggingface.co/datasets/awwaawwa/BabelDOC-Assets/resolve/main/fonts/{name}?download=true"
+    ),
+    "hf-mirror": lambda name: (
+        f"https://hf-mirror.com/datasets/awwaawwa/BabelDOC-Assets/resolve/main/fonts/{name}?download=true"
+    ),
+    "modelscope": lambda name: (
+        f"https://www.modelscope.cn/datasets/awwaawwa/BabelDOCAssets/resolve/master/fonts/{name}"
+    ),
 }
 
 CMAP_URL_BY_UPSTREAM = {
-    "github": lambda name: f"https://raw.githubusercontent.com/funstory-ai/BabelDOC-Assets/refs/heads/main/cmap/{name}",
-    "huggingface": lambda name: f"https://huggingface.co/datasets/awwaawwa/BabelDOC-Assets/resolve/main/cmap/{name}?download=true",
-    "hf-mirror": lambda name: f"https://hf-mirror.com/datasets/awwaawwa/BabelDOC-Assets/resolve/main/cmap/{name}?download=true",
-    "modelscope": lambda name: f"https://www.modelscope.cn/datasets/awwaawwa/BabelDOCAssets/resolve/master/cmap/{name}",
+    "github": lambda name: (
+        f"https://raw.githubusercontent.com/funstory-ai/BabelDOC-Assets/refs/heads/main/cmap/{name}"
+    ),
+    "huggingface": lambda name: (
+        f"https://huggingface.co/datasets/awwaawwa/BabelDOC-Assets/resolve/main/cmap/{name}?download=true"
+    ),
+    "hf-mirror": lambda name: (
+        f"https://hf-mirror.com/datasets/awwaawwa/BabelDOC-Assets/resolve/main/cmap/{name}?download=true"
+    ),
+    "modelscope": lambda name: (
+        f"https://www.modelscope.cn/datasets/awwaawwa/BabelDOCAssets/resolve/master/cmap/{name}"
+    ),
 }
 
 DOC_LAYOUT_ONNX_MODEL_URL = {

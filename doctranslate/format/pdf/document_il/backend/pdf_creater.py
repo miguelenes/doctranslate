@@ -22,7 +22,7 @@ from doctranslate.format.pdf.document_il.utils.matrix_helper import matrix_to_by
 from doctranslate.format.pdf.document_il.utils.zstd_helper import zstd_decompress
 from doctranslate.format.pdf.translation_config import TranslateResult
 from doctranslate.format.pdf.translation_config import TranslationConfig
-from doctranslate.format.pdf.translation_config import WatermarkOutputMode
+from doctranslate.format.pdf.translation_settings import WatermarkOutputMode
 
 logger = logging.getLogger(__name__)
 

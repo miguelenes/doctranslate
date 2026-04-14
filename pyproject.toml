@@ -1,6 +1,6 @@
 [project]
 name = "DocTranslater"
-version = "0.5.24"
+version = "0.6.0"
 description = "DocTranslater — PDF translation with layout preservation and multi-provider LLM routing"
 license = "AGPL-3.0"
 readme = "README.md"
@@ -18,7 +18,6 @@ classifiers = [
 keywords = ["PDF"]
 dependencies = [
     "bitstring>=4.3.0",
-    "configargparse>=1.7",
     "httpx[socks]>=0.27.0",
     "huggingface-hub>=0.27.0",
     "numpy>=2.0.2",
@@ -81,8 +80,6 @@ Issues = "https://github.com/miguelenes/doctranslate/issues"
 [project.scripts]
 doctranslate = "doctranslate.main:cli"
 doc-translate = "doctranslate.main:cli"
-doctranslater = "doctranslate.main:cli"
-doc-translater = "doctranslate.main:cli"
 
 [build-system]
 requires = ["hatchling"]
@@ -157,8 +154,6 @@ convention = "google"
 max-complexity = 10 # 函数圈复杂度阈值
 
 [tool.ruff.lint.per-file-ignores]
-"doctranslate/babeldoc_exception/BabelDOCException.py" = ["N999"]
-"doctranslate/doctranslate_exception/BabelDOCException.py" = ["N999"]
 "doctranslate/format/pdf/pdfinterp.py" = ["N"] # 忽略命名规范
 "tests/*" = ["S101"]            # 在测试文件中允许 assert
 "**/__init__.py" = ["F401"]     # 允许未使用的导入
@@ -190,7 +185,7 @@ pythonpath = [".", "src"]
 testpaths = ["tests"]
 
 [bumpver]
-current_version = "0.5.24"
+current_version = "0.6.0"
 version_pattern = "MAJOR.MINOR.PATCH[.PYTAGNUM]"
 
 [bumpver.file_patterns]

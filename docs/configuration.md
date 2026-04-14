@@ -1,19 +1,15 @@
 # Configuration
 
-DocTranslater reads CLI flags first (via `configargparse` on the **legacy** flat path, and `argparse` on the **vNext** subcommand path). A TOML file passed with `-c` / `--config` merges into defaults. For **multi-provider routing**, nested tables under **`[doctranslate]`** define providers and route profiles. Legacy configs may use **`[babeldoc]`** with the same nested shape; prefer `[doctranslate]` for new files (see [Migration](migration.md)).
-
-**vNext CLI:** prefer `doctranslate translate …` with `--provider` and the renamed flags in [Migration](migration.md); global defaults can be set with `doctranslate -c defaults.toml translate …`.
+DocTranslater reads CLI flags with **`argparse`** on the `doctranslate <subcommand>` path. A TOML file passed with `-c` / `--config` on the root command merges scalar defaults into `translate` when you run `doctranslate -c file.toml translate …`. For **multi-provider routing**, nested tables under **`[doctranslate]`** define providers and route profiles (see [Migration](migration.md) if you still have `[babeldoc]` sections).
 
 ## Merge order (router / nested TOML)
 
 1. **Defaults** in code (`NestedTranslatorConfig`).
-2. **TOML** `[doctranslate]` section (and nested `profiles` / `providers`). Nested router config loading also accepts `[babeldoc]` when `[doctranslate]` is absent.
+2. **TOML** `[doctranslate]` section (and nested `profiles` / `providers`).
 3. **Environment** for API keys referenced by `api_key_env` on each provider.
 4. **CLI overrides** for router-only flags (see below).
 
-When both `[babeldoc]` and `[doctranslate]` appear in the same file, CLI defaults loaded from TOML merge **`babeldoc` first, then `doctranslate`** (later values win for duplicate keys).
-
-Legacy **OpenAI-only** mode (`--translator openai`) does not require nested TOML; it uses `--openai*` flags and `OPENAI_*` environment variables.
+**OpenAI-only** mode (`--translator openai`) does not require nested TOML; it uses `--openai*` flags and `OPENAI_*` environment variables.
 
 ## Local translation CLI flags
 

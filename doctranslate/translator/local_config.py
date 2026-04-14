@@ -57,8 +57,14 @@ def nested_from_local_cli_mapping(cli: dict[str, Any]) -> NestedTranslatorConfig
 
 def _make_translate_provider(nested: NestedTranslatorConfig) -> ProviderConfigModel:
     backend = _normalize_backend_name(nested.local_backend)
-    timeout = nested.local_timeout_seconds if nested.local_timeout_seconds is not None else 120.0
-    max_retries = nested.local_max_retries if nested.local_max_retries is not None else 2
+    timeout = (
+        nested.local_timeout_seconds
+        if nested.local_timeout_seconds is not None
+        else 120.0
+    )
+    max_retries = (
+        nested.local_max_retries if nested.local_max_retries is not None else 2
+    )
     model = (nested.local_model or "").strip()
     if not model:
         msg = "local_model is required for local translation"
@@ -110,8 +116,14 @@ def _make_term_provider(nested: NestedTranslatorConfig) -> ProviderConfigModel:
         raise ValueError(msg)
 
     backend = _normalize_backend_name(nested.local_backend)
-    timeout = nested.local_timeout_seconds if nested.local_timeout_seconds is not None else 120.0
-    max_retries = nested.local_max_retries if nested.local_max_retries is not None else 2
+    timeout = (
+        nested.local_timeout_seconds
+        if nested.local_timeout_seconds is not None
+        else 120.0
+    )
+    max_retries = (
+        nested.local_max_retries if nested.local_max_retries is not None else 2
+    )
 
     if backend == "ollama":
         base = (

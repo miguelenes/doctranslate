@@ -1,15 +1,15 @@
 # Project map (for humans and coding agents)
 
-DocTranslater is a Python 3.10+ package (PyPI name **DocTranslater**; import package `doctranslate`): CLI entries `doctranslate` / `doctranslater` → `doctranslate.main:cli`. This fork extends upstream with multi-provider routing and local translation.
+DocTranslater is a Python 3.10+ package (PyPI name **DocTranslater**; import package `doctranslate`): CLI entries `doctranslate` / `doc-translate` → `doctranslate.main:cli`. This fork extends upstream with multi-provider routing and local translation.
 
 ## Key directories
 
 | Path | Role |
 |------|------|
-| `doctranslate/main.py` | Thin entry: `cli()` → `cli/dispatch.py`; `create_parser` aliases legacy parser. |
-| `doctranslate/cli/` | vNext subcommands (`translate`, `assets`, `config`, …), argv mapping, JSON output helpers. |
-| `doctranslate/cli/legacy_parser.py` | Flat `configargparse` surface (legacy + tests). |
-| `doctranslate/cli/translate_run.py` | Shared async translation pipeline + progress UI. |
+| `doctranslate/main.py` | Entry: `cli()` → `cli/dispatch.py`; `create_parser` → translate argparse parent (tests). |
+| `doctranslate/cli/` | Subcommands (`translate`, `assets`, `config`, …), JSON output helpers. |
+| `doctranslate/cli/translate_cli.py` | Argparse flags for `translate`. |
+| `doctranslate/cli/translate_run.py` | Async translation pipeline + progress UI. |
 | `doctranslate/format/pdf/high_level.py` | PDF translation orchestration; `TRANSLATE_STAGES`; async/thread boundaries. |
 | `doctranslate/format/pdf/document_il/` | Intermediate representation (IL): frontend/midend/backend, typesetting, translators. |
 | `doctranslate/translator/` | Translator modes: OpenAI legacy, `TranslatorRouter`, LiteLLM executors, local → synthetic router. |
@@ -26,7 +26,7 @@ DocTranslater is a Python 3.10+ package (PyPI name **DocTranslater**; import pac
 
 | Task | Start here |
 |------|------------|
-| New CLI flag or default | vNext: `doctranslate/cli/vnext_argv.py` + passthrough; legacy: `doctranslate/cli/legacy_parser.py`. |
+| New CLI flag or default | `doctranslate/cli/translate_cli.py` (+ `dispatch.py` if root-level). |
 | Router / TOML / local knobs | `doctranslate/translator/config.py`, `factory.py`, `local_config.py`, `router.py`. |
 | PDF stage order or wiring | `doctranslate/format/pdf/high_level.py` and stage classes under `document_il/`. |
 | Public docs for config | `docs/configuration.md`, `docs/multi-translator.md`, `docs/local-translation.md`, `README.md`. |

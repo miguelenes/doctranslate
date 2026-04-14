@@ -1,4 +1,5 @@
-import enum
+from __future__ import annotations
+
 import hashlib
 import logging
 import shutil
@@ -8,23 +9,16 @@ from collections import Counter
 from pathlib import Path
 
 from doctranslate.const import CACHE_FOLDER
-from doctranslate.format.pdf.split_manager import BaseSplitStrategy
 from doctranslate.format.pdf.split_manager import PageCountStrategy
+from doctranslate.format.pdf.translation_settings import TranslationSettings
 from doctranslate.glossary import Glossary
 from doctranslate.glossary import GlossaryEntry
-from doctranslate.progress_monitor import ProgressMonitor
 from doctranslate.translator.cache import flatten_glossary_entries_from_config
 from doctranslate.translator.cache import glossary_signature_from_pairs
 from doctranslate.translator.tm_policy import TMRuntimeConfig
 from doctranslate.translator.translator import BaseTranslator
 
 logger = logging.getLogger(__name__)
-
-
-class WatermarkOutputMode(enum.Enum):
-    Watermarked = "watermarked"
-    NoWatermark = "no_watermark"
-    Both = "both"
 
 
 class SharedContextCrossSplitPart:
@@ -145,158 +139,92 @@ class TranslationConfig:
     def create_max_pages_per_part_split_strategy(max_pages_per_part: int):
         return PageCountStrategy(max_pages_per_part)
 
-    # for backward compatibility,
-    # new parameters should be added at the end of the function.
+    @classmethod
+    def from_settings(
+        cls,
+        translator: BaseTranslator,
+        input_file: str | Path,
+        doc_layout_model,
+        settings: TranslationSettings,
+        *,
+        term_extraction_translator: BaseTranslator | None = None,
+    ) -> TranslationConfig:
+        """Build a :class:`TranslationConfig` from structured settings."""
+        return cls(
+            translator,
+            input_file,
+            doc_layout_model,
+            settings,
+            term_extraction_translator=term_extraction_translator,
+        )
+
     def __init__(
         self,
         translator: BaseTranslator,
         input_file: str | Path,
-        lang_in: str,
-        lang_out: str,
-        doc_layout_model,  # DocLayoutModel
-        # for backward compatibility
-        font: str | Path | None = None,
-        pages: str | None = None,
-        output_dir: str | Path | None = None,
-        debug: bool = False,
-        working_dir: str | Path | None = None,
-        no_dual: bool = False,
-        no_mono: bool = False,
-        formular_font_pattern: str | None = None,
-        formular_char_pattern: str | None = None,
-        qps: int = 1,
-        split_short_lines: bool = False,
-        short_line_split_factor: float = 0.8,
-        use_rich_pbar: bool = True,
-        progress_monitor: ProgressMonitor | None = None,
-        skip_clean: bool = False,
-        dual_translate_first: bool = False,
-        disable_rich_text_translate: bool = False,
-        enhance_compatibility: bool = False,
-        report_interval: float = 0.1,
-        min_text_length: int = 5,
-        use_side_by_side_dual: bool = True,  # Deprecated: 是否使用拼版式双语 PDF（并排显示原文和译文）向下兼容选项，已停用。
-        use_alternating_pages_dual: bool = False,
-        watermark_output_mode: WatermarkOutputMode = WatermarkOutputMode.Watermarked,
-        # Add split-related parameters
-        split_strategy: BaseSplitStrategy | None = None,
-        table_model=None,
-        show_char_box: bool = False,
-        skip_scanned_detection: bool = False,
-        ocr_workaround: bool = False,
-        custom_system_prompt: str | None = None,
-        add_formula_placehold_hint: bool = False,
-        glossaries: list[Glossary] | None = None,
-        pool_max_workers: int | None = None,
-        auto_extract_glossary: bool = True,
-        auto_enable_ocr_workaround: bool = False,
-        primary_font_family: str | None = None,
-        only_include_translated_page: bool | None = False,
-        save_auto_extracted_glossary: bool = True,
-        enable_graphic_element_process: bool = True,
-        merge_alternating_line_numbers: bool = True,
-        skip_translation: bool = False,
-        skip_form_render: bool = False,
-        skip_curve_render: bool = False,
-        only_parse_generate_pdf: bool = False,
-        remove_non_formula_lines: bool = False,
-        non_formula_line_iou_threshold: float = 0.9,
-        figure_table_protection_threshold: float = 0.9,
-        skip_formula_offset_calculation: bool = False,
+        doc_layout_model,
+        settings: TranslationSettings,
+        *,
         term_extraction_translator: BaseTranslator | None = None,
-        metadata_extra_data: str | None = None,
-        term_pool_max_workers: int | None = None,
-        disable_same_text_fallback: bool = False,
-        llm_translation_batch_max_tokens: int | None = None,
-        llm_translation_batch_max_paragraphs: int | None = None,
-        llm_term_extraction_batch_max_tokens: int | None = None,
-        llm_term_extraction_batch_max_paragraphs: int | None = None,
-        tm_mode: str = "off",
-        tm_scope: str = "document",
-        tm_min_segment_chars: int = 12,
-        tm_fuzzy_min_score: float = 92.0,
-        tm_semantic_min_similarity: float = 0.90,
-        tm_project_id: str = "",
-        tm_embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
-        tm_import_path: str | None = None,
-        tm_export_path: str | None = None,
-        # OCR / layout fallback routing (optional; default off preserves legacy behavior)
-        ocr_mode: str = "off",
-        ocr_pages: str | None = None,
-        ocr_lang_hints: list[str] | None = None,
-        ocr_debug_dump: bool = False,
-        ocr_scanned_ssim_threshold: float = 0.95,
-        ocr_low_text_density_threshold: float = 0.02,
-        split_part_origin_offset: int = 0,
-    ):
+    ) -> None:
+        s = settings
         self.translator = translator
         self.term_extraction_translator = term_extraction_translator or translator
-        initial_user_glossaries = list(glossaries) if glossaries else []
+        initial_user_glossaries = list(s.glossaries) if s.glossaries else []
 
         self.input_file = input_file
-        self.lang_in = lang_in
-        self.lang_out = lang_out
-        # just ignore font
+        self.lang_in = s.lang_in
+        self.lang_out = s.lang_out
         self.font = None
 
-        self.pages = pages
-        self.page_ranges = self.parse_pages(pages) if pages else None
-        self.debug = debug
-        self.watermark_output_mode = watermark_output_mode
+        self.pages = s.pages
+        self.page_ranges = self.parse_pages(s.pages) if s.pages else None
+        self.debug = s.debug
+        self.watermark_output_mode = s.watermark_output_mode
 
-        self.output_dir = output_dir
-        self.working_dir = working_dir
-        self.no_dual = no_dual
-        self.no_mono = no_mono
+        working_dir = s.working_dir
+        self.no_dual = s.no_dual
+        self.no_mono = s.no_mono
 
-        self.formular_font_pattern = formular_font_pattern
-        self.formular_char_pattern = formular_char_pattern
-        self.qps = qps
-        # Set pool_max_workers with default value from qps
+        self.formular_font_pattern = s.formular_font_pattern
+        self.formular_char_pattern = s.formular_char_pattern
+        self.qps = s.qps
         self.pool_max_workers = (
-            pool_max_workers if pool_max_workers is not None else qps
+            s.pool_max_workers if s.pool_max_workers is not None else s.qps
         )
-        # Set term_pool_max_workers for automatic term extraction.
-        # If not provided, default to pool_max_workers.
         self.term_pool_max_workers = (
-            term_pool_max_workers
-            if term_pool_max_workers is not None
+            s.term_pool_max_workers
+            if s.term_pool_max_workers is not None
             else self.pool_max_workers
         )
-        self.split_short_lines = split_short_lines
+        self.split_short_lines = s.split_short_lines
 
-        self.short_line_split_factor = short_line_split_factor
-        self.use_rich_pbar = use_rich_pbar
-        self.progress_monitor = progress_monitor
+        self.short_line_split_factor = s.short_line_split_factor
+        self.use_rich_pbar = s.use_rich_pbar
+        self.progress_monitor = s.progress_monitor
         self.doc_layout_model = doc_layout_model
 
-        self.skip_clean = skip_clean or enhance_compatibility
-        self.skip_scanned_detection = skip_scanned_detection
+        self.skip_clean = s.skip_clean
+        self.skip_scanned_detection = s.skip_scanned_detection
 
-        self.dual_translate_first = dual_translate_first or enhance_compatibility
-        self.disable_rich_text_translate = (
-            disable_rich_text_translate or enhance_compatibility
-        )
+        self.dual_translate_first = s.dual_translate_first
+        self.disable_rich_text_translate = s.disable_rich_text_translate
 
-        self.report_interval = report_interval
-        self.min_text_length = min_text_length
-        self.use_alternating_pages_dual = use_alternating_pages_dual
-        self.ocr_workaround = ocr_workaround
-        self.merge_alternating_line_numbers = merge_alternating_line_numbers
+        self.report_interval = s.report_interval
+        self.min_text_length = s.min_text_length
+        self.use_alternating_pages_dual = s.use_alternating_pages_dual
+        self.ocr_workaround = s.ocr_workaround
+        self.merge_alternating_line_numbers = s.merge_alternating_line_numbers
 
         if self.ocr_workaround:
             self.skip_scanned_detection = True
             self.disable_rich_text_translate = True
 
-        # for backward compatibility
-        if use_side_by_side_dual is False and use_alternating_pages_dual is False:
-            self.use_alternating_pages_dual = True
-
-        if progress_monitor and progress_monitor.cancel_event is None:
-            progress_monitor.cancel_event = threading.Event()
+        if s.progress_monitor and s.progress_monitor.cancel_event is None:
+            s.progress_monitor.cancel_event = threading.Event()
 
         if working_dir is None:
-            if debug:
+            if s.debug:
                 working_dir = Path(CACHE_FOLDER) / "working" / Path(input_file).stem
                 self._is_temp_dir = False
             else:
@@ -310,6 +238,7 @@ class TranslationConfig:
 
         Path(working_dir).mkdir(parents=True, exist_ok=True)
 
+        output_dir = s.output_dir
         if output_dir is None:
             output_dir = Path.cwd()
         self.output_dir = output_dir
@@ -327,55 +256,53 @@ class TranslationConfig:
             initial_user_glossaries
         )
 
-        # Initialize split-related attributes
-        self.split_strategy = split_strategy
+        self.split_strategy = s.split_strategy
 
-        # Create a unique working directory for each part
         self._part_working_dirs: dict[int, Path] = {}
         self._part_output_dirs: dict[int, Path] = {}
 
-        self.table_model = table_model
-        self.show_char_box = show_char_box
-        self.custom_system_prompt = custom_system_prompt
-        self.add_formula_placehold_hint = add_formula_placehold_hint
-        self.auto_extract_glossary = auto_extract_glossary
-        self.auto_enable_ocr_workaround = auto_enable_ocr_workaround
-        self.skip_translation = skip_translation
-        self.only_parse_generate_pdf = only_parse_generate_pdf
+        self.table_model = s.table_model
+        self.show_char_box = s.show_char_box
+        self.custom_system_prompt = s.custom_system_prompt
+        self.add_formula_placehold_hint = s.add_formula_placehold_hint
+        self.auto_extract_glossary = s.auto_extract_glossary
+        self.auto_enable_ocr_workaround = s.auto_enable_ocr_workaround
+        self.skip_translation = s.skip_translation
+        self.only_parse_generate_pdf = s.only_parse_generate_pdf
 
         if self.skip_translation or self.only_parse_generate_pdf:
             self.auto_extract_glossary = False
 
-        if auto_enable_ocr_workaround:
+        if s.auto_enable_ocr_workaround:
             self.ocr_workaround = False
             self.skip_scanned_detection = False
 
-        assert primary_font_family in [
+        assert s.primary_font_family in [
             None,
             "serif",
             "sans-serif",
             "script",
         ]
-        self.primary_font_family = primary_font_family
+        self.primary_font_family = s.primary_font_family
 
-        if only_include_translated_page is None:
-            only_include_translated_page = False
+        oitp = s.only_include_translated_page
+        if oitp is None:
+            oitp = False
 
-        self.only_include_translated_page = only_include_translated_page
+        self.only_include_translated_page = oitp
 
-        self.save_auto_extracted_glossary = save_auto_extracted_glossary
+        self.save_auto_extracted_glossary = s.save_auto_extracted_glossary
 
-        # force disable table translate until the new model is ready
         self.table_model = None
-        self.enable_graphic_element_process = enable_graphic_element_process
-        self.skip_form_render = skip_form_render
-        self.skip_curve_render = skip_curve_render
-        self.remove_non_formula_lines = remove_non_formula_lines
-        self.non_formula_line_iou_threshold = non_formula_line_iou_threshold
-        self.figure_table_protection_threshold = figure_table_protection_threshold
-        self.skip_formula_offset_calculation = skip_formula_offset_calculation
+        self.enable_graphic_element_process = s.enable_graphic_element_process
+        self.skip_form_render = s.skip_form_render
+        self.skip_curve_render = s.skip_curve_render
+        self.remove_non_formula_lines = s.remove_non_formula_lines
+        self.non_formula_line_iou_threshold = s.non_formula_line_iou_threshold
+        self.figure_table_protection_threshold = s.figure_table_protection_threshold
+        self.skip_formula_offset_calculation = s.skip_formula_offset_calculation
 
-        self.metadata_extra_data = metadata_extra_data
+        self.metadata_extra_data = s.metadata_extra_data
 
         self.term_extraction_token_usage: dict[str, int] = {
             "total_tokens": 0,
@@ -383,63 +310,60 @@ class TranslationConfig:
             "completion_tokens": 0,
             "cache_hit_prompt_tokens": 0,
         }
-        self.disable_same_text_fallback = disable_same_text_fallback
+        self.disable_same_text_fallback = s.disable_same_text_fallback
 
         self.llm_translation_batch_max_tokens = (
-            llm_translation_batch_max_tokens
-            if llm_translation_batch_max_tokens is not None
+            s.llm_translation_batch_max_tokens
+            if s.llm_translation_batch_max_tokens is not None
             else 200
         )
         self.llm_translation_batch_max_paragraphs = (
-            llm_translation_batch_max_paragraphs
-            if llm_translation_batch_max_paragraphs is not None
+            s.llm_translation_batch_max_paragraphs
+            if s.llm_translation_batch_max_paragraphs is not None
             else 5
         )
         self.llm_term_extraction_batch_max_tokens = (
-            llm_term_extraction_batch_max_tokens
-            if llm_term_extraction_batch_max_tokens is not None
+            s.llm_term_extraction_batch_max_tokens
+            if s.llm_term_extraction_batch_max_tokens is not None
             else 600
         )
         self.llm_term_extraction_batch_max_paragraphs = (
-            llm_term_extraction_batch_max_paragraphs
-            if llm_term_extraction_batch_max_paragraphs is not None
+            s.llm_term_extraction_batch_max_paragraphs
+            if s.llm_term_extraction_batch_max_paragraphs is not None
             else 12
         )
 
         if self.ocr_workaround:
             self.remove_non_formula_lines = False
 
-        self.tm_mode = tm_mode
-        self.tm_scope = tm_scope
-        self.tm_min_segment_chars = tm_min_segment_chars
-        self.tm_fuzzy_min_score = tm_fuzzy_min_score
-        self.tm_semantic_min_similarity = tm_semantic_min_similarity
-        self.tm_project_id = tm_project_id or ""
-        self.tm_embedding_model = tm_embedding_model
-        self.tm_import_path = tm_import_path
-        self.tm_export_path = tm_export_path
+        self.tm_mode = s.tm_mode
+        self.tm_scope = s.tm_scope
+        self.tm_min_segment_chars = s.tm_min_segment_chars
+        self.tm_fuzzy_min_score = s.tm_fuzzy_min_score
+        self.tm_semantic_min_similarity = s.tm_semantic_min_similarity
+        self.tm_project_id = s.tm_project_id or ""
+        self.tm_embedding_model = s.tm_embedding_model
+        self.tm_import_path = s.tm_import_path
+        self.tm_export_path = s.tm_export_path
 
-        self.ocr_mode = (ocr_mode or "off").strip().lower()
+        self.ocr_mode = (s.ocr_mode or "off").strip().lower()
         if self.ocr_mode not in ("off", "auto", "force", "hybrid"):
             raise ValueError(
-                f"ocr_mode must be one of off|auto|force|hybrid, got {ocr_mode!r}",
+                f"ocr_mode must be one of off|auto|force|hybrid, got {s.ocr_mode!r}",
             )
-        self.ocr_pages = ocr_pages
-        self.ocr_page_ranges = self.parse_pages(ocr_pages) if ocr_pages else None
-        self.ocr_lang_hints = list(ocr_lang_hints) if ocr_lang_hints else []
-        self.ocr_debug_dump = bool(ocr_debug_dump or (debug and self.ocr_mode != "off"))
-        self.ocr_scanned_ssim_threshold = float(ocr_scanned_ssim_threshold)
-        self.ocr_low_text_density_threshold = float(ocr_low_text_density_threshold)
-        # Original `--pages` filter (1-based page numbers). Kept for split parts when
-        # `page_ranges` is rewritten to local part indices.
+        self.ocr_pages = s.ocr_pages
+        self.ocr_page_ranges = self.parse_pages(s.ocr_pages) if s.ocr_pages else None
+        self.ocr_lang_hints = list(s.ocr_lang_hints) if s.ocr_lang_hints else []
+        self.ocr_debug_dump = bool(
+            s.ocr_debug_dump or (s.debug and self.ocr_mode != "off"),
+        )
+        self.ocr_scanned_ssim_threshold = float(s.ocr_scanned_ssim_threshold)
+        self.ocr_low_text_density_threshold = float(s.ocr_low_text_density_threshold)
         self.original_page_ranges: list[tuple[int, int]] | None = (
             list(self.page_ranges) if self.page_ranges else None
         )
-        # 0-based index of first page of this PDF in the original document (split parts).
-        self.split_part_origin_offset: int = int(split_part_origin_offset)
-        # When True, ParagraphFinder must not clear pdf_character after OCR injection.
+        self.split_part_origin_offset: int = int(s.split_part_origin_offset)
         self.ocr_glyph_clear_disabled: bool = False
-        # Last OCR routing report (for tests / debug JSON).
         self.last_ocr_routing_report: dict | None = None
 
         self._apply_translation_memory_to_translators()
@@ -652,10 +576,10 @@ class TranslationConfig:
 class TranslateResult:
     original_pdf_path: str
     total_seconds: float
-    mono_pdf_path: Path | None
-    dual_pdf_path: Path | None
-    no_watermark_mono_pdf_path: Path | None
-    no_watermark_dual_pdf_path: Path | None
+    mono_plain_pdf: Path | None
+    mono_watermarked_pdf: Path | None
+    dual_plain_pdf: Path | None
+    dual_watermarked_pdf: Path | None
     peak_memory_usage: int | None
     auto_extracted_glossary_path: Path | None
     total_valid_character_count: int | None
@@ -663,17 +587,17 @@ class TranslateResult:
 
     def __init__(
         self,
-        mono_pdf_path: Path | None,
-        dual_pdf_path: Path | None,
+        mono_plain_pdf: Path | None,
+        dual_plain_pdf: Path | None,
         auto_extracted_glossary_path: Path | None = None,
+        *,
+        mono_watermarked_pdf: Path | None = None,
+        dual_watermarked_pdf: Path | None = None,
     ):
-        self.mono_pdf_path = mono_pdf_path
-        self.dual_pdf_path = dual_pdf_path
-
-        # For compatibility considerations, if only a non-watermarked PDF is generated,
-        # the values of mono_pdf_path and no_watermark_mono_pdf_path are the same.
-        self.no_watermark_mono_pdf_path = mono_pdf_path
-        self.no_watermark_dual_pdf_path = dual_pdf_path
+        self.mono_plain_pdf = mono_plain_pdf
+        self.dual_plain_pdf = dual_plain_pdf
+        self.mono_watermarked_pdf = mono_watermarked_pdf or mono_plain_pdf
+        self.dual_watermarked_pdf = dual_watermarked_pdf or dual_plain_pdf
 
         self.auto_extracted_glossary_path = auto_extracted_glossary_path
         self.total_valid_character_count = None
@@ -688,29 +612,25 @@ class TranslateResult:
         if hasattr(self, "total_seconds") and self.total_seconds:
             result.append(f"\tTotal time: {self.total_seconds:.2f} seconds")
 
-        if self.mono_pdf_path:
-            result.append(f"\tMonolingual PDF: {self.mono_pdf_path}")
+        if self.mono_watermarked_pdf:
+            result.append(f"\tMonolingual PDF: {self.mono_watermarked_pdf}")
 
-        if self.dual_pdf_path:
-            result.append(f"\tDual-language PDF: {self.dual_pdf_path}")
-
-        if (
-            hasattr(self, "no_watermark_mono_pdf_path")
-            and self.no_watermark_mono_pdf_path
-            and self.no_watermark_mono_pdf_path != self.mono_pdf_path
-        ):
-            result.append(
-                f"\tNo-watermark Monolingual PDF: {self.no_watermark_mono_pdf_path}"
-            )
+        if self.dual_watermarked_pdf:
+            result.append(f"\tDual-language PDF: {self.dual_watermarked_pdf}")
 
         if (
-            hasattr(self, "no_watermark_dual_pdf_path")
-            and self.no_watermark_dual_pdf_path
-            and self.no_watermark_dual_pdf_path != self.dual_pdf_path
+            self.mono_plain_pdf
+            and self.mono_watermarked_pdf
+            and self.mono_plain_pdf != self.mono_watermarked_pdf
         ):
-            result.append(
-                f"\tNo-watermark Dual-language PDF: {self.no_watermark_dual_pdf_path}"
-            )
+            result.append(f"\tPlain monolingual PDF: {self.mono_plain_pdf}")
+
+        if (
+            self.dual_plain_pdf
+            and self.dual_watermarked_pdf
+            and self.dual_plain_pdf != self.dual_watermarked_pdf
+        ):
+            result.append(f"\tPlain dual-language PDF: {self.dual_plain_pdf}")
 
         if (
             hasattr(self, "auto_extracted_glossary_path")

@@ -1,1 +1,1 @@
-"""DocTranslater CLI vNext (subcommands) and legacy compatibility."""
+"""DocTranslater CLI (subcommands)."""

@@ -30,8 +30,17 @@ def get_font_metadata(font_path) -> PdfFont:
     doc = pymupdf.open()
     page = doc.new_page(width=1000, height=1000)
     page.insert_font("test_font", font_path)
+    from unittest.mock import MagicMock
+
+    from doctranslate.format.pdf.translation_settings import TranslationSettings
+
+    _tr = MagicMock()
+    _tr.cache = None
     translation_config = doctranslate.format.pdf.translation_config.TranslationConfig(
-        *[None for _ in range(4)], doc_layout_model=1
+        _tr,
+        Path(),
+        1,
+        TranslationSettings(),
     )
     translation_config.progress_monitor = (
         doctranslate.format.pdf.high_level.ProgressMonitor(

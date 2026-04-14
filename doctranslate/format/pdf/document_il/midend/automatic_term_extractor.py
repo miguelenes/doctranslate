@@ -215,9 +215,13 @@ class AutomaticTermExtractor:
             #     continue
             total_token_count += self.calc_token_count(paragraph.unicode)
             paragraphs.append(paragraph)
-            if total_token_count > self._term_batch_max_tokens or len(
-                paragraphs,
-            ) > self._term_batch_max_paragraphs:
+            if (
+                total_token_count > self._term_batch_max_tokens
+                or len(
+                    paragraphs,
+                )
+                > self._term_batch_max_paragraphs
+            ):
                 executor.submit(
                     self.extract_terms_from_paragraphs,
                     BatchParagraph(paragraphs, tracker),

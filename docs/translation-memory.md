@@ -45,7 +45,7 @@ If `sentence-transformers` / `torch` are missing, `--tm-mode=semantic` behaves l
 
 ## Legacy `cache.v1.db` import
 
-If `~/.cache/doctranslate/cache.v1.db` exists, a **one-time** import of rows into the `_tmentry` table runs on startup (marker `legacy_cache_v1_import` in `_tmmigration`). The active database remains `cache.v2.db` with both legacy and TM tables.
+If you still have `~/.cache/doctranslate/cache.v1.db`, run **`doctranslate tm migrate-v1-cache`** once to import rows into the TM table (marker `legacy_cache_v1_import` in `_tmmigration`). The active database remains `cache.v2.db`.
 
 ## Quality vs cost
 

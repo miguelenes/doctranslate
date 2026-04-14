@@ -130,14 +130,22 @@ def run_local_preflight(nested: NestedTranslatorConfig) -> None:
     t_cfg = _make_translate_provider(nested)
     term_cfg = _make_term_provider(nested)
     _preflight_provider(t_cfg)
-    if term_cfg.model != t_cfg.model or term_cfg.base_url != t_cfg.base_url or term_cfg.provider != t_cfg.provider:
+    if (
+        term_cfg.model != t_cfg.model
+        or term_cfg.base_url != t_cfg.base_url
+        or term_cfg.provider != t_cfg.provider
+    ):
         _preflight_provider(term_cfg)
 
 
 def _preflight_provider(cfg: ProviderConfigModel) -> None:
     timeout = min(15.0, max(2.0, float(cfg.timeout_seconds)))
     if cfg.provider == "ollama":
-        preflight_ollama(base_url=cfg.base_url or LOCAL_DEFAULT_OLLAMA_BASE, model=cfg.model, timeout=timeout)
+        preflight_ollama(
+            base_url=cfg.base_url or LOCAL_DEFAULT_OLLAMA_BASE,
+            model=cfg.model,
+            timeout=timeout,
+        )
         return
     if cfg.provider == "openai_compatible":
         if not cfg.base_url:

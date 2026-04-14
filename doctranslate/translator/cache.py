@@ -239,10 +239,7 @@ class TranslationCache:
             return query.where(
                 (_TmEntry.document_scope == doc)
                 | (_TmEntry.project_scope == proj)
-                | (
-                    (_TmEntry.document_scope == "")
-                    & (_TmEntry.project_scope == "")
-                ),
+                | ((_TmEntry.document_scope == "") & (_TmEntry.project_scope == "")),
             )
         return query
 
@@ -380,7 +377,9 @@ class TranslationCache:
             return None
         _match_s, score, idx = best
         row = rows[idx]
-        if not self._safe_to_reuse(original_text, row.source_text_raw, row.target_text, layer="fuzzy"):
+        if not self._safe_to_reuse(
+            original_text, row.source_text_raw, row.target_text, layer="fuzzy"
+        ):
             return None
         logger.debug("TM fuzzy hit score=%s id=%s", score, row.id)
         self._bump_tm_hit(row)
@@ -416,10 +415,7 @@ class TranslationCache:
             if sim > best_sim:
                 best_sim = sim
                 best_row = row
-        if (
-            best_row is None
-            or best_sim < self.tm_runtime.semantic_min_similarity
-        ):
+        if best_row is None or best_sim < self.tm_runtime.semantic_min_similarity:
             return None
         if not self._safe_to_reuse(
             original_text,
@@ -513,7 +509,11 @@ class TranslationCache:
         ph = placeholder_signature(original_text)[:64]
         now = _now_ms()
         emb_blob = None
-        if store_embedding and self._semantic_backend and self._semantic_backend.available:
+        if (
+            store_embedding
+            and self._semantic_backend
+            and self._semantic_backend.available
+        ):
             try:
                 vec = self._semantic_backend.encode([original_text])[0]
                 emb_blob = serialize_embedding_f32(vec)
@@ -753,10 +753,6 @@ def init_db(remove_exists=False):
         },
     )
     db.create_tables([_TranslationCache, _TmEntry, _TmMigration], safe=True)
-    try:
-        _run_legacy_migration_if_needed()
-    except Exception:
-        logger.exception("TM legacy migration step failed (non-fatal)")
 
 
 def init_test_db():

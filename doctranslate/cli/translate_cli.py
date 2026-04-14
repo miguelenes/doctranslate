@@ -1,98 +1,14 @@
-"""Legacy flat CLI parser (ConfigArgParse + TOML merge)."""
+"""Argparse surface for ``doctranslate translate`` (single parser, no ConfigArgParse)."""
 
 from __future__ import annotations
 
-import configargparse
-
-from doctranslate import __version__
+import argparse
 
 
-def create_legacy_parser():
-    parser = configargparse.ArgParser(
-        config_file_parser_class=configargparse.TomlConfigParser(
-            ["babeldoc", "doctranslate"],
-        ),
-    )
-    parser.add_argument(
-        "-c",
-        "--config",
-        is_config_file=True,
-        help="config file path",
-    )
-    parser.add_argument(
-        "--version",
-        action="version",
-        version=f"%(prog)s {__version__}",
-    )
-    parser.add_argument(
-        "--files",
-        action="append",
-        help="One or more paths to PDF files.",
-    )
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Use debug logging level.",
-    )
-    parser.add_argument(
-        "--warmup",
-        action="store_true",
-        help="Only download and verify required assets then exit.",
-    )
-    parser.add_argument(
-        "--rpc-doclayout",
-        help="RPC service host address for document layout analysis",
-    )
-    parser.add_argument(
-        "--rpc-doclayout2",
-        help="RPC service host address for document layout analysis",
-    )
-    parser.add_argument(
-        "--rpc-doclayout3",
-        help="RPC service host address for document layout analysis",
-    )
-    parser.add_argument(
-        "--rpc-doclayout4",
-        help="RPC service host address for document layout analysis",
-    )
-    parser.add_argument(
-        "--rpc-doclayout5",
-        help="RPC service host address for document layout analysis",
-    )
-    parser.add_argument(
-        "--rpc-doclayout6",
-        help="RPC service host address for document layout analysis",
-    )
-    parser.add_argument(
-        "--rpc-doclayout7",
-        help="RPC service host address for document layout analysis",
-    )
-    parser.add_argument(
-        "--generate-offline-assets",
-        default=None,
-        help="Generate offline assets package in the specified directory",
-    )
-    parser.add_argument(
-        "--restore-offline-assets",
-        default=None,
-        help="Restore offline assets package from the specified file",
-    )
-    parser.add_argument(
-        "--working-dir",
-        default=None,
-        help="Working directory for translation. If not set, use temp directory.",
-    )
-    parser.add_argument(
-        "--metadata-extra-data",
-        default=None,
-        help="Extra data for metadata",
-    )
-    parser.add_argument(
-        "--enable-process-pool",
-        action="store_true",
-        help="DEBUG ONLY",
-    )
-    # translation option argument group
+def build_translate_parent_parser() -> argparse.ArgumentParser:
+    """All flags and positionals merged into the ``translate`` subcommand via ``parents=``."""
+    parser = argparse.ArgumentParser(add_help=False)
+
     translation_group = parser.add_argument_group(
         "Translation",
         description="Used during translation",
@@ -110,24 +26,33 @@ def create_legacy_parser():
     )
     translation_group.add_argument(
         "--lang-in",
+        "--source-lang",
         "-li",
+        dest="lang_in",
         default="en",
         help="The code of source language.",
     )
     translation_group.add_argument(
         "--lang-out",
+        "--target-lang",
         "-lo",
+        dest="lang_out",
         default="zh",
         help="The code of target language.",
     )
     translation_group.add_argument(
         "--output",
+        "--output-dir",
         "-o",
+        dest="output",
+        default=None,
         help="Output directory for files. if not set, use same as input.",
     )
     translation_group.add_argument(
         "--qps",
+        "--request-rate",
         "-q",
+        dest="qps",
         type=int,
         default=4,
         help="QPS limit of translation service",
@@ -239,31 +164,25 @@ def create_legacy_parser():
         help="Disable rich text translation (may help improve compatibility with some PDFs)",
     )
     translation_group.add_argument(
-        "--enhance-compatibility",
-        action="store_true",
-        help="Enable all compatibility enhancement options (equivalent to --skip-clean --dual-translate-first --disable-rich-text-translate)",
-    )
-    translation_group.add_argument(
         "--use-alternating-pages-dual",
         action="store_true",
         help="Use alternating pages mode for dual PDF. When enabled, original and translated pages are arranged in alternate order.",
     )
     translation_group.add_argument(
         "--watermark-output-mode",
+        "--watermark-mode",
         type=str,
         choices=["watermarked", "no_watermark", "both"],
         default="watermarked",
-        help="Control watermark output mode: 'watermarked' (default) adds watermark to translated PDF, 'no_watermark' doesn't add watermark, 'both' outputs both versions.",
+        help="Watermark output mode.",
     )
     translation_group.add_argument(
         "--max-pages-per-part",
+        "--split-pages",
         type=int,
-        help="Maximum number of pages per part for split translation. If not set, no splitting will be performed.",
-    )
-    translation_group.add_argument(
-        "--no-watermark",
-        action="store_true",
-        help="[DEPRECATED] Use --watermark-output-mode=no_watermark instead. Do not add watermark to the translated PDF.",
+        dest="max_pages_per_part",
+        default=None,
+        help="Maximum number of pages per part for split translation.",
     )
     translation_group.add_argument(
         "--report-interval",
@@ -453,9 +372,7 @@ def create_legacy_parser():
         default=False,
         help="Skip formula offset calculation (default: False)",
     )
-    # service option argument group
-    service_group = translation_group.add_mutually_exclusive_group()
-    service_group.add_argument(
+    translation_group.add_argument(
         "--openai",
         action="store_true",
         help="Use OpenAI translator.",
@@ -525,9 +442,11 @@ def create_legacy_parser():
     )
     translation_group.add_argument(
         "--translator",
+        "--provider",
         choices=["openai", "router", "local"],
         default="openai",
-        help="Translation backend: openai (legacy), router (multi-provider TOML), or local (Ollama / OpenAI-compatible server).",
+        dest="translator",
+        help="Translation backend: openai, router (multi-provider TOML), or local (Ollama / OpenAI-compatible server).",
     )
     translation_group.add_argument(
         "--routing-profile",
@@ -536,6 +455,8 @@ def create_legacy_parser():
     )
     translation_group.add_argument(
         "--term-extraction-profile",
+        "--term-profile",
+        dest="term_extraction_profile",
         default=None,
         help="Router mode: override profile name for automatic term extraction (default from TOML).",
     )
@@ -553,6 +474,8 @@ def create_legacy_parser():
     )
     translation_group.add_argument(
         "--metrics-json-path",
+        "--metrics-file",
+        dest="metrics_json_path",
         default=None,
         help="Router mode: write metrics JSON to this path (when metrics-output includes json).",
     )
@@ -643,5 +566,63 @@ def create_legacy_parser():
         default=None,
         help="Term extraction batch paragraph threshold (default: 12).",
     )
-
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Use debug logging level.",
+    )
+    parser.add_argument(
+        "--rpc-doclayout",
+        help="RPC service host address for document layout analysis",
+    )
+    parser.add_argument(
+        "--rpc-doclayout2",
+        help="RPC service host address for document layout analysis",
+    )
+    parser.add_argument(
+        "--rpc-doclayout3",
+        help="RPC service host address for document layout analysis",
+    )
+    parser.add_argument(
+        "--rpc-doclayout4",
+        help="RPC service host address for document layout analysis",
+    )
+    parser.add_argument(
+        "--rpc-doclayout5",
+        help="RPC service host address for document layout analysis",
+    )
+    parser.add_argument(
+        "--rpc-doclayout6",
+        help="RPC service host address for document layout analysis",
+    )
+    parser.add_argument(
+        "--rpc-doclayout7",
+        help="RPC service host address for document layout analysis",
+    )
+    parser.add_argument(
+        "--working-dir",
+        default=None,
+        help="Working directory for translation. If not set, use temp directory.",
+    )
+    parser.add_argument(
+        "--metadata-extra-data",
+        default=None,
+        help="Extra data for metadata",
+    )
+    parser.add_argument(
+        "--enable-process-pool",
+        action="store_true",
+        help="DEBUG ONLY",
+    )
+    parser.add_argument(
+        "translate_inputs",
+        nargs="*",
+        metavar="PDF",
+        help="Input PDF file(s).",
+    )
     return parser
+
+
+def create_legacy_parser():
+    """Deprecated name for tests; prefer :func:`build_translate_parent_parser`."""
+    return build_translate_parent_parser()

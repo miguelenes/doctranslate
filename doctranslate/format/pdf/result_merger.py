@@ -29,103 +29,97 @@ class ResultMerger:
         mono_file_name = f"{basename}{debug_suffix}.{self.config.lang_out}.mono.pdf"
         dual_file_name = f"{basename}{debug_suffix}.{self.config.lang_out}.dual.pdf"
 
-        debug_suffix += ".no_watermark"
+        nw_suffix = debug_suffix + ".no_watermark"
 
         mono_file_name_no_watermark = (
-            f"{basename}{debug_suffix}.{self.config.lang_out}.mono.pdf"
+            f"{basename}{nw_suffix}.{self.config.lang_out}.mono.pdf"
         )
         dual_file_name_no_watermark = (
-            f"{basename}{debug_suffix}.{self.config.lang_out}.dual.pdf"
+            f"{basename}{nw_suffix}.{self.config.lang_out}.dual.pdf"
         )
         results = {k: v for k, v in results.items() if v is not None}
-        # Sort results by part index
         sorted_results = dict(sorted(results.items()))
-        first_result = next(iter(sorted_results.values()))
 
-        # Initialize paths for merged files
-        merged_mono_path = None
-        merged_dual_path = None
-        merged_no_watermark_mono_path = None
-        merged_no_watermark_dual_path = None
+        merged_mono_wm_path = None
+        merged_dual_wm_path = None
+        merged_mono_plain_path = None
+        merged_dual_plain_path = None
         try:
-            # Merge monolingual PDFs if they exist
             if (
-                any(r.mono_pdf_path for r in results.values())
+                any(r.mono_watermarked_pdf for r in results.values())
                 and not self.config.no_mono
             ):
-                merged_mono_path = self._merge_pdfs(
+                merged_mono_wm_path = self._merge_pdfs(
                     [
-                        r.mono_pdf_path
+                        r.mono_watermarked_pdf
                         for r in sorted_results.values()
-                        if r.mono_pdf_path
+                        if r.mono_watermarked_pdf
                     ],
                     mono_file_name,
                     tag="merged_mono",
                 )
         except Exception as e:
             logger.error(f"Error merging monolingual PDFs: {e}")
-            merged_mono_path = None
+            merged_mono_wm_path = None
 
         try:
-            # Merge dual-language PDFs if they exist
             if (
-                any(r.dual_pdf_path for r in results.values())
+                any(r.dual_watermarked_pdf for r in results.values())
                 and not self.config.no_dual
             ):
-                merged_dual_path = self._merge_pdfs(
+                merged_dual_wm_path = self._merge_pdfs(
                     [
-                        r.dual_pdf_path
+                        r.dual_watermarked_pdf
                         for r in sorted_results.values()
-                        if r.dual_pdf_path
+                        if r.dual_watermarked_pdf
                     ],
                     dual_file_name,
                     tag="merged_dual",
                 )
         except Exception as e:
             logger.error(f"Error merging dual-language PDFs: {e}")
-            merged_dual_path = None
+            merged_dual_wm_path = None
 
         if any(
-            r.dual_pdf_path != r.no_watermark_dual_pdf_path
-            or r.mono_pdf_path != r.no_watermark_mono_pdf_path
+            r.dual_watermarked_pdf != r.dual_plain_pdf
+            or r.mono_watermarked_pdf != r.mono_plain_pdf
             for r in results.values()
         ):
             try:
-                # Merge no-watermark PDFs if they exist
                 if (
-                    any(r.no_watermark_mono_pdf_path for r in results.values())
+                    any(r.mono_plain_pdf for r in results.values())
                     and not self.config.no_mono
                 ):
-                    merged_no_watermark_mono_path = self._merge_pdfs(
+                    merged_mono_plain_path = self._merge_pdfs(
                         [
-                            r.no_watermark_mono_pdf_path
+                            r.mono_plain_pdf
                             for r in sorted_results.values()
-                            if r.no_watermark_mono_pdf_path
+                            if r.mono_plain_pdf
                         ],
                         mono_file_name_no_watermark,
                         tag="merged_no_watermark_mono",
                     )
             except Exception as e:
                 logger.error(f"Error merging no-watermark PDFs: {e}")
-                merged_no_watermark_mono_path = None
+                merged_mono_plain_path = None
 
             try:
                 if (
-                    any(r.no_watermark_dual_pdf_path for r in results.values())
+                    any(r.dual_plain_pdf for r in results.values())
                     and not self.config.no_dual
                 ):
-                    merged_no_watermark_dual_path = self._merge_pdfs(
+                    merged_dual_plain_path = self._merge_pdfs(
                         [
-                            r.no_watermark_dual_pdf_path
+                            r.dual_plain_pdf
                             for r in sorted_results.values()
-                            if r.no_watermark_dual_pdf_path
+                            if r.dual_plain_pdf
                         ],
                         "merged_no_watermark_dual.pdf",
                         tag="merged_no_watermark_dual",
                     )
             except Exception as e:
                 logger.error(f"Error merging no-watermark PDFs: {e}")
-                merged_no_watermark_dual_path = None
+                merged_dual_plain_path = None
 
         auto_extracted_glossary_path = None
         if (
@@ -133,7 +127,7 @@ class ResultMerger:
             and self.config.shared_context_cross_split_part.auto_extracted_glossary
         ):
             auto_extracted_glossary_path = self.config.get_output_file_path(
-                f"{basename}{debug_suffix}.{self.config.lang_out}.glossary.csv"
+                f"{basename}{nw_suffix}.{self.config.lang_out}.glossary.csv"
             )
             with auto_extracted_glossary_path.open("w", encoding="utf-8-sig") as f:
                 logger.info(
@@ -143,26 +137,29 @@ class ResultMerger:
                     self.config.shared_context_cross_split_part.auto_extracted_glossary.to_csv()
                 )
 
-        # Create merged result
+        mp = merged_mono_plain_path
+        mw = merged_mono_wm_path
+        dp = merged_dual_plain_path
+        dw = merged_dual_wm_path
+
+        if mp is None:
+            mp = mw
+        elif mw is None:
+            mw = mp
+
+        if dp is None:
+            dp = dw
+        elif dw is None:
+            dw = dp
+
         merged_result = TranslateResult(
-            mono_pdf_path=merged_mono_path,
-            dual_pdf_path=merged_dual_path,
+            mono_plain_pdf=mp,
+            dual_plain_pdf=dp,
             auto_extracted_glossary_path=auto_extracted_glossary_path,
+            mono_watermarked_pdf=mw,
+            dual_watermarked_pdf=dw,
         )
-        merged_result.no_watermark_mono_pdf_path = merged_no_watermark_mono_path
-        merged_result.no_watermark_dual_pdf_path = merged_no_watermark_dual_path
 
-        if merged_result.no_watermark_mono_pdf_path is None:
-            merged_result.no_watermark_mono_pdf_path = merged_mono_path
-        elif merged_result.mono_pdf_path is None:
-            merged_result.mono_pdf_path = merged_no_watermark_mono_path
-
-        if merged_result.no_watermark_dual_pdf_path is None:
-            merged_result.no_watermark_dual_pdf_path = merged_dual_path
-        elif merged_result.dual_pdf_path is None:
-            merged_result.dual_pdf_path = merged_no_watermark_dual_path
-
-        # Calculate total time
         total_time = sum(
             r.total_seconds for r in results.values() if hasattr(r, "total_seconds")
         )

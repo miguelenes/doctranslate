@@ -12,20 +12,14 @@ logger = logging.getLogger(__name__)
 
 
 def load_flat_doctranslate_defaults(path: Path) -> dict[str, Any]:
-    """Return flat key/value dict from ``[babeldoc]`` then ``[doctranslate]`` (later wins)."""
+    """Return flat key/value dict from scalar keys under ``[doctranslate]``."""
     if not path.is_file():
         return {}
     raw = toml.load(path)
     if not isinstance(raw, dict):
         return {}
     out: dict[str, Any] = {}
-    babel = raw.get("babeldoc")
     doc = raw.get("doctranslate")
-    if isinstance(babel, dict):
-        for k, v in babel.items():
-            if isinstance(v, dict):
-                continue
-            out[k] = v
     if isinstance(doc, dict):
         for k, v in doc.items():
             if isinstance(v, dict):

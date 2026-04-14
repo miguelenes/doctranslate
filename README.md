@@ -39,21 +39,14 @@ uv run doctranslate --help
 uv run doc-translate --help
 ```
 
-Set your API key and translate a file (replace paths and languages as needed). **vNext CLI** (recommended): subcommands and clearer flags. **Legacy** flat flags still work but print a deprecation warning.
+Set your API key and translate a file (replace paths and languages as needed). The CLI uses **subcommands** (for example `translate`, `assets`). See [docs/migration.md](docs/migration.md) if you are upgrading from 0.5.x.
 
 ```bash
 export OPENAI_API_KEY="sk-..."
 
-# vNext (no --openai gate; use --provider openai)
 uv run doctranslate translate input.pdf \
   --provider openai \
   --source-lang en --target-lang zh \
-  -o ./out
-
-# Legacy equivalent
-uv run doctranslate --openai \
-  --files input.pdf \
-  --lang-in en --lang-out zh \
   -o ./out
 ```
 
@@ -103,7 +96,7 @@ uv run doctranslate translate input.pdf \
   -o ./out
 ```
 
-Warm assets / offline bundle (vNext):
+Warm assets / offline bundle:
 
 ```bash
 uv run doctranslate assets warmup
@@ -111,7 +104,7 @@ uv run doctranslate assets pack-offline /path/to/bundle_dir
 uv run doctranslate assets restore-offline /path/to/bundle.tar.zst
 ```
 
-Use `--openai-model`, `--openai-base-url`, and optional `--openai-term-extraction-*` (append as extra flags after vNext options, or see `doctranslate translate --help`).
+Use `--openai-model`, `--openai-base-url`, and optional `--openai-term-extraction-*` (see `doctranslate translate --help`).
 
 **API behavior note:** on the default OpenAI host, simple `translate()` calls may use the **Responses** API, while JSON-heavy `llm_translate()` flows (term extraction, batched IL translation) may use **structured parse**. If you set a custom `--openai-base-url` gateway, chat completions are used throughout.
 
@@ -163,7 +156,6 @@ Validate configuration without running a full job:
 
 ```bash
 uv run doctranslate config validate --translator router -c doctranslate.toml
-# legacy: doctranslate --translator router --config doctranslate.toml --validate-translators
 ```
 
 More examples and JSON metrics export: [docs/multi-translator.md](docs/multi-translator.md).
@@ -302,13 +294,13 @@ If you use pip in an editable install: `pip install -e .`
 **Translation is slow**
 
 - Router: try `least_loaded` or `cost_aware` where appropriate.
-- Enable split translation with `--max-pages-per-part` (legacy) or `doctranslate translate … --split-pages N` (vNext).
+- Enable split translation with `doctranslate translate … --split-pages N` (alias `--max-pages-per-part`).
 - Use a faster (sometimes lower-quality) model for drafts.
 
 **Layout looks wrong after translation**
 
-- Tune fonts with `--primary-font-family` (see `doctranslate translate --help` / legacy `--help`).
-- Try `--watermark-mode no_watermark` (vNext) or `--watermark-output-mode no_watermark` (legacy); deprecated `--no-watermark` is still accepted on the legacy path only.
+- Tune fonts with `--primary-font-family` (see `doctranslate translate --help`).
+- Try `--watermark-mode no_watermark` (alias `--watermark-output-mode`).
 - Confirm the source is not an image-only scan without OCR — see `--ocr-mode` above.
 
 **Getting help**

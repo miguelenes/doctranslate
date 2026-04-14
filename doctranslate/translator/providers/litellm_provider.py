@@ -153,7 +153,9 @@ class LiteLLMProviderExecutor:
             msg = choice0.message
             content = (msg.content or "").strip() if msg is not None else ""
         except (IndexError, AttributeError) as e:
-            raise MalformedLLMResponseError("Missing choices/message in response") from e
+            raise MalformedLLMResponseError(
+                "Missing choices/message in response"
+            ) from e
 
         if not content:
             raise MalformedLLMResponseError("Empty model content")

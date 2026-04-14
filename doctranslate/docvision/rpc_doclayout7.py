@@ -68,7 +68,8 @@ def predict_layout(
     image,
     host: str = "http://localhost:8000",
     _imgsz: int = 1024,
-    lines: list[doctranslate.format.pdf.document_il.utils.extract_char.Line] | None = None,
+    lines: list[doctranslate.format.pdf.document_il.utils.extract_char.Line]
+    | None = None,
 ):
     """
     Predict document layout using the MOSEC service

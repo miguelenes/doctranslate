@@ -15,15 +15,13 @@ uv sync --locked --group dev
 uv run doctranslate --help
 ```
 
-**Translate with OpenAI-compatible API (vNext CLI):**
+**Translate with OpenAI-compatible API:**
 
 ```bash
 export OPENAI_API_KEY=sk-...
 uv run doctranslate translate input.pdf --provider openai \
   --source-lang en --target-lang zh -o ./out
 ```
-
-Legacy flat flags (`--openai --files …`) still work but log a deprecation warning; see [Migration](migration.md).
 
 **Local (Ollama):** see [Local translation](local-translation.md).
 

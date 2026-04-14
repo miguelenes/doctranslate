@@ -1,4 +1,4 @@
-"""CLI entry and backward-compatible helpers."""
+"""CLI entry for DocTranslater."""
 
 from __future__ import annotations
 
@@ -9,21 +9,21 @@ import sys
 
 import doctranslate.format.pdf.high_level
 from doctranslate.cli.dispatch import main_dispatch
-from doctranslate.cli.legacy_parser import create_legacy_parser
-from doctranslate.cli.translate_run import run_legacy_translate_pipeline
+from doctranslate.cli.translate_cli import build_translate_parent_parser
 
-__version__ = "0.5.24"
+__version__ = "0.6.0"
 
 logger = logging.getLogger(__name__)
 
-# Tests and external callers expect this symbol on ``main``.
-create_parser = create_legacy_parser
+create_parser = build_translate_parent_parser
 
 
 async def main() -> None:
-    """Legacy entry: flat ``configargparse`` CLI."""
+    """Async entry used by tests; prefer :func:`cli`."""
     parser = create_parser()
     args = parser.parse_args()
+    from doctranslate.cli.translate_run import run_legacy_translate_pipeline
+
     await run_legacy_translate_pipeline(parser, args)
 
 
@@ -87,16 +87,6 @@ def cli():
     speed_up_logs()
     doctranslate.format.pdf.high_level.init()
     sys.exit(main_dispatch())
-
-
-# for backward compatibility
-def create_cache_folder():
-    return doctranslate.format.pdf.high_level.create_cache_folder()
-
-
-# for backward compatibility
-def download_font_assets():
-    return doctranslate.format.pdf.high_level.download_font_assets()
 
 
 if __name__ == "__main__":

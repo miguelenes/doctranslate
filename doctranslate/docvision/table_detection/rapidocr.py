@@ -232,7 +232,9 @@ class RapidOCRModel:
         translate_config,
         save_debug_image,
     ) -> Generator[
-        tuple[doctranslate.format.pdf.document_il.il_version_1.Page, YoloResult], None, None
+        tuple[doctranslate.format.pdf.document_il.il_version_1.Page, YoloResult],
+        None,
+        None,
     ]:
         for page in pages:
             translate_config.raise_if_cancelled()

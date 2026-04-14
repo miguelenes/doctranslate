@@ -109,6 +109,33 @@ def cmd_stats(ctx: OutputContext) -> int:
     return EXIT_OK
 
 
+def cmd_migrate_v1_cache(ctx: OutputContext) -> int:
+    """Re-run one-time import of ``cache.v1.db`` into TM (clears migration marker first)."""
+    from doctranslate.translator.cache import _run_legacy_migration_if_needed
+    from doctranslate.translator.cache import _TmMigration
+    from doctranslate.translator.cache import init_db
+
+    init_db()
+    try:
+        _TmMigration.delete().where(
+            _TmMigration.name == "legacy_cache_v1_import",
+        ).execute()
+    except Exception as e:
+        ctx.emit_error("migrate_failed", str(e))
+        return EXIT_VALIDATION
+    try:
+        _run_legacy_migration_if_needed()
+    except Exception as e:
+        ctx.emit_error("migrate_failed", str(e))
+        return EXIT_VALIDATION
+    ctx.emit_result(True, {"status": "legacy_v1_import_attempted"})
+    if not ctx.is_json():
+        logger.info(
+            "Legacy cache.v1.db import attempted (see logs if file was absent)."
+        )
+    return EXIT_OK
+
+
 def cmd_purge(ctx: OutputContext, *, yes: bool) -> int:
     """Delete all TM rows (keeps legacy exact cache table)."""
     if not yes:

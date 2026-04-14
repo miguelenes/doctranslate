@@ -163,7 +163,9 @@ def build_translators_from_router_config(
     executors: dict[str, LiteLLMProviderExecutor] = {}
     cap_map: dict[str, TranslatorCapabilities] = {}
     for pid, pcfg in nested.providers.items():
-        if _provider_requires_resolved_api_key(pcfg) and not resolve_provider_api_key(pcfg):
+        if _provider_requires_resolved_api_key(pcfg) and not resolve_provider_api_key(
+            pcfg
+        ):
             env_hint = pcfg.api_key_env or "(inline api_key)"
             msg = f"Provider {pid!r} has no API key (check env {env_hint})"
             raise ValueError(msg)
@@ -232,7 +234,9 @@ def build_translators(
             Path(config_path) if config_path else None,
         )
         if cli_router_overrides:
-            nested = merge_cli_router_overrides_from_mapping(nested, cli_router_overrides)
+            nested = merge_cli_router_overrides_from_mapping(
+                nested, cli_router_overrides
+            )
         return build_translators_from_router_config(
             lang_in=lang_in,
             lang_out=lang_out,
@@ -252,7 +256,9 @@ def build_translators(
         nested = nested.model_copy(update={"translator": "local"})
         nested = convert_local_translator_to_router_nested(nested)
         if cli_router_overrides:
-            nested = merge_cli_router_overrides_from_mapping(nested, cli_router_overrides)
+            nested = merge_cli_router_overrides_from_mapping(
+                nested, cli_router_overrides
+            )
         return build_translators_from_router_config(
             lang_in=lang_in,
             lang_out=lang_out,

@@ -4,7 +4,7 @@ import re
 
 import numpy as np
 
-from doctranslate.babeldoc_exception.BabelDOCException import ExtractTextError
+from doctranslate.exceptions import ExtractTextError
 from doctranslate.format.pdf.document_il import Box
 from doctranslate.format.pdf.document_il import Document
 from doctranslate.format.pdf.document_il import Page

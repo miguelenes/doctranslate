@@ -19,7 +19,8 @@ import doctranslate.assets.assets
 import doctranslate.format.pdf.high_level
 from doctranslate.const import enable_process_pool
 from doctranslate.format.pdf.translation_config import TranslationConfig
-from doctranslate.format.pdf.translation_config import WatermarkOutputMode
+from doctranslate.format.pdf.translation_settings import TranslationSettings
+from doctranslate.format.pdf.translation_settings import WatermarkOutputMode
 from doctranslate.glossary import Glossary
 from doctranslate.translator.config import load_nested_translator_config
 from doctranslate.translator.config import merge_cli_router_overrides_from_mapping
@@ -156,8 +157,7 @@ async def run_legacy_translate_pipeline(parser: Any, args: Any) -> None:
     elif args.translator == "router":
         if not args.config:
             parser.error(
-                "Router mode requires --config with [doctranslate] (or legacy [babeldoc]) "
-                "providers and profiles",
+                "Router mode requires --config with [doctranslate] providers and profiles",
             )
     elif args.translator == "local":
         nested_chk = load_nested_translator_config(
@@ -366,93 +366,94 @@ async def run_legacy_translate_pipeline(parser: Any, args: Any) -> None:
     total_term_extraction_completion_tokens = 0
     total_term_extraction_cache_hit_prompt_tokens = 0
 
-    ocr_lang_hints = None
+    ocr_lang_hints: list[str] = []
     if getattr(args, "ocr_lang", None):
         ocr_lang_hints = [x.strip() for x in args.ocr_lang.split(",") if x.strip()]
+
+    job_settings = TranslationSettings(
+        lang_in=args.lang_in,
+        lang_out=args.lang_out,
+        pages=args.pages,
+        output_dir=args.output,
+        debug=args.debug,
+        working_dir=working_dir,
+        no_dual=args.no_dual,
+        no_mono=args.no_mono,
+        formular_font_pattern=args.formular_font_pattern,
+        formular_char_pattern=args.formular_char_pattern,
+        qps=args.qps,
+        split_short_lines=args.split_short_lines,
+        short_line_split_factor=args.short_line_split_factor,
+        skip_clean=args.skip_clean,
+        dual_translate_first=args.dual_translate_first,
+        disable_rich_text_translate=args.disable_rich_text_translate,
+        report_interval=args.report_interval,
+        min_text_length=args.min_text_length,
+        use_alternating_pages_dual=args.use_alternating_pages_dual,
+        watermark_output_mode=watermark_output_mode,
+        split_strategy=split_strategy,
+        table_model=table_model,
+        show_char_box=args.show_char_box,
+        skip_scanned_detection=args.skip_scanned_detection,
+        ocr_workaround=args.ocr_workaround,
+        custom_system_prompt=args.custom_system_prompt,
+        add_formula_placehold_hint=args.add_formula_placehold_hint,
+        disable_same_text_fallback=args.disable_same_text_fallback,
+        glossaries=loaded_glossaries,
+        pool_max_workers=args.pool_max_workers,
+        auto_extract_glossary=args.auto_extract_glossary,
+        auto_enable_ocr_workaround=args.auto_enable_ocr_workaround,
+        primary_font_family=args.primary_font_family,
+        only_include_translated_page=args.only_include_translated_page,
+        save_auto_extracted_glossary=args.save_auto_extracted_glossary,
+        enable_graphic_element_process=not args.disable_graphic_element_process,
+        merge_alternating_line_numbers=args.merge_alternating_line_numbers,
+        skip_translation=args.skip_translation,
+        skip_form_render=args.skip_form_render,
+        skip_curve_render=args.skip_curve_render,
+        only_parse_generate_pdf=args.only_parse_generate_pdf,
+        remove_non_formula_lines=args.remove_non_formula_lines,
+        non_formula_line_iou_threshold=args.non_formula_line_iou_threshold,
+        figure_table_protection_threshold=args.figure_table_protection_threshold,
+        skip_formula_offset_calculation=args.skip_formula_offset_calculation,
+        metadata_extra_data=args.metadata_extra_data,
+        term_pool_max_workers=args.term_pool_max_workers,
+        llm_translation_batch_max_tokens=llm_batch_kwargs[
+            "llm_translation_batch_max_tokens"
+        ],
+        llm_translation_batch_max_paragraphs=llm_batch_kwargs[
+            "llm_translation_batch_max_paragraphs"
+        ],
+        llm_term_extraction_batch_max_tokens=llm_batch_kwargs[
+            "llm_term_extraction_batch_max_tokens"
+        ],
+        llm_term_extraction_batch_max_paragraphs=llm_batch_kwargs[
+            "llm_term_extraction_batch_max_paragraphs"
+        ],
+        tm_mode=args.tm_mode,
+        tm_scope=args.tm_scope,
+        tm_min_segment_chars=args.tm_min_segment_chars,
+        tm_fuzzy_min_score=args.tm_fuzzy_min_score,
+        tm_semantic_min_similarity=args.tm_semantic_min_similarity,
+        tm_project_id=args.tm_project_id,
+        tm_embedding_model=args.tm_embedding_model,
+        tm_import_path=args.tm_import_path,
+        tm_export_path=args.tm_export_path,
+        ocr_mode=args.ocr_mode,
+        ocr_pages=args.ocr_pages,
+        ocr_lang_hints=ocr_lang_hints,
+        ocr_debug_dump=args.ocr_debug,
+    )
 
     for file in pending_files:
         # 清理文件路径，去除两端的引号
         file = file.strip("\"'")
-        # 创建配置对象
         config = TranslationConfig(
-            input_file=file,
-            font=None,
-            pages=args.pages,
-            output_dir=args.output,
-            translator=translator,
+            translator,
+            file,
+            doc_layout_model,
+            job_settings,
             term_extraction_translator=term_extraction_translator,
-            debug=args.debug,
-            lang_in=args.lang_in,
-            lang_out=args.lang_out,
-            no_dual=args.no_dual,
-            no_mono=args.no_mono,
-            qps=args.qps,
-            formular_font_pattern=args.formular_font_pattern,
-            formular_char_pattern=args.formular_char_pattern,
-            split_short_lines=args.split_short_lines,
-            short_line_split_factor=args.short_line_split_factor,
-            doc_layout_model=doc_layout_model,
-            skip_clean=args.skip_clean,
-            dual_translate_first=args.dual_translate_first,
-            disable_rich_text_translate=args.disable_rich_text_translate,
-            enhance_compatibility=args.enhance_compatibility,
-            use_alternating_pages_dual=args.use_alternating_pages_dual,
-            report_interval=args.report_interval,
-            min_text_length=args.min_text_length,
-            watermark_output_mode=watermark_output_mode,
-            split_strategy=split_strategy,
-            table_model=table_model,
-            show_char_box=args.show_char_box,
-            skip_scanned_detection=args.skip_scanned_detection,
-            ocr_workaround=args.ocr_workaround,
-            custom_system_prompt=args.custom_system_prompt,
-            working_dir=working_dir,
-            add_formula_placehold_hint=args.add_formula_placehold_hint,
-            disable_same_text_fallback=args.disable_same_text_fallback,
-            glossaries=loaded_glossaries,
-            pool_max_workers=args.pool_max_workers,
-            auto_extract_glossary=args.auto_extract_glossary,
-            auto_enable_ocr_workaround=args.auto_enable_ocr_workaround,
-            primary_font_family=args.primary_font_family,
-            only_include_translated_page=args.only_include_translated_page,
-            save_auto_extracted_glossary=args.save_auto_extracted_glossary,
-            enable_graphic_element_process=not args.disable_graphic_element_process,
-            merge_alternating_line_numbers=args.merge_alternating_line_numbers,
-            skip_translation=args.skip_translation,
-            skip_form_render=args.skip_form_render,
-            skip_curve_render=args.skip_curve_render,
-            only_parse_generate_pdf=args.only_parse_generate_pdf,
-            remove_non_formula_lines=args.remove_non_formula_lines,
-            non_formula_line_iou_threshold=args.non_formula_line_iou_threshold,
-            figure_table_protection_threshold=args.figure_table_protection_threshold,
-            skip_formula_offset_calculation=args.skip_formula_offset_calculation,
-            metadata_extra_data=args.metadata_extra_data,
-            term_pool_max_workers=args.term_pool_max_workers,
-            llm_translation_batch_max_tokens=llm_batch_kwargs[
-                "llm_translation_batch_max_tokens"
-            ],
-            llm_translation_batch_max_paragraphs=llm_batch_kwargs[
-                "llm_translation_batch_max_paragraphs"
-            ],
-            llm_term_extraction_batch_max_tokens=llm_batch_kwargs[
-                "llm_term_extraction_batch_max_tokens"
-            ],
-            llm_term_extraction_batch_max_paragraphs=llm_batch_kwargs[
-                "llm_term_extraction_batch_max_paragraphs"
-            ],
-            tm_mode=args.tm_mode,
-            tm_scope=args.tm_scope,
-            tm_min_segment_chars=args.tm_min_segment_chars,
-            tm_fuzzy_min_score=args.tm_fuzzy_min_score,
-            tm_semantic_min_similarity=args.tm_semantic_min_similarity,
-            tm_project_id=args.tm_project_id,
-            tm_embedding_model=args.tm_embedding_model,
-            tm_import_path=args.tm_import_path,
-            tm_export_path=args.tm_export_path,
-            ocr_mode=args.ocr_mode,
-            ocr_pages=args.ocr_pages,
-            ocr_lang_hints=ocr_lang_hints,
-            ocr_debug_dump=args.ocr_debug,
         )
 
         def nop(_x):

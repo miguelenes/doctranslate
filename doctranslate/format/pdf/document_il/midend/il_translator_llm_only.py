@@ -162,7 +162,9 @@ class ILTranslatorLLMOnly:
         self.ok_count = 0
         self.fallback_count = 0
         self.total_count = 0
-        self._batch_max_tokens = int(translation_config.llm_translation_batch_max_tokens)
+        self._batch_max_tokens = int(
+            translation_config.llm_translation_batch_max_tokens
+        )
         self._batch_max_paragraphs = int(
             translation_config.llm_translation_batch_max_paragraphs,
         )
@@ -602,9 +604,13 @@ class ILTranslatorLLMOnly:
                     copy.deepcopy(paragraph)
                 )
 
-            if total_token_count > self._batch_max_tokens or len(
-                paragraphs,
-            ) > self._batch_max_paragraphs:
+            if (
+                total_token_count > self._batch_max_tokens
+                or len(
+                    paragraphs,
+                )
+                > self._batch_max_paragraphs
+            ):
                 self.mid += 1
                 executor.submit(
                     self.translate_paragraph,

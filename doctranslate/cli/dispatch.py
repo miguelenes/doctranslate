@@ -1,4 +1,4 @@
-"""Route between vNext subcommands and legacy flat CLI."""
+"""DocTranslater CLI: subcommands and ``translate`` entry."""
 
 from __future__ import annotations
 
@@ -18,76 +18,13 @@ from doctranslate.cli import inspect_cmd
 from doctranslate.cli import tm_cmd
 from doctranslate.cli.exits import EXIT_OK
 from doctranslate.cli.exits import EXIT_USAGE
-from doctranslate.cli.legacy_parser import create_legacy_parser
 from doctranslate.cli.output import OutputContext
 from doctranslate.cli.project_config import load_flat_doctranslate_defaults
 from doctranslate.cli.project_config import load_profile_overlay
+from doctranslate.cli.translate_cli import build_translate_parent_parser
 from doctranslate.cli.translate_run import run_legacy_translate_pipeline
-from doctranslate.cli.vnext_argv import build_translate_legacy_argv
-from doctranslate.cli.vnext_argv import build_translate_parent_parser
 
 logger = logging.getLogger(__name__)
-
-VNEXT_COMMANDS = frozenset(
-    {
-        "translate",
-        "inspect",
-        "glossary",
-        "tm",
-        "assets",
-        "debug",
-        "config",
-        "help",
-    },
-)
-
-LEGACY_TRIGGERS = frozenset(
-    {
-        "--warmup",
-        "--files",
-        "--generate-offline-assets",
-        "--restore-offline-assets",
-        "--validate-translators",
-        "--openai",
-        "--translator",
-        "--rpc-doclayout",
-        "--rpc-doclayout2",
-        "--rpc-doclayout3",
-        "--rpc-doclayout4",
-        "--rpc-doclayout5",
-        "--rpc-doclayout6",
-        "--rpc-doclayout7",
-    },
-)
-
-
-def _flag_base(tok: str) -> str:
-    if "=" in tok:
-        return tok.split("=", 1)[0]
-    return tok
-
-
-def should_use_vnext(argv: Sequence[str]) -> bool:
-    """Use vNext router unless argv clearly targets legacy flat flags."""
-    if not argv:
-        return True
-    i = 0
-    while i < len(argv):
-        t = argv[i]
-        if t in ("-c", "--config"):
-            i += 2
-            continue
-        if t.startswith("--config="):
-            i += 1
-            continue
-        if t in VNEXT_COMMANDS:
-            return True
-        break
-    for tok in argv:
-        b = _flag_base(tok)
-        if b in LEGACY_TRIGGERS:
-            return False
-    return True
 
 
 def _register_local_flags(p: argparse.ArgumentParser) -> None:
@@ -110,7 +47,7 @@ def build_vnext_parser() -> argparse.ArgumentParser:
     translate_parent = build_translate_parent_parser()
     root = argparse.ArgumentParser(
         prog="doctranslate",
-        description="DocTranslater — PDF translation CLI (vNext).",
+        description="DocTranslater — PDF translation CLI.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     root.add_argument(
@@ -141,8 +78,6 @@ def build_vnext_parser() -> argparse.ArgumentParser:
         "translate",
         parents=[translate_parent],
         help="Translate PDF(s) through the IL pipeline.",
-        description="Additional legacy flags may follow recognized options "
-        "(passed through to the legacy parser).",
     )
 
     insp = sub.add_parser("inspect", help="Inspect PDFs without translating.")
@@ -170,6 +105,10 @@ def build_vnext_parser() -> argparse.ArgumentParser:
     tst = ts.add_parser("stats", help="Count TM rows.")
     tp = ts.add_parser("purge", help="Delete all TM rows (requires --yes).")
     tp.add_argument("--yes", action="store_true")
+    ts.add_parser(
+        "migrate-v1-cache",
+        help="Import legacy ~/.cache/doctranslate/cache.v1.db into TM (one-time).",
+    )
 
     ast = sub.add_parser("assets", help="Model/asset cache management.")
     a_s = ast.add_subparsers(dest="asset_cmd", required=True)
@@ -221,14 +160,11 @@ def build_vnext_parser() -> argparse.ArgumentParser:
 
 async def run_vnext_async(argv: Sequence[str]) -> int:
     parser = build_vnext_parser()
-    args, unknown = parser.parse_known_args(list(argv))
+    args = parser.parse_args(list(argv))
     ctx = OutputContext(
         format=args.output_format,
         command=args.command or "help",
     )
-
-    if unknown and getattr(args, "command", None) != "translate":
-        parser.error(f"unrecognized arguments: {' '.join(unknown)}")
 
     if not args.command:
         parser.print_help()
@@ -238,44 +174,31 @@ async def run_vnext_async(argv: Sequence[str]) -> int:
         return EXIT_OK
 
     if args.command == "translate":
-        args.extra_legacy = unknown
-        effective_cfg = args.translate_config or args.global_config
-        if effective_cfg:
-            flat = load_flat_doctranslate_defaults(Path(effective_cfg))
-            prof = load_profile_overlay(Path(effective_cfg), args.profile or "")
-            flat.update(prof)
-            for k, v in flat.items():
-                if hasattr(args, k) and getattr(args, k) is None:
-                    setattr(args, k, v)
-        legacy = create_legacy_parser()
-        if args.global_config and not args.translate_config:
+        tpl = build_translate_parent_parser()
+        known_dests = {
+            getattr(a, "dest", None)
+            for a in tpl._actions
+            if getattr(a, "dest", None) not in (None, argparse.SUPPRESS)
+        }
+        if args.global_config:
             gflat = load_flat_doctranslate_defaults(Path(args.global_config))
             gprof = load_profile_overlay(Path(args.global_config), args.profile or "")
             gflat.update(gprof)
-            known_dests = {
-                getattr(a, "dest", None)
-                for a in legacy._actions
-                if getattr(a, "dest", None) not in (None, argparse.SUPPRESS)
-            }
-            legacy.set_defaults(
-                **{k: v for k, v in gflat.items() if k in known_dests},
-            )
-        legacy_argv = build_translate_legacy_argv(args)
-        l_ns = legacy.parse_args(legacy_argv)
-        if args.provider == "openai":
-            l_ns.openai_implicit = True
-        if not l_ns.files:
+            for k, v in gflat.items():
+                if k in known_dests and hasattr(args, k) and getattr(args, k) is None:
+                    setattr(args, k, v)
+        args.config = args.global_config
+        args.files = list(args.translate_inputs or [])
+        args.openai_implicit = args.translator == "openai" and not args.openai
+        if not args.files and not args.validate_translators:
             ctx.emit_error(
                 "usage",
                 "translate requires at least one PDF (positional paths).",
             )
             return EXIT_USAGE
-        await run_legacy_translate_pipeline(legacy, l_ns)
+        await run_legacy_translate_pipeline(parser, args)
         ctx.emit_result(True, {"status": "translate_finished"})
         return EXIT_OK
-
-    if unknown:
-        parser.error(f"unrecognized arguments: {' '.join(unknown)}")
 
     if args.command == "inspect":
         return inspect_cmd.run_inspect(
@@ -301,6 +224,8 @@ async def run_vnext_async(argv: Sequence[str]) -> int:
             return tm_cmd.cmd_stats(ctx)
         if args.tm_cmd == "purge":
             return tm_cmd.cmd_purge(ctx, yes=args.yes)
+        if args.tm_cmd == "migrate-v1-cache":
+            return tm_cmd.cmd_migrate_v1_cache(ctx)
 
     if args.command == "assets":
         if args.asset_cmd == "warmup":
@@ -338,19 +263,4 @@ def run_vnext(argv: Sequence[str]) -> int:
 
 def main_dispatch(argv: Sequence[str] | None = None) -> int:
     """Entry from ``cli()`` after logging is configured."""
-    argv = list(sys.argv[1:] if argv is None else argv)
-    if not should_use_vnext(argv):
-        logger.warning(
-            "Legacy flat CLI is deprecated; prefer `doctranslate translate ...`. "
-            "See docs/migration.md.",
-        )
-        return asyncio.run(_run_legacy_main_async())
-
-    return run_vnext(argv)
-
-
-async def _run_legacy_main_async() -> int:
-    legacy = create_legacy_parser()
-    ns = legacy.parse_args()
-    await run_legacy_translate_pipeline(legacy, ns)
-    return EXIT_OK
+    return run_vnext(list(sys.argv[1:] if argv is None else argv))

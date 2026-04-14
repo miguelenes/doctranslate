@@ -2,20 +2,20 @@
 
 from pathlib import Path
 
-from doctranslate.main import create_parser
+from doctranslate.cli.dispatch import build_vnext_parser
 
 
 def test_parser_accepts_translator_router_flags(tmp_path: Path):
     cfg = tmp_path / "router.toml"
-    cfg.write_text("[doctranslate]\ntranslator = \"router\"\n", encoding="utf-8")
-    p = create_parser()
+    cfg.write_text('[doctranslate]\ntranslator = "router"\n', encoding="utf-8")
+    p = build_vnext_parser()
     args = p.parse_args(
         [
+            "-c",
+            str(cfg),
+            "translate",
             "--translator",
             "router",
-            "--config",
-            str(cfg),
-            "--files",
             "x.pdf",
         ],
     )
@@ -24,20 +24,28 @@ def test_parser_accepts_translator_router_flags(tmp_path: Path):
 
 
 def test_parser_default_translator_openai():
-    p = create_parser()
-    args = p.parse_args(["--openai", "--openai-api-key", "k", "--files", "a.pdf"])
+    p = build_vnext_parser()
+    args = p.parse_args(
+        [
+            "translate",
+            "--openai",
+            "--openai-api-key",
+            "k",
+            "a.pdf",
+        ],
+    )
     assert args.translator == "openai"
 
 
 def test_parser_accepts_translator_local_flags():
-    p = create_parser()
+    p = build_vnext_parser()
     args = p.parse_args(
         [
+            "translate",
             "--translator",
             "local",
             "--local-model",
             "qwen2.5:7b",
-            "--files",
             "x.pdf",
         ],
     )
@@ -46,14 +54,14 @@ def test_parser_accepts_translator_local_flags():
 
 
 def test_parser_accepts_ocr_flags():
-    p = create_parser()
+    p = build_vnext_parser()
     args = p.parse_args(
         [
+            "translate",
             "--translator",
             "local",
             "--local-model",
             "m",
-            "--files",
             "x.pdf",
             "--ocr-mode",
             "hybrid",
