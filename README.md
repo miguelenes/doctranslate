@@ -63,7 +63,7 @@ doctranslate --openai \
   --output output_zh.pdf
 ```
 
-Use `--openai-model`, `--openai-base-url`, and optional `--openai-term-extraction-*` flags as documented in `doctranslate --help`.
+Use `--openai-model`, `--openai-base-url`, and optional `--openai-term-extraction-*` flags as documented in `doctranslate --help`. With the default OpenAI API host, the legacy path may use the **Responses** API for simple `translate()` calls and **structured parse** for JSON-heavy `llm_translate()` flows (term extraction, batched IL translation); custom `--openai-base-url` gateways use chat completions only.
 
 ### Multi-provider router (TOML)
 

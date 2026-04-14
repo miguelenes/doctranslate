@@ -14,8 +14,11 @@ from tenacity import retry_if_exception_type
 from tenacity import stop_after_attempt
 from tenacity import wait_exponential
 
-from doctranslate.babeldoc_exception.BabelDOCException import ContentFilterError
 from doctranslate.translator.cache import TranslationCache
+from doctranslate.translator.llm.prompt_versions import PROMPT_VERSION_SIMPLE_TRANSLATE
+from doctranslate.translator.llm.usage import token_usage_from_chat_completion
+from doctranslate.translator.providers.openai_client import OpenAILLMTransport
+from doctranslate.translator.types import TokenUsage
 from doctranslate.translator.types import TranslatorCapabilities
 from doctranslate.utils.atomic_integer import AtomicInteger
 
@@ -245,6 +248,7 @@ class OpenAITranslator(BaseTranslator):
         #     }
         #     self.add_cache_impact_parameters("reasoning-effort", 'minimal')
         self.reasoning = reasoning
+        self._base_url = base_url
         self.client = openai.OpenAI(
             base_url=base_url,
             api_key=api_key,
@@ -255,6 +259,11 @@ class OpenAITranslator(BaseTranslator):
                 timeout=60,  # Set a reasonable timeout
             ),
         )
+        self._transport = OpenAILLMTransport(
+            self.client,
+            model=model,
+            base_url=base_url,
+        )
         if send_temperature:
             self.add_cache_impact_parameters("temperature", self.options["temperature"])
         self.model = model
@@ -263,6 +272,11 @@ class OpenAITranslator(BaseTranslator):
         self.send_temperature = send_temperature
         self.add_cache_impact_parameters("model", self.model)
         self.add_cache_impact_parameters("prompt", self.prompt(""))
+        self.add_cache_impact_parameters("llm_client", "openai_transport_v1")
+        self.add_cache_impact_parameters(
+            "prompt_version_simple",
+            PROMPT_VERSION_SIMPLE_TRANSLATE,
+        )
         if self.reasoning:
             self.extra_body["reasoning"] = {"effort": self.reasoning}
             self.add_cache_impact_parameters("reasoning", self.reasoning)
@@ -282,6 +296,8 @@ class OpenAITranslator(BaseTranslator):
             supports_json_mode=self.enable_json_mode_if_requested,
             supports_reasoning=bool(self.reasoning),
             supports_streaming=False,
+            supports_structured_outputs=True,
+            supports_responses_api=self._base_url is None,
             max_output_tokens=2048,
             provider_id=self.name,
         )
@@ -293,18 +309,19 @@ class OpenAITranslator(BaseTranslator):
         before_sleep=before_sleep_log(logger, logging.WARNING),
     )
     def do_translate(self, text, rate_limit_params: dict = None) -> str:
-        options = {}
-        if self.send_temperature:
-            options.update(self.options)
-
-        response = self.client.chat.completions.create(
-            model=self.model,
-            **options,
-            messages=self.prompt(text),
+        temp = self.options.get("temperature") if self.send_temperature else None
+        result = self._transport.complete(
+            self.prompt(text),
+            temperature=temp,
+            send_temperature=self.send_temperature,
+            max_output_tokens=2048,
+            json_mode=False,
+            extra_headers={},
             extra_body=self.extra_body,
+            structured_model=None,
         )
-        self.update_token_count(response)
-        return response.choices[0].message.content.strip()
+        self._inc_token_usage(result.usage)
+        return result.text.strip()
 
     def prompt(self, text):
         return [
@@ -328,62 +345,48 @@ class OpenAITranslator(BaseTranslator):
         if text is None:
             return None
 
-        options = {}
-        if self.send_temperature:
-            options.update(self.options)
-        if self.enable_json_mode_if_requested and rate_limit_params.get(
-            "request_json_mode", False
-        ):
-            options["response_format"] = {"type": "json_object"}
+        rlp = rate_limit_params or {}
+        json_mode = bool(
+            self.enable_json_mode_if_requested and rlp.get("request_json_mode", False),
+        )
+        structured_model = rlp.get("structured_response_model")
 
         extra_headers = {}
         if self.send_dashscope_header:
             extra_headers["X-DashScope-DataInspection"] = (
                 '{"input": "disable", "output": "disable"}'
             )
+        temp = self.options.get("temperature") if self.send_temperature else None
+        result = self._transport.complete(
+            [{"role": "user", "content": text}],
+            temperature=temp,
+            send_temperature=self.send_temperature,
+            max_output_tokens=2048,
+            json_mode=json_mode and structured_model is None,
+            extra_headers=extra_headers,
+            extra_body=self.extra_body,
+            structured_model=structured_model,
+        )
+        self._inc_token_usage(result.usage)
+        return result.text.strip()
+
+    def _inc_token_usage(self, usage: TokenUsage) -> None:
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                **options,
-                max_tokens=2048,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": text,
-                    },
-                ],
-                extra_headers=extra_headers,
-                extra_body=self.extra_body,
-            )
-            self.update_token_count(response)
-            return response.choices[0].message.content.strip()
-        except openai.BadRequestError as e:
-            if (
-                "系统检测到输入或生成内容可能包含不安全或敏感内容，请您避免输入易产生敏感内容的提示语，感谢您的配合。"
-                in e.message
-            ):
-                raise ContentFilterError(e.message) from e
-            else:
-                raise
+            if usage.total_tokens:
+                self.token_count.inc(usage.total_tokens)
+            if usage.prompt_tokens:
+                self.prompt_token_count.inc(usage.prompt_tokens)
+            if usage.completion_tokens:
+                self.completion_token_count.inc(usage.completion_tokens)
+            if usage.cache_hit_prompt_tokens:
+                self.cache_hit_prompt_token_count.inc(usage.cache_hit_prompt_tokens)
+        except Exception:
+            logger.exception("Error updating token count")
 
     def update_token_count(self, response):
+        """Backward-compatible hook; prefer ``_inc_token_usage`` with ``TokenUsage``."""
         try:
-            if response.usage and response.usage.total_tokens:
-                self.token_count.inc(response.usage.total_tokens)
-            if response.usage and response.usage.prompt_tokens:
-                self.prompt_token_count.inc(response.usage.prompt_tokens)
-            if response.usage and response.usage.completion_tokens:
-                self.completion_token_count.inc(response.usage.completion_tokens)
-            # Support both response.usage.prompt_cache_hit_tokens and response.prompt_tokens_details.cached_tokens
-            hit_count = 0
-            if response.usage and hasattr(response.usage, "prompt_cache_hit_tokens"):
-                hit_count = getattr(response.usage, "prompt_cache_hit_tokens", 0)
-            if hasattr(response, "prompt_tokens_details") and getattr(
-                response.prompt_tokens_details, "cached_tokens", 0
-            ):
-                hit_count += getattr(response.prompt_tokens_details, "cached_tokens", 0)
-            if hit_count:
-                self.cache_hit_prompt_token_count.inc(hit_count)
+            self._inc_token_usage(token_usage_from_chat_completion(response))
         except Exception as e:
             logger.exception("Error updating token count")
 

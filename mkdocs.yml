@@ -155,3 +155,11 @@ nav:
     - Contributing:
       - Contributing: CONTRIBUTING.md
       - Contributor Reward: CONTRIBUTOR_REWARD.md
+  - AI assistant context:
+    - Overview: ai/README.md
+    - Project map: ai/project-map.md
+    - PDF pipeline: ai/pdf-pipeline.md
+    - Translator stack: ai/translator-stack.md
+    - Verification: ai/verification.md
+    - MCP suggestions: ai/mcp-suggestions.md
+    - Phase 2 (optional): ai/phase2-skills.md

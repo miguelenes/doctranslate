@@ -127,6 +127,11 @@ class TranslatorRouter(BaseTranslator):
                     "max_retries": pcfg.max_retries,
                     "max_output_tokens": pcfg.max_output_tokens,
                     "supports_json_mode": pcfg.supports_json_mode,
+                    "supports_structured_outputs": getattr(
+                        pcfg,
+                        "supports_structured_outputs",
+                        None,
+                    ),
                 },
             )
 
@@ -149,6 +154,12 @@ class TranslatorRouter(BaseTranslator):
             supports_json_mode=all(c.supports_json_mode for c in caps),
             supports_reasoning=any(c.supports_reasoning for c in caps),
             supports_streaming=any(c.supports_streaming for c in caps),
+            supports_structured_outputs=all(
+                getattr(c, "supports_structured_outputs", False) for c in caps
+            ),
+            supports_responses_api=any(
+                getattr(c, "supports_responses_api", None) is True for c in caps
+            ),
             max_output_tokens=max(c.max_output_tokens for c in caps),
             provider_id=f"router:{self.profile_name}",
         )

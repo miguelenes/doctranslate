@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          cache-dependency-glob: "pyproject.toml"
           activate-environment: true
       - name: Install project and dev tools (pytest)
         run: uv sync --group dev
@@ -58,26 +58,43 @@ jobs:
           rm -rf ~/.cache/doctranslate/working
 
   # Optional: real LLM smoke (requires repository secrets). Skipped on forks / missing secrets.
+  # Note: `secrets` is not allowed in `jobs.<id>.if`; gate steps via a prerequisite step instead.
   smoke-openai:
     name: Optional OpenAI end-to-end smoke
     runs-on: ubuntu-latest
-    if: ${{ secrets.OPENAIAPIKEY != '' && secrets.OPENAIAPIURL != '' && secrets.OPENAIMODEL != '' }}
     steps:
+      - name: Check OpenAI smoke secrets
+        id: openai_smoke
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAIAPIKEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAIAPIURL }}
+          OPENAI_MODEL: ${{ secrets.OPENAIMODEL }}
+        run: |
+          if [ -n "$OPENAI_API_KEY" ] && [ -n "$OPENAI_BASE_URL" ] && [ -n "$OPENAI_MODEL" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/checkout@v6
+        if: steps.openai_smoke.outputs.ok == 'true'
         with:
           persist-credentials: false
       - name: Setup uv with Python 3.12
+        if: steps.openai_smoke.outputs.ok == 'true'
         uses: astral-sh/setup-uv@85856786d1ce8acfbcc2f13a5f3fbd6b938f9f41 # v7.1.2
         with:
           python-version: "3.12"
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          cache-dependency-glob: "pyproject.toml"
           activate-environment: true
       - name: Install project
+        if: steps.openai_smoke.outputs.ok == 'true'
         run: uv sync --group dev
       - name: Warm up cache
+        if: steps.openai_smoke.outputs.ok == 'true'
         run: uv run doctranslate --warmup
       - name: Translate sample PDF (OpenAI)
+        if: steps.openai_smoke.outputs.ok == 'true'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAIAPIKEY }}
           OPENAI_BASE_URL: ${{ secrets.OPENAIAPIURL }}

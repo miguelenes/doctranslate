@@ -89,7 +89,7 @@ metrics_json_path = ""               # path when metrics_output includes json
 - `api_key` — inline key (discouraged for real deployments).
 - `base_url` — optional (OpenAI-compatible gateways, Ollama host, etc.).
 - `timeout_seconds`, `max_retries`, `rpm`, `tpm`, `max_output_tokens`
-- `supports_json_mode`, `supports_reasoning`, `supports_streaming` — overrides when autodetection is wrong.
+- `supports_json_mode`, `supports_structured_outputs`, `supports_reasoning`, `supports_streaming` — overrides when autodetection is wrong. Structured outputs indicate the provider can satisfy schema-style JSON (used when routing requests that attach a Pydantic response model; LiteLLM paths still use `json_object` where configured).
 - `input_cost_per_million_tokens`, `output_cost_per_million_tokens` — for `cost_aware` routing when list prices are not built in.
 
 ### Ollama note

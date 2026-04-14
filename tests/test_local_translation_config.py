@@ -2,14 +2,13 @@
 
 from pathlib import Path
 
-import pytest
-
-from doctranslate.translator.config import NestedTranslatorConfig, load_nested_translator_config
+from doctranslate.translator.config import NestedTranslatorConfig
+from doctranslate.translator.config import load_nested_translator_config
 from doctranslate.translator.local_config import (
     convert_local_translator_to_router_nested,
-    merge_local_cli_into_nested,
-    validate_local_nested,
 )
+from doctranslate.translator.local_config import merge_local_cli_into_nested
+from doctranslate.translator.local_config import validate_local_nested
 
 
 def test_validate_local_requires_model():

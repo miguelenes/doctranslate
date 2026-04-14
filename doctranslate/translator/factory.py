@@ -55,11 +55,25 @@ def _default_capabilities_for_provider(
     ss = cfg.supports_streaming
     if ss is None:
         ss = False
+    s_struct = cfg.supports_structured_outputs
+    if s_struct is None:
+        s_struct = cfg.provider in (
+            "openai",
+            "anthropic",
+            "openrouter",
+            "openai_compatible",
+            "ollama",
+        )
+    supports_resp: bool | None = None
+    if cfg.provider == "openai":
+        supports_resp = cfg.base_url is None
     return TranslatorCapabilities(
         supports_llm=True,
         supports_json_mode=bool(sj),
         supports_reasoning=bool(sr),
         supports_streaming=bool(ss),
+        supports_structured_outputs=bool(s_struct),
+        supports_responses_api=supports_resp,
         max_output_tokens=cfg.max_output_tokens,
         rpm=cfg.rpm,
         tpm=cfg.tpm,

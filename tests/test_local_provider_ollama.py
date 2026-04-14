@@ -1,10 +1,8 @@
 """Factory builds executors for Ollama providers (no API key)."""
 
-from doctranslate.translator.config import (
-    NestedTranslatorConfig,
-    ProviderConfigModel,
-    RouteProfileConfig,
-)
+from doctranslate.translator.config import NestedTranslatorConfig
+from doctranslate.translator.config import ProviderConfigModel
+from doctranslate.translator.config import RouteProfileConfig
 from doctranslate.translator.factory import build_translators
 from doctranslate.translator.factory import build_translators_from_router_config
 

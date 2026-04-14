@@ -7,6 +7,7 @@ from string import Template
 
 import Levenshtein
 import tiktoken
+from pydantic import ValidationError
 from tqdm import tqdm
 
 from doctranslate.format.pdf.document_il import Document
@@ -33,6 +34,8 @@ from doctranslate.format.pdf.document_il.utils.paragraph_helper import (
     is_pure_numeric_paragraph,
 )
 from doctranslate.format.pdf.translation_config import TranslationConfig
+from doctranslate.translator.llm.json_utils import clean_llm_json_text
+from doctranslate.translator.llm.schemas import BatchTranslationEnvelope
 from doctranslate.translator.translator import BaseTranslator
 from doctranslate.utils.priority_thread_pool_executor import PriorityThreadPoolExecutor
 
@@ -60,7 +63,10 @@ PROMPT_TEMPLATE = Template(
 
 $glossary_usage_rules_block
 ## Output Format
-Return a JSON array of the same length.  
+Return either:
+- A JSON array of the same length as the input, OR
+- A single JSON object: `{"items": [ ... ]}` with the same array as the value of `items`.
+
 For each item:
 - Keep the same "id" and remove other fields like "input" and "layout_label".
 - Add "output" with the translated text only.
@@ -720,15 +726,21 @@ class ILTranslatorLLMOnly:
                 rate_limit_params={
                     "paragraph_token_count": paragraph_token_count,
                     "request_json_mode": True,
+                    "structured_response_model": BatchTranslationEnvelope,
                 },
             )
             for llm_translate_tracker in llm_translate_trackers:
                 llm_translate_tracker.set_output(llm_output)
             llm_output = llm_output.strip()
 
-            llm_output = self._clean_json_output(llm_output)
-
-            parsed_output = json.loads(llm_output)
+            cleaned = clean_llm_json_text(llm_output)
+            try:
+                envelope = BatchTranslationEnvelope.model_validate_json(cleaned)
+                parsed_output = [it.model_dump() for it in envelope.items]
+            except ValidationError:
+                parsed_output = json.loads(cleaned)
+                if isinstance(parsed_output, dict) and "items" in parsed_output:
+                    parsed_output = parsed_output["items"]
 
             if isinstance(parsed_output, dict) and parsed_output.get(
                 "output", parsed_output.get("input", False)
@@ -992,16 +1004,4 @@ class ILTranslatorLLMOnly:
         )
 
     def _clean_json_output(self, llm_output: str) -> str:
-        # Clean up JSON output by removing common wrapper tags
-        llm_output = llm_output.strip()
-        if llm_output.startswith("<json>"):
-            llm_output = llm_output[6:]
-        if llm_output.endswith("</json>"):
-            llm_output = llm_output[:-7]
-        if llm_output.startswith("```json"):
-            llm_output = llm_output[7:]
-        if llm_output.startswith("```"):
-            llm_output = llm_output[3:]
-        if llm_output.endswith("```"):
-            llm_output = llm_output[:-3]
-        return llm_output.strip()
+        return clean_llm_json_text(llm_output)

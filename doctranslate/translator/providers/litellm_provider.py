@@ -10,8 +10,10 @@ import httpx
 
 from doctranslate.translator.config import ProviderConfigModel
 from doctranslate.translator.config import resolve_provider_api_key
+from doctranslate.translator.llm.usage import token_usage_from_chat_completion
 from doctranslate.translator.types import CompletionResult
 from doctranslate.translator.types import FailureCategory
+from doctranslate.translator.types import LLMTransportKind
 from doctranslate.translator.types import TokenUsage
 
 logger = logging.getLogger(__name__)
@@ -89,26 +91,6 @@ def classify_exception(exc: BaseException) -> FailureCategory:
     return FailureCategory.UNKNOWN
 
 
-def _usage_from_response(response: Any) -> TokenUsage:
-    usage = getattr(response, "usage", None)
-    if not usage:
-        return TokenUsage()
-    pt = int(getattr(usage, "prompt_tokens", None) or 0)
-    ct = int(getattr(usage, "completion_tokens", None) or 0)
-    tt = int(getattr(usage, "total_tokens", None) or 0)
-    if not tt and (pt or ct):
-        tt = pt + ct
-    hit = 0
-    if hasattr(usage, "prompt_cache_hit_tokens"):
-        hit = int(getattr(usage, "prompt_cache_hit_tokens", 0) or 0)
-    return TokenUsage(
-        prompt_tokens=pt,
-        completion_tokens=ct,
-        total_tokens=tt,
-        cache_hit_prompt_tokens=hit,
-    )
-
-
 def estimate_cost_usd(
     usage: TokenUsage,
     in_per_mtok: float | None,
@@ -159,7 +141,7 @@ class LiteLLMProviderExecutor:
             raise
         latency_ms = (time.perf_counter() - t0) * 1000.0
 
-        usage = _usage_from_response(response)
+        usage = token_usage_from_chat_completion(response)
         cost = estimate_cost_usd(
             usage,
             self.cfg.input_cost_per_million_tokens,
@@ -182,6 +164,7 @@ class LiteLLMProviderExecutor:
             estimated_cost_usd=cost,
             latency_ms=latency_ms,
             raw_response=response,
+            transport=LLMTransportKind.LITELLM,
         )
 
 

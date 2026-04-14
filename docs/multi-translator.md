@@ -42,6 +42,8 @@ Failures are classified (e.g. `rate_limit`, `timeout`, `authentication`, `malfor
 
 Automatic glossary term extraction issues JSON-shaped prompts. Define a profile with `require_json_mode = true` and list providers that support JSON mode. Set `term_extraction_profile` in TOML (or `--term-extraction-profile`) to that profile name. Paragraph translation can use a different `routing_profile` with cheaper or faster models.
 
+**Structured outputs:** With `--translator openai`, term extraction and batched LLM paragraph translation can use OpenAI `chat.completions.parse` when `supports_structured_outputs` is true (default for common providers in router config). Router / LiteLLM paths continue to use `response_format: json_object` unless you add future schema support in provider configs.
+
 ## Metrics
 
 With `metrics_output = "json"` or `both`, and `metrics_json_path` set (or overridden by CLI), the router can write structured usage summaries. Logs always include a human-readable summary when `log` or `both` is selected.

@@ -29,6 +29,8 @@ yadt.toml
 examples/
 /make_gif.py
 /dist
+# MkDocs build output
+site/
 .cache
 .cursor/rules/_*.mdc
 /.cursor

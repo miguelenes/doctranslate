@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import tiktoken
+from pydantic import ValidationError
 from tqdm import tqdm
 
 from doctranslate.format.pdf.document_il import (
@@ -22,6 +23,8 @@ from doctranslate.format.pdf.document_il.utils.paragraph_helper import (
 from doctranslate.format.pdf.document_il.utils.paragraph_helper import (
     is_pure_numeric_paragraph,
 )
+from doctranslate.translator.llm.json_utils import clean_llm_json_text
+from doctranslate.translator.llm.schemas import TermExtractionEnvelope
 from doctranslate.utils.priority_thread_pool_executor import PriorityThreadPoolExecutor
 
 if TYPE_CHECKING:
@@ -49,10 +52,10 @@ You are an expert multilingual terminologist. Extract key terms from the text an
 {reference_glossary_section}
 
 ### Output Format
-- Return ONLY a valid JSON array.
+- Return ONLY valid JSON: either a JSON array of term objects, OR one JSON object `{{"terms": [...]}}` with the same array as the value of `terms`.
 - Each element: {{"src": "...", "tgt": "..."}}.
 - No comments, no backticks, no extra text.
-- If no terms: [].
+- If no terms: [] or {{"terms": []}}.
 
 ### Example
 For terms “LLM”, “GPT”:
@@ -184,53 +187,6 @@ class AutomaticTermExtractor:
         )
         return total_tokens, prompt_tokens, completion_tokens, cache_hit_prompt_tokens
 
-    def _clean_json_output(self, llm_output: str) -> str:
-        llm_output = llm_output.strip()
-        if llm_output.startswith("<json>"):
-            llm_output = llm_output[6:]
-        if llm_output.endswith("</json>"):
-            llm_output = llm_output[:-7]
-        if llm_output.startswith("```json"):
-            llm_output = llm_output[7:]
-        if llm_output.startswith("```"):
-            llm_output = llm_output[3:]
-        if llm_output.endswith("```"):
-            llm_output = llm_output[:-3]
-        return llm_output.strip()
-
-    def _process_llm_response(self, llm_response_text: str, request_id: str):
-        try:
-            cleaned_response_text = self._clean_json_output(llm_response_text)
-            extracted_data = json.loads(cleaned_response_text)
-
-            if not isinstance(extracted_data, list):
-                logger.warning(
-                    f"Request ID {request_id}: LLM response was not a JSON list, but type: {type(extracted_data)}. Content: {cleaned_response_text[:200]}"
-                )
-                return
-
-            for item in extracted_data:
-                if isinstance(item, dict) and "src" in item and "tgt" in item:
-                    src_term = str(item["src"]).strip()
-                    tgt_term = str(item["tgt"]).strip()
-                    if (
-                        src_term and tgt_term and len(src_term) < 100
-                    ):  # Basic validation
-                        self.shared_context.add_raw_extracted_term_pair(
-                            src_term, tgt_term
-                        )
-                else:
-                    logger.warning(
-                        f"Request ID {request_id}: Skipping malformed item in LLM JSON response: {item}"
-                    )
-
-        except json.JSONDecodeError as e:
-            logger.error(
-                f"Request ID {request_id}: JSON Parsing Error: {e}. Problematic LLM Response after cleaning (start): {cleaned_response_text[:200]}..."
-            )
-        except Exception as e:
-            logger.error(f"Request ID {request_id}: Error processing LLM response: {e}")
-
     def process_page(
         self,
         page: Page,
@@ -339,13 +295,20 @@ class AutomaticTermExtractor:
                 rate_limit_params={
                     "paragraph_token_count": paragraph_token_count,
                     "request_json_mode": True,
+                    "structured_response_model": TermExtractionEnvelope,
                 },
             )
             tracker.set_output(output)
-            cleaned_output = self._clean_json_output(output)
-            response = json.loads(cleaned_output)
-            if not isinstance(response, list):
-                response = [response]  # Ensure we have a list
+            cleaned_output = clean_llm_json_text(output)
+            try:
+                envelope = TermExtractionEnvelope.model_validate_json(cleaned_output)
+                response = [p.model_dump() for p in envelope.terms]
+            except ValidationError:
+                response = json.loads(cleaned_output)
+                if isinstance(response, dict) and "terms" in response:
+                    response = response["terms"]
+                if not isinstance(response, list):
+                    response = [response]  # Ensure we have a list
 
             for term in response:
                 if isinstance(term, dict) and "src" in term and "tgt" in term:

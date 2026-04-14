@@ -79,6 +79,7 @@ class ProviderConfigModel(BaseModel):
     rpm: int | None = None
     tpm: int | None = None
     supports_json_mode: bool | None = None
+    supports_structured_outputs: bool | None = None
     supports_reasoning: bool | None = None
     supports_streaming: bool | None = None
     max_output_tokens: int = 2048
