@@ -7,6 +7,32 @@ Run DocTranslater in Linux containers for local use, CI, or deployment. Images a
 - Docker 23+ with BuildKit (`DOCKER_BUILDKIT=1`).
 - Linux `amd64` or `arm64` (buildx for multi-arch: `docker buildx build --platform linux/amd64,linux/arm64 …`).
 
+## Prebuilt images (GitHub Container Registry)
+
+On push to `main`, [`.github/workflows/docker.yml`](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/docker.yml) builds and pushes **amd64** images to **GitHub Packages** (`ghcr.io`). Use your GitHub username or organization name in **lowercase** as `OWNER` (GHCR requires a lowercase owner in the image path).
+
+| Image | Dockerfile target | Typical use |
+|-------|-------------------|-------------|
+| `ghcr.io/OWNER/doctranslater-base` | `runtime-base` | Schemas / minimal CLI |
+| `ghcr.io/OWNER/doctranslater-cpu` | `runtime-cpu` | Default translate path (PDF + LLM + layout ONNX) |
+| `ghcr.io/OWNER/doctranslater-vision` | `runtime-vision` | Full optional stack (OCR, Hyperscan glossary path, …) |
+| `ghcr.io/OWNER/doctranslater-dev` | `runtime-dev` | Development / CI parity |
+
+**Tags**
+
+- `main` — tip of the default branch when the workflow ran.
+- `sha-<short>` — commit SHA for reproducible pulls.
+- `latest` — only on **`doctranslater-cpu`** (the default runtime profile).
+
+**Pull and run** (example for this fork; replace `OWNER` if you use a fork):
+
+```bash
+docker pull ghcr.io/miguelenes/doctranslater-cpu:main
+docker run --rm ghcr.io/miguelenes/doctranslater-cpu:main --help
+```
+
+Private packages require `docker login ghcr.io` (PAT with `read:packages`, or `GITHUB_TOKEN` in CI). For anonymous pulls, keep the package visibility **public** in the repo’s Packages settings.
+
 ## Build targets
 
 | Target | Contents |

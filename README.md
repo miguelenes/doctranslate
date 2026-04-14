@@ -14,6 +14,7 @@ Pick what you need — you can always come back here.
 |------------|------------|
 | Install and run my first translation | [Start here (~5 minutes)](#start-here-5-minutes) |
 | Run in Docker (Linux images) | [Docker](docs/docker.md) |
+| Pull prebuilt images (GHCR) | [Docker — Prebuilt images](docs/docker.md#prebuilt-images-github-container-registry) |
 | See every CLI flag and config option | [Configuration](docs/configuration.md) |
 | Use several providers (failover, cost-aware routing) | [Multi-translator setup](docs/multi-translator.md) |
 | Run without a hosted API (Ollama, vLLM, …) | [Local translation](docs/local-translation.md) |
