@@ -10,19 +10,14 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from doctranslate import __version__
-from doctranslate.cli import assets_cmd
-from doctranslate.cli import config_cmd
 from doctranslate.cli import debug_cmd
 from doctranslate.cli import glossary_cmd
-from doctranslate.cli import inspect_cmd
-from doctranslate.cli import tm_cmd
 from doctranslate.cli.exits import EXIT_OK
 from doctranslate.cli.exits import EXIT_USAGE
 from doctranslate.cli.output import OutputContext
 from doctranslate.cli.project_config import load_flat_doctranslate_defaults
 from doctranslate.cli.project_config import load_profile_overlay
 from doctranslate.cli.translate_cli import build_translate_parent_parser
-from doctranslate.cli.translate_run import run_legacy_translate_pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -174,6 +169,10 @@ async def run_vnext_async(argv: Sequence[str]) -> int:
         return EXIT_OK
 
     if args.command == "translate":
+        from doctranslate.bootstrap import ensure_user_cache_dirs
+        from doctranslate.cli.translate_run import run_legacy_translate_pipeline
+
+        ensure_user_cache_dirs()
         tpl = build_translate_parent_parser()
         known_dests = {
             getattr(a, "dest", None)
@@ -201,6 +200,10 @@ async def run_vnext_async(argv: Sequence[str]) -> int:
         return EXIT_OK
 
     if args.command == "inspect":
+        from doctranslate.bootstrap import ensure_user_cache_dirs
+        from doctranslate.cli import inspect_cmd
+
+        ensure_user_cache_dirs()
         return inspect_cmd.run_inspect(
             ctx,
             list(args.pdf_paths),
@@ -216,6 +219,10 @@ async def run_vnext_async(argv: Sequence[str]) -> int:
             )
 
     if args.command == "tm":
+        from doctranslate.bootstrap import ensure_user_cache_dirs
+        from doctranslate.cli import tm_cmd
+
+        ensure_user_cache_dirs()
         if args.tm_cmd == "import":
             return tm_cmd.cmd_import(ctx, args.ndjson, args.lang_in, args.lang_out)
         if args.tm_cmd == "export":
@@ -228,6 +235,10 @@ async def run_vnext_async(argv: Sequence[str]) -> int:
             return tm_cmd.cmd_migrate_v1_cache(ctx)
 
     if args.command == "assets":
+        from doctranslate.bootstrap import ensure_user_cache_dirs
+        from doctranslate.cli import assets_cmd
+
+        ensure_user_cache_dirs()
         if args.asset_cmd == "warmup":
             return assets_cmd.cmd_warmup(ctx)
         if args.asset_cmd == "pack-offline":
@@ -240,6 +251,8 @@ async def run_vnext_async(argv: Sequence[str]) -> int:
             return debug_cmd.cmd_info(ctx)
 
     if args.command == "config":
+        from doctranslate.cli import config_cmd
+
         if args.cfg_cmd == "validate":
             return config_cmd.cmd_validate(ctx, args)
         if args.cfg_cmd == "init":

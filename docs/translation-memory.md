@@ -38,7 +38,7 @@ After **automatic term extraction** finalizes a glossary, the translator cache c
 Install optional dependencies (large download; CPU OK for small models):
 
 ```bash
-uv sync --extra tm_semantic
+uv sync --group dev --extra full --extra tm_semantic
 ```
 
 If `sentence-transformers` / `torch` are missing, `--tm-mode=semantic` behaves like `fuzzy` (L3 is skipped when the backend is unavailable).

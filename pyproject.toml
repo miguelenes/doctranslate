@@ -16,48 +16,96 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 keywords = ["PDF"]
+# Minimal install: config/TOML types and glossary CSV normalization (`regex`).
+# For CLI translation and PDF pipeline, install ``DocTranslater[full]`` (see README).
 dependencies = [
-    "bitstring>=4.3.0",
-    "httpx[socks]>=0.27.0",
-    "huggingface-hub>=0.27.0",
-    "numpy>=2.0.2",
-    "onnx>=1.18.0",
-    # ORT 1.24.1+ no longer publishes cp310 wheels; keep 3.10 installs on 1.23.x.
-    "onnxruntime>=1.16.1,<1.24; python_version < '3.11'",
-    "onnxruntime>=1.16.1; python_version >= '3.11'",
-    "openai>=1.59.3",
-    "orjson>=3.10.14",
-    "charset-normalizer >= 2.0.0",
-    "cryptography >= 36.0.0",
-    #    "pdfminer-six==20250416",
-    "peewee>=3.17.8",
-    "psutil>=7.0.0",
-    "pymupdf>=1.25.1",
-    "rich>=13.9.4",
-    "toml>=0.10.2",
-    "tqdm>=4.67.1",
-    "xsdata[cli,lxml,soap]>=24.12",
-    "msgpack>=1.1.0",
-    "pydantic>=2.10.6",
-    "tenacity>=9.0.0",
-    "scikit-image>=0.25.2",
-    "freetype-py>=2.5.1",
-    "tiktoken>=0.9.0",
-    "Levenshtein>=0.27.1",
-    "litellm>=1.55.0",
-    "opencv-python-headless>=4.10.0.84",
-    "rapidocr-onnxruntime>=1.4.4",
-    "pyzstd>=0.17.0",
-    "hyperscan>=0.7.13",
-    "rtree>=1.4.0",
+    "charset-normalizer>=2.0.0",
     "chardet>=5.2.0",
-    "scipy>=1.15.3",
-    "uharfbuzz>=0.50.2",
-    "scikit-learn>=1.7.1",
-    "rapidfuzz>=3.9.0",
+    "pydantic>=2.10.6",
+    "regex>=2024.11.6",
+    "toml>=0.10.2",
 ]
 
 [project.optional-dependencies]
+schemas = []
+pdf = [
+    "bitstring>=4.3.0",
+    "cryptography>=36.0.0",
+    "freetype-py>=2.5.1",
+    "msgpack>=1.1.0",
+    "numpy>=2.0.2",
+    "orjson>=3.10.14",
+    "pymupdf>=1.25.1",
+    "pyzstd>=0.17.0",
+    "rtree>=1.4.0",
+    "scikit-image>=0.25.2",
+    "scikit-learn>=1.7.1",
+    "scipy>=1.15.3",
+    "xsdata[cli,lxml,soap]>=24.12",
+]
+llm = [
+    "httpx[socks]>=0.27.0",
+    "litellm>=1.55.0",
+    "openai>=1.59.3",
+    "tenacity>=9.0.0",
+    "tiktoken>=0.9.0",
+]
+vision = [
+    "huggingface-hub>=0.27.0",
+    "onnx>=1.18.0",
+    "onnxruntime>=1.16.1,<1.24; python_version < '3.11'",
+    "onnxruntime>=1.16.1; python_version >= '3.11'",
+    "opencv-python-headless>=4.10.0.84",
+]
+ocr = [
+    "rapidocr-onnxruntime>=1.4.4",
+]
+tm = [
+    "Levenshtein>=0.27.1",
+    "peewee>=3.17.8",
+    "rapidfuzz>=3.9.0",
+]
+glossary = [
+    "hyperscan>=0.7.13",
+]
+cli = [
+    "psutil>=7.0.0",
+    "rich>=13.9.4",
+    "tqdm>=4.67.1",
+]
+full = [
+    "bitstring>=4.3.0",
+    "cryptography>=36.0.0",
+    "freetype-py>=2.5.1",
+    "huggingface-hub>=0.27.0",
+    "httpx[socks]>=0.27.0",
+    "hyperscan>=0.7.13",
+    "Levenshtein>=0.27.1",
+    "litellm>=1.55.0",
+    "msgpack>=1.1.0",
+    "numpy>=2.0.2",
+    "onnx>=1.18.0",
+    "onnxruntime>=1.16.1,<1.24; python_version < '3.11'",
+    "onnxruntime>=1.16.1; python_version >= '3.11'",
+    "openai>=1.59.3",
+    "opencv-python-headless>=4.10.0.84",
+    "orjson>=3.10.14",
+    "peewee>=3.17.8",
+    "psutil>=7.0.0",
+    "pymupdf>=1.25.1",
+    "pyzstd>=0.17.0",
+    "rapidfuzz>=3.9.0",
+    "rapidocr-onnxruntime>=1.4.4",
+    "rich>=13.9.4",
+    "rtree>=1.4.0",
+    "scikit-image>=0.25.2",
+    "scikit-learn>=1.7.1",
+    "scipy>=1.15.3",
+    "tenacity>=9.0.0",
+    "tiktoken>=0.9.0",
+    "tqdm>=4.67.1",
+    "xsdata[cli,lxml,soap]>=24.12",
+]
 directml = [
     "onnxruntime-directml>=1.16.1,<1.24; python_version < '3.11'",
     "onnxruntime-directml>=1.16.1; python_version >= '3.11'",
@@ -183,6 +231,14 @@ dev = [
 [tool.pytest.ini_options]
 pythonpath = [".", "src"]
 testpaths = ["tests"]
+markers = [
+    "requires_pdf: needs PDF/IL stack (pymupdf, xsdata, …)",
+    "requires_llm: needs OpenAI/httpx/LiteLLM stack",
+    "requires_ocr: needs RapidOCR / ONNX OCR path",
+    "requires_hyperscan: needs hyperscan (glossary acceleration)",
+    "requires_semantic_tm: needs sentence-transformers / torch",
+    "requires_full: needs the ``full`` optional dependency set (default CI)",
+]
 
 [bumpver]
 current_version = "0.6.0"

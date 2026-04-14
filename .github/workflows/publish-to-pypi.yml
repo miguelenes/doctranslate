@@ -59,7 +59,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          uv sync --locked
+          uv sync --locked --group dev --extra full
 
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"

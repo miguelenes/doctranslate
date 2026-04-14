@@ -5,8 +5,10 @@ Run the smallest set that covers your change. CI reference: `.github/workflows/t
 ## Environment
 
 ```bash
-uv sync --locked --group dev
+uv sync --locked --group dev --extra full
 ```
+
+For a **minimal** environment (schemas types only), `uv sync --locked --group dev` is enough; see [Package layers](package-layers.md).
 
 If you change `pyproject.toml` dependencies, run **`uv lock`** and commit **`uv.lock`** so CI (`uv sync --locked`) stays in sync.
 

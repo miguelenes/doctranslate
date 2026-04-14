@@ -14,7 +14,6 @@ from doctranslate.translator.config import load_nested_translator_config
 from doctranslate.translator.config import merge_cli_router_overrides_from_mapping
 from doctranslate.translator.config import resolve_provider_api_key
 from doctranslate.translator.config import validate_router_config
-from doctranslate.translator.providers.litellm_provider import LiteLLMProviderExecutor
 from doctranslate.translator.translator import OpenAITranslator
 from doctranslate.translator.types import TranslatorCapabilities
 
@@ -146,6 +145,9 @@ def build_translators_from_router_config(
     nested: NestedTranslatorConfig,
 ) -> TranslatorBuildResult:
     """Router path: two ``TranslatorRouter`` instances (translate + term extraction)."""
+    from doctranslate.translator.providers.litellm_provider import (
+        LiteLLMProviderExecutor,
+    )
     from doctranslate.translator.router import TranslatorRouter
 
     validate_router_config(nested)
@@ -160,7 +162,7 @@ def build_translators_from_router_config(
 
     strategy = nested.routing_strategy or translate_profile.strategy
 
-    executors: dict[str, LiteLLMProviderExecutor] = {}
+    executors: dict[str, Any] = {}
     cap_map: dict[str, TranslatorCapabilities] = {}
     for pid, pcfg in nested.providers.items():
         if _provider_requires_resolved_api_key(pcfg) and not resolve_provider_api_key(

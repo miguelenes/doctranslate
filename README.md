@@ -28,10 +28,12 @@ You will: clone the project, install dependencies, and produce one translated PD
 
 **Requirements:** Python 3.10+ and [uv](https://docs.astral.sh/uv/) (recommended).
 
+**PyPI / library installs:** use the `full` extra so all PDF, LLM, OCR, TM, and CLI pieces resolve (`pip install "DocTranslater[full]"`). A smaller **schemas-only** footprint is documented in [docs/ai/package-layers.md](docs/ai/package-layers.md).
+
 ```bash
 git clone https://github.com/miguelenes/doctranslate.git
 cd doctranslate
-uv sync --locked --group dev
+uv sync --locked --group dev --extra full
 
 uv run doctranslate --version
 uv run doctranslate --help
@@ -83,7 +85,7 @@ DocTranslater is aimed at **technical and layout-heavy PDFs**: papers, manuals, 
 
 ## Usage (pick your path)
 
-The sections below assume you already ran `uv sync --locked --group dev` and use `uv run doctranslate …`. If you installed the package into an active environment, you can call `doctranslate` directly instead.
+The sections below assume you already ran `uv sync --locked --group dev --extra full` and use `uv run doctranslate …`. If you installed the package into an active environment, you can call `doctranslate` directly instead.
 
 ### OpenAI (quick path)
 
@@ -244,7 +246,7 @@ cd doctranslate
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-uv sync --locked --group dev
+uv sync --locked --group dev --extra full
 uv run pytest tests/ -v
 
 # Docs: live preview
@@ -285,7 +287,7 @@ Times include layout detection, translation, and PDF rendering. Actual cost depe
 **`No module named 'doctranslate'`**
 
 ```bash
-uv sync --locked --group dev
+uv sync --locked --group dev --extra full
 uv run python -c "import doctranslate; print(doctranslate.__version__)"
 ```
 

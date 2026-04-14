@@ -7,6 +7,9 @@ DocTranslater is a Python 3.10+ package (PyPI name **DocTranslater**; import pac
 | Path | Role |
 |------|------|
 | `doctranslate/main.py` | Entry: `cli()` → `cli/dispatch.py`; `create_parser` → translate argparse parent (tests). |
+| `doctranslate/api.py` | Stable public API (`translate`, `build_translators`, …); see [Package layers](package-layers.md). |
+| `doctranslate/schemas/` | Config/settings types with minimal deps (optional extra `schemas`). |
+| `doctranslate/bootstrap.py` | Cache dir creation without importing the PDF/IL graph (used by CLI). |
 | `doctranslate/cli/` | Subcommands (`translate`, `assets`, `config`, …), JSON output helpers. |
 | `doctranslate/cli/translate_cli.py` | Argparse flags for `translate`. |
 | `doctranslate/cli/translate_run.py` | Async translation pipeline + progress UI. |

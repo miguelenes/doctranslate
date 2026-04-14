@@ -17,7 +17,7 @@ We stay on **MkDocs 1.x** with an explicit **`mkdocs>=1.5,<2`** pin (see `pyproj
 
 - Workflow: [.github/workflows/docs.yml](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/docs.yml)
 - Trigger: push to **`main`** or **`master`**, or **Run workflow** manually (`workflow_dispatch`).
-- Steps: `uv sync --locked --group dev` → `uv run zensical build --clean` → deploy **`./site`** to **`gh-pages`**.
+- Steps: `uv sync --locked --group dev --extra full` → `uv run zensical build --clean` → deploy **`./site`** to **`gh-pages`**.
 
 ## Local development
 

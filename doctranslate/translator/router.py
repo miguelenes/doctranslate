@@ -21,9 +21,6 @@ from doctranslate.exceptions import ContentFilterError
 from doctranslate.translator.config import NestedTranslatorConfig
 from doctranslate.translator.config import ProviderConfigModel
 from doctranslate.translator.config import RouteProfileConfig
-from doctranslate.translator.providers.litellm_provider import LiteLLMProviderExecutor
-from doctranslate.translator.providers.litellm_provider import MalformedLLMResponseError
-from doctranslate.translator.providers.litellm_provider import classify_exception
 from doctranslate.translator.translator import BaseTranslator
 from doctranslate.translator.translator import TranslationError
 from doctranslate.translator.types import FailureCategory
@@ -90,7 +87,7 @@ class TranslatorRouter(BaseTranslator):
         profile_name: str,
         route_profile: RouteProfileConfig,
         global_strategy: RouterStrategy,
-        executors: dict[str, LiteLLMProviderExecutor],
+        executors: dict[str, Any],
         capabilities_by_id: dict[str, TranslatorCapabilities],
         provider_configs: dict[str, ProviderConfigModel],
         nested_settings: NestedTranslatorConfig,
@@ -263,6 +260,10 @@ class TranslatorRouter(BaseTranslator):
         self.cache_hit_prompt_token_count.inc(int(usage.cache_hit_prompt_tokens or 0))
 
     def _record_failure_only(self, pid: str, exc: BaseException) -> FailureCategory:
+        from doctranslate.translator.providers.litellm_provider import (
+            classify_exception,
+        )
+
         cat = classify_exception(exc)
         m = self._metrics[pid]
         m.total_requests += 1
@@ -311,17 +312,22 @@ class TranslatorRouter(BaseTranslator):
                     "Translation OK provider=%s profile=%s", pid, self.profile_name
                 )
                 return result.text
-            except ContentFilterError:
-                m.concurrent_requests = max(0, m.concurrent_requests - 1)
-                raise
-            except MalformedLLMResponseError as e:
-                self._record_failure_only(pid, e)
-                last_exc = e
-                attempts += 1
-                if FailureCategory.MALFORMED_RESPONSE not in rp.fallback_on:
-                    raise
-                logger.warning("Malformed response from %s: %s", pid, e)
             except Exception as e:
+                if isinstance(e, ContentFilterError):
+                    m.concurrent_requests = max(0, m.concurrent_requests - 1)
+                    raise
+                from doctranslate.translator.providers.litellm_provider import (
+                    MalformedLLMResponseError,
+                )
+
+                if isinstance(e, MalformedLLMResponseError):
+                    self._record_failure_only(pid, e)
+                    last_exc = e
+                    attempts += 1
+                    if FailureCategory.MALFORMED_RESPONSE not in rp.fallback_on:
+                        raise
+                    logger.warning("Malformed response from %s: %s", pid, e)
+                    continue
                 cat = self._record_failure_only(pid, e)
                 last_exc = e
                 attempts += 1

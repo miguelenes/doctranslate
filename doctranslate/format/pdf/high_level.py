@@ -19,7 +19,6 @@ from pymupdf import Font
 
 from doctranslate import asynchronize
 from doctranslate.assets.assets import warmup
-from doctranslate.const import CACHE_FOLDER
 from doctranslate.const import WATERMARK_VERSION
 from doctranslate.const import close_process_pool
 from doctranslate.exceptions import ExtractTextError
@@ -1278,15 +1277,9 @@ def download_font_assets():
 
 
 def create_cache_folder():
-    try:
-        logger.debug(f"create cache folder at {CACHE_FOLDER}")
-        Path(CACHE_FOLDER).mkdir(parents=True, exist_ok=True)
-    except OSError:
-        logger.critical(
-            f"Failed to create cache folder at {CACHE_FOLDER}",
-            exc_info=True,
-        )
-        exit(1)
+    from doctranslate.bootstrap import ensure_user_cache_dirs
+
+    ensure_user_cache_dirs()
 
 
 def init():

@@ -5,9 +5,9 @@ import logging
 import re
 import time
 from pathlib import Path
+from typing import Any
 
 import chardet
-import hyperscan
 import regex
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class Glossary:
 
         self.normalized_lookup: dict[str, tuple[str, str]] = {}
         self.id_lookup: list[tuple[str, str]] = []
-        self.hs_dbs: list[hyperscan.Database] | None = None
+        self.hs_dbs: list[Any] | None = None
         self._build_regex_and_lookup()
 
     @staticmethod
@@ -79,6 +79,15 @@ class Glossary:
         if not self.entries:
             self.source_terms_regex = None
             return
+
+        try:
+            import hyperscan
+        except ImportError as e:
+            msg = (
+                "hyperscan is required for glossary scanning. "
+                'Install with: pip install "DocTranslater[glossary]"'
+            )
+            raise RuntimeError(msg) from e
 
         self.hs_dbs = []
         hs_pattern = []
@@ -194,6 +203,8 @@ class Glossary:
         """Returns a list of (original_source, target_text) tuples for terms found in the given text."""
         if not self.hs_dbs or not text:
             return []
+
+        import hyperscan
 
         text = TERM_NORM_PATTERN.sub(" ", text)  # Normalize whitespace in the text
         if not text:

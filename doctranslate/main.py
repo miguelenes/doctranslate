@@ -7,7 +7,6 @@ import multiprocessing as mp
 import queue
 import sys
 
-import doctranslate.format.pdf.high_level
 from doctranslate.cli.dispatch import main_dispatch
 from doctranslate.cli.translate_cli import build_translate_parent_parser
 
@@ -58,9 +57,12 @@ def speed_up_logs():
 
 def cli():
     """Command line interface entry point."""
-    from rich.logging import RichHandler
+    try:
+        from rich.logging import RichHandler
 
-    logging.basicConfig(level=logging.INFO, handlers=[RichHandler()])
+        logging.basicConfig(level=logging.INFO, handlers=[RichHandler()])
+    except ImportError:
+        logging.basicConfig(level=logging.INFO)
 
     logging.getLogger("httpx").setLevel("CRITICAL")
     logging.getLogger("httpx").propagate = False
@@ -85,7 +87,6 @@ def cli():
             v.propagate = False
 
     speed_up_logs()
-    doctranslate.format.pdf.high_level.init()
     sys.exit(main_dispatch())
 
 
