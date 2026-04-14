@@ -7,6 +7,8 @@ import sys
 from dataclasses import dataclass
 from typing import Any
 
+from doctranslate.schemas.versions import PUBLIC_SCHEMA_VERSION
+
 
 @dataclass
 class OutputContext:
@@ -25,7 +27,9 @@ class OutputContext:
             return
         envelope: dict[str, Any] = {
             "ok": ok,
+            "schema_version": PUBLIC_SCHEMA_VERSION,
             "command": self.command,
+            "stream": "final",
             "result": result,
             "warnings": warnings or [],
             "errors": [],
@@ -43,7 +47,9 @@ class OutputContext:
                 json.dumps(
                     {
                         "ok": False,
+                        "schema_version": PUBLIC_SCHEMA_VERSION,
                         "command": self.command,
+                        "stream": "final",
                         "result": None,
                         "warnings": [],
                         "errors": [],

@@ -1,6 +1,10 @@
 """Translation engine orchestration (PDF pipeline entrypoints).
 
 Requires the same optional extras as :mod:`doctranslate.api` (typically ``[full]``).
+
+.. deprecated::
+    Prefer :mod:`doctranslate.api` for stable embedding. This package re-exports
+    low-level pipeline callables and may overlap with :mod:`doctranslate.pdf`.
 """
 
 from __future__ import annotations

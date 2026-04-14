@@ -8,9 +8,15 @@
 
 ## Overview
 
-The `doctranslate.format.pdf.high_level.async_translate` coroutine provides an **asynchronous progress API** around the same **synchronous** PDF translation pipeline: workers still run blocking `translate` / `llm_translate` calls (often via thread pools). Use this entry point when you need `async for` progress events (CLI and UIs), not because the LLM stack is natively async end-to-end.
+The `doctranslate.api.async_translate` coroutine provides an **asynchronous progress API** around the same **synchronous** PDF translation pipeline: workers still run blocking `translate` / `llm_translate` calls (often via thread pools). Use this entry point when you need `async for` progress events (CLI and UIs), not because the LLM stack is natively async end-to-end.
 
-Import:
+Stable import:
+
+```python
+from doctranslate.api import async_translate, validate_request
+```
+
+Legacy import (not semver-stable across minors):
 
 ```python
 from doctranslate.format.pdf.high_level import async_translate
@@ -21,19 +27,22 @@ from doctranslate.format.pdf.translation_config import TranslationConfig
 
 ```python linenums="1"
 async def translate_with_progress():
-    config = TranslationConfig(
-        input_file="example.pdf",
-        translator=your_translator,
-        # ... other configuration options
+    req = validate_request(
+        {
+            "input_pdf": "example.pdf",
+            "lang_in": "en",
+            "lang_out": "zh",
+            "translator": {"mode": "openai", "openai": {"model": "gpt-4o-mini"}},
+        }
     )
-    
+
     try:
-        async for event in async_translate(config):
+        async for event in async_translate(req):
             if event["type"] == "progress_update":
                 print(f"Progress: {event['overall_progress']}%")
             elif event["type"] == "finish":
-                result = event["translate_result"]
-                print(f"Translation completed: {result.original_pdf_path}")
+                summary = event["translation_result"]["summary"]
+                print(f"Translation completed: {summary['original_pdf_path']}")
             elif event["type"] == "error":
                 print(f"Error occurred: {event['error']}")
                 break
@@ -98,9 +107,19 @@ Emitted when translation completes successfully:
 ```python
 {
     "type": "finish",
-    "translate_result": TranslateResult  # Contains paths to translated files and timing info
+    "schema_version": "1",
+    "event_version": "1",
+    "translation_result": {
+        "schema_version": "1",
+        "summary": {...},
+        "artifacts": {"items": [...]},
+    },
 }
 ```
+
+When you pass a legacy `TranslationConfig` to `async_translate`, the dict may
+still contain a live `translate_result` object for backward compatibility; prefer
+`TranslationRequest` for stable wire-format output.
 
 ### 5. Error Event
 
@@ -109,7 +128,14 @@ Emitted if an error occurs during translation:
 ```python
 {
     "type": "error",
-    "error": str  # Error message
+    "schema_version": "1",
+    "event_version": "1",
+    "error": {
+        "code": "internal_error",
+        "message": "…",
+        "retryable": false,
+        "details": {},
+    },
 }
 ```
 
@@ -134,9 +160,10 @@ The translation process can be cancelled in several ways:
 
 1. By raising a `CancelledError` (e.g., when using `asyncio.Task.cancel()`)
 2. Through `KeyboardInterrupt` (e.g., when user presses Ctrl+C)
-3. By calling `translation_config.cancel_translation()` method
+3. By calling `translation_config.cancel_translation()` on a legacy `TranslationConfig`
+4. By cancelling the asyncio `Task` that consumes `async_translate` when using `TranslationRequest`
 
-Example of programmatic cancellation:
+Example of programmatic cancellation (legacy `TranslationConfig`):
 
 ```python linenums="1"
 async def translate_with_cancellation():
@@ -145,26 +172,23 @@ async def translate_with_cancellation():
         translator=your_translator,
         # ... other configuration options
     )
-    
+
     try:
-        # Start translation in another task
         translation_task = asyncio.create_task(process_translation(config))
-        
-        # Simulate some condition that requires cancellation
         await asyncio.sleep(5)
-        config.cancel_translation()  # This will trigger cancellation
-        
-        await translation_task  # Wait for the task to finish
+        config.cancel_translation()
+        await translation_task
     except asyncio.CancelledError:
         print("Translation was cancelled")
 
 async def process_translation(config):
     async for event in async_translate(config):
         if event["type"] == "error":
-            if isinstance(event["error"], asyncio.CancelledError):
-                print("Translation was cancelled")
+            err = event.get("error")
+            if isinstance(err, dict) and err.get("code") == "canceled":
+                print("Translation was canceled")
                 break
-            print(f"Error occurred: {event['error']}")
+            print(f"Error occurred: {err}")
             break
         # ... handle other events ...
 ```

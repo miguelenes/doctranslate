@@ -8,6 +8,16 @@ import argparse
 def build_translate_parent_parser() -> argparse.ArgumentParser:
     """All flags and positionals merged into the ``translate`` subcommand via ``parents=``."""
     parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument(
+        "--output-format",
+        choices=["human", "json"],
+        default=None,
+        dest="translate_output_format",
+        help=(
+            "Structured JSON output for this translate run. When set after the "
+            "`translate` subcommand, overrides the root `--output-format` default."
+        ),
+    )
 
     translation_group = parser.add_argument_group(
         "Translation",
@@ -613,6 +623,23 @@ def build_translate_parent_parser() -> argparse.ArgumentParser:
         "--enable-process-pool",
         action="store_true",
         help="DEBUG ONLY",
+    )
+    parser.add_argument(
+        "--request-json",
+        default=None,
+        metavar="PATH",
+        help=(
+            "JSON file describing a stable public TranslationRequest "
+            "(see docs/library-api.md). When set, positional PDF paths are optional."
+        ),
+    )
+    parser.add_argument(
+        "--emit-progress-json",
+        action="store_true",
+        help=(
+            "With --output-format json on the root command, print one NDJSON progress "
+            "line per event (stream=progress) before the final envelope."
+        ),
     )
     parser.add_argument(
         "translate_inputs",

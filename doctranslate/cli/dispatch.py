@@ -153,11 +153,20 @@ def build_vnext_parser() -> argparse.ArgumentParser:
     return root
 
 
+def _cli_output_format(args: argparse.Namespace) -> str:
+    """Resolve JSON vs human for the current subcommand."""
+    if getattr(args, "command", None) == "translate":
+        sub = getattr(args, "translate_output_format", None)
+        if sub is not None:
+            return sub
+    return getattr(args, "output_format", "human")
+
+
 async def run_vnext_async(argv: Sequence[str]) -> int:
     parser = build_vnext_parser()
     args = parser.parse_args(list(argv))
     ctx = OutputContext(
-        format=args.output_format,
+        format=_cli_output_format(args),
         command=args.command or "help",
     )
 
@@ -189,14 +198,22 @@ async def run_vnext_async(argv: Sequence[str]) -> int:
         args.config = args.global_config
         args.files = list(args.translate_inputs or [])
         args.openai_implicit = args.translator == "openai" and not args.openai
-        if not args.files and not args.validate_translators:
+        if (
+            not args.files
+            and not args.validate_translators
+            and not getattr(args, "request_json", None)
+        ):
             ctx.emit_error(
                 "usage",
-                "translate requires at least one PDF (positional paths).",
+                "translate requires at least one PDF (positional paths) or "
+                "--request-json.",
             )
             return EXIT_USAGE
-        await run_legacy_translate_pipeline(parser, args)
-        ctx.emit_result(True, {"status": "translate_finished"})
+        payload = await run_legacy_translate_pipeline(parser, args)
+        out: dict = {"status": "translate_finished"}
+        if isinstance(payload, dict):
+            out.update(payload)
+        ctx.emit_result(True, out)
         return EXIT_OK
 
     if args.command == "inspect":

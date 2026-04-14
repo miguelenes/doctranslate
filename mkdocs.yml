@@ -142,6 +142,8 @@ nav:
   - Multi-Provider Routing: multi-translator.md
   - Local translation: local-translation.md
   - API:
+    - Stable library API: library-api.md
+    - Public API policy: public-api-policy.md
     - Async Translation API: ImplementationDetails/AsyncTranslate/AsyncTranslate.md
   - Implementation Details:
     - IL schema notes: il-spec-notes.md

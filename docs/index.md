@@ -31,6 +31,7 @@ uv run doctranslate translate input.pdf --provider openai \
 
 | Topic | Description |
 |-------|-------------|
+| [Stable library API](library-api.md) | Python embedding, `TranslationRequest`, JSON CLI |
 | [Configuration](configuration.md) | CLI flags, TOML `[doctranslate]`, env vars, cache |
 | [Multi-provider routing](multi-translator.md) | Router profiles, failover, metrics |
 | [Local translation](local-translation.md) | Ollama, vLLM, OpenAI-compatible servers |

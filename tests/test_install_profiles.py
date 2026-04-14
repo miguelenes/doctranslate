@@ -14,3 +14,21 @@ def test_public_api_import() -> None:
 
     assert callable(api.translate)
     assert callable(api.build_translators)
+    assert callable(api.async_translate)
+    assert callable(api.validate_request)
+    assert callable(api.inspect_input)
+
+
+def test_minimal_schemas_translation_request() -> None:
+    """``TranslationRequest`` must import on the minimal dependency profile."""
+    from doctranslate.schemas import TranslationRequest
+
+    r = TranslationRequest.model_validate(
+        {
+            "input_pdf": "doc.pdf",
+            "lang_in": "en",
+            "lang_out": "zh",
+            "translator": {"mode": "openai"},
+        },
+    )
+    assert r.input_pdf == "doc.pdf"

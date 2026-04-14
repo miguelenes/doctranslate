@@ -1,7 +1,10 @@
 """PDF and intermediate layout (IL) pipeline namespace.
 
 This package re-exports the implementation under ``doctranslate.format.pdf``.
-Prefer :mod:`doctranslate.api` for a smaller, documented surface.
+
+.. deprecated::
+    Prefer :mod:`doctranslate.api` for stable embedding. This namespace exists for
+    compatibility and may overlap with :mod:`doctranslate.engine`.
 """
 
 from __future__ import annotations

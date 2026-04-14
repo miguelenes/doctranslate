@@ -65,6 +65,8 @@ doctranslate --translator router --config doctranslate.toml --validate-translato
 
 ## Programmatic use
 
-Prefer `doctranslate.translator.factory.build_translators` with `translator_mode="router"` and a config path, or construct `TranslatorRouter` with pre-built `LiteLLMProviderExecutor` instances for tests.
+For **application embedding**, prefer `doctranslate.api` with a `TranslationRequest` whose `translator.mode` is `router` or `local`, or use `doctranslate.api.build_translators` when you need low-level `BaseTranslator` instances (see [Stable library API](library-api.md)).
 
-The public PDF pipeline still calls **`translate` / `llm_translate` synchronously** on the translator instance; there is no requirement to use `async` in your own code for translation itself. Progress reporting uses `async_translate` in `doctranslate.format.pdf.high_level` around thread-pooled work (see [Async Translation API](ImplementationDetails/AsyncTranslate/AsyncTranslate.md)).
+For **tests or advanced composition**, you may call `doctranslate.translator.factory.build_translators` with `translator_mode="router"` and a config path, or construct `TranslatorRouter` with pre-built `LiteLLMProviderExecutor` instances.
+
+The public PDF pipeline still calls **`translate` / `llm_translate` synchronously** on the translator instance; there is no requirement to use `async` in your own code for translation itself. Progress reporting uses `doctranslate.api.async_translate` around thread-pooled work (see [Async Translation API](ImplementationDetails/AsyncTranslate/AsyncTranslate.md)).

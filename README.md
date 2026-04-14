@@ -179,7 +179,9 @@ vLLM, OpenAI-compatible URLs, batch tuning, and troubleshooting: **[Local transl
 
 ### Using DocTranslater from Python
 
-For router mode from code, use `doctranslate.translator.factory.build_translators` with `translator_mode="router"` and a config path, or build a `TranslatorRouter` with `LiteLLMProviderExecutor` instances for advanced or test scenarios — see `tests/test_translator_router.py`.
+Use the stable API: **`doctranslate.api`** with `TranslationRequest` / `TranslationResult`, or `doctranslate.schemas` for Pydantic models only. See **[Stable library API](docs/library-api.md)** and **[Public API policy](docs/public-api-policy.md)**.
+
+For router mode, set `translator.mode` to `router` in the request (or call `doctranslate.api.build_translators` with `translator_mode="router"` when you need `TranslatorRouter` instances for metrics or tests — see `tests/test_translator_router.py`).
 
 ---
 

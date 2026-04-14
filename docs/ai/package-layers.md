@@ -6,11 +6,12 @@ DocTranslater ships as **one PyPI distribution** (`DocTranslater`) with **option
 
 | Module | Purpose | Typical extras |
 |--------|---------|------------------|
-| `doctranslate.schemas` | Pydantic/TOML config types and translation settings | *none* (base install) |
-| `doctranslate.api` | Stable `translate` / `async_translate` / `build_translators` | `full` |
-| `doctranslate.engine` | Same engine entrypoints + `init` | `full` |
-| `doctranslate.pdf` | Re-exports PDF/IL pipeline | `full` (or `pdf` + peers) |
+| `doctranslate.schemas` | Pydantic models: router/TOML, `TranslationRequest`, results, events | *none* (base install) |
+| `doctranslate.api` | Stable `translate` / `async_translate` / `validate_request` / `inspect_input` / `build_translators` | `full` |
+| `doctranslate.engine` | Deprecated shim: pipeline entrypoints + `init` — prefer `doctranslate.api` | `full` |
+| `doctranslate.pdf` | Deprecated shim: re-exports PDF/IL pipeline — prefer `doctranslate.api` | `full` (or `pdf` + peers) |
 | `doctranslate.vision` | Layout model types | `vision` or `full` |
+| `doctranslate.experimental` | Unstable experiments — **not** semver | varies |
 
 Deep imports under `doctranslate.format.pdf` remain valid but are **not** semver-guaranteed; prefer `doctranslate.api` for embedding.
 

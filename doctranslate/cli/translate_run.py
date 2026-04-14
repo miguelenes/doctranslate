@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import random
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -85,9 +87,113 @@ def _cli_router_override_dict(args: Any) -> dict[str, Any]:
     return out
 
 
-async def run_legacy_translate_pipeline(parser: Any, args: Any) -> None:
+async def _run_translate_request_json(
+    parser: Any,
+    args: Any,
+) -> dict[str, Any] | None:
+    """Run translation from a stable :class:`~doctranslate.schemas.public_api.TranslationRequest` JSON file."""
+    from doctranslate.docvision.doclayout import DocLayoutModel
+    from doctranslate.engine.adapters import build_translators_for_request
+    from doctranslate.engine.adapters import load_glossaries_from_request
+    from doctranslate.engine.adapters import translation_config_from_request
+    from doctranslate.engine.service import async_translate_job
+    from doctranslate.engine.service import translate_job
+    from doctranslate.engine.service import validate_request
+    from doctranslate.schemas.enums import TranslatorMode
+    from doctranslate.schemas.public_api import CliProgressLine
+    from doctranslate.schemas.public_api import OpenAIRequestArgs
+    from doctranslate.schemas.public_api import TranslationResult
+
+    req = validate_request(Path(args.request_json))
+    inp = Path(req.input_pdf).expanduser()
+    if not inp.is_file():
+        parser.error(f"input_pdf does not exist: {inp}")
+
+    if req.translator.mode == TranslatorMode.OPENAI:
+        oa = req.translator.openai
+        if oa is None or not oa.api_key:
+            key = resolve_openai_api_key(oa.api_key if oa else None)
+            if key:
+                oa2 = (oa or OpenAIRequestArgs()).model_copy(update={"api_key": key})
+                req = req.model_copy(
+                    update={
+                        "translator": req.translator.model_copy(update={"openai": oa2}),
+                    },
+                )
+
+    qps = req.options.qps if req.options is not None else args.qps
+    set_translate_rate_limiter(qps)
+
+    if args.enable_process_pool:
+        enable_process_pool()
+
+    fmt = getattr(args, "translate_output_format", None) or getattr(
+        args,
+        "output_format",
+        "human",
+    )
+    emit_json = fmt == "json"
+    emit_progress = getattr(args, "emit_progress_json", False)
+
+    if emit_json and emit_progress:
+        last_tr: TranslationResult | None = None
+        async for ev in async_translate_job(req):
+            line = CliProgressLine(event=ev)
+            sys.stdout.write(
+                json.dumps(line.model_dump(mode="json"), ensure_ascii=False) + "\n",
+            )
+            sys.stdout.flush()
+            if ev.get("type") == "finish":
+                last_tr = TranslationResult.model_validate(ev["translation_result"])
+            elif ev.get("type") == "error":
+                err = ev.get("error") or {}
+                parser.error(str(err.get("message", err)))
+        if last_tr is None:
+            parser.error("Translation did not finish successfully")
+        return {"translation": last_tr.model_dump(mode="json")}
+
+    if emit_json and not emit_progress:
+        result = translate_job(req)
+        return {"translation": result.model_dump(mode="json")}
+
+    glossaries = load_glossaries_from_request(req)
+    doc_layout_model = DocLayoutModel.load_onnx()
+    built = build_translators_for_request(req)
+    config = translation_config_from_request(
+        req,
+        glossaries=glossaries,
+        doc_layout_model=doc_layout_model,
+        built=built,
+    )
+    nop = getattr(doc_layout_model, "init_font_mapper", lambda _x: None)
+    nop(config)
+    progress_context, progress_handler = create_progress_handler(
+        config,
+        show_log=False,
+    )
+    with progress_context:
+        async for event in doctranslate.format.pdf.high_level.async_translate(config):
+            progress_handler(event)
+            if config.debug:
+                logger.debug("%s", event)
+            if event["type"] == "error":
+                logger.error("Error: %s", event["error"])
+                break
+            if event["type"] == "finish":
+                logger.info("%s", event["translate_result"])
+                config.run_tm_export_if_configured()
+                break
+    return None
+
+
+async def run_legacy_translate_pipeline(
+    parser: Any, args: Any
+) -> dict[str, Any] | None:
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
+
+    if getattr(args, "request_json", None):
+        return await _run_translate_request_json(parser, args)
 
     if args.generate_offline_assets:
         doctranslate.assets.assets.generate_offline_assets_package(
