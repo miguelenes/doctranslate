@@ -1,6 +1,6 @@
 # Multi-provider routing
 
-DocTranslate can route LLM calls through a **sync** `TranslatorRouter` that selects among several LiteLLM-backed providers using a TOML-defined **profile** (ordered provider list + strategy + failure policy).
+DocTranslater can route LLM calls through a **sync** `TranslatorRouter` that selects among several LiteLLM-backed providers using a TOML-defined **profile** (ordered provider list + strategy + failure policy).
 
 ## When to use `--translator local`
 

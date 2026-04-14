@@ -2,7 +2,7 @@
 
 Translate PDFs using **models on your machine** or on a **LAN-hosted OpenAI-compatible server**, without calling hosted APIs (OpenAI, Anthropic, etc.).
 
-DocTranslate’s PDF pipeline still expects an **LLM** that can follow structured prompts and, where needed, **JSON output** (paragraph translation and automatic term extraction). This is not the same workflow as classic sentence-MT engines (e.g. Marian via CTranslate2); support for that may be added later.
+DocTranslater’s PDF pipeline still expects an **LLM** that can follow structured prompts and, where needed, **JSON output** (paragraph translation and automatic term extraction). This is not the same workflow as classic sentence-MT engines (e.g. Marian via CTranslate2); support for that may be added later.
 
 ## Quick start (Ollama)
 
@@ -12,7 +12,7 @@ DocTranslate’s PDF pipeline still expects an **LLM** that can follow structure
    ollama pull qwen2.5:7b
    ```
 
-2. Run DocTranslate:
+2. Run DocTranslater:
 
    ```bash
    doctranslate --translator local \
@@ -56,7 +56,7 @@ vllm serve Qwen/Qwen2.5-7B-Instruct --host 0.0.0.0 --port 8000
 python3 -m llama_cpp.server --model /path/to/model.gguf --host 0.0.0.0 --port 8080
 ```
 
-Then run DocTranslate with a base URL that includes `/v1` (or omit `/v1`; DocTranslate normalizes it):
+Then run DocTranslater with a base URL that includes `/v1` (or omit `/v1`; DocTranslater normalizes it):
 
 ```bash
 doctranslate --translator local \
@@ -66,7 +66,7 @@ doctranslate --translator local \
   --files input.pdf --lang-in en --lang-out de
 ```
 
-Many local servers accept a dummy API key; DocTranslate sends `EMPTY` when none is configured.
+Many local servers accept a dummy API key; DocTranslater sends `EMPTY` when none is configured.
 
 ## Configuration file (TOML)
 

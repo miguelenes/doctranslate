@@ -1,4 +1,4 @@
-DocTranslate
+DocTranslater
 Copyright (C) 2025 Miguel Enes
 
 This software is derived from BabelDOC, an open-source document translation project.
@@ -16,7 +16,7 @@ This product includes software developed by funstory-ai Limited as part of
 the BabelDOC project. The BabelDOC project was originally licensed under the
 GNU Affero General Public License v3.0.
 
-DocTranslate maintains the original BabelDOC license (AGPL-3.0) and builds upon
+DocTranslater maintains the original BabelDOC license (AGPL-3.0) and builds upon
 the following components from BabelDOC:
 
 - Core IL (Intermediate Language) pipeline for PDF document translation
@@ -25,7 +25,7 @@ the following components from BabelDOC:
 - Translation caching system
 - Glossary matching and management
 
-Modifications in DocTranslate:
+Modifications in DocTranslater:
 - Multi-translator orchestration engine (new feature)
 - User-facing rebranding (CLI, configuration, documentation)
 - Documentation updates

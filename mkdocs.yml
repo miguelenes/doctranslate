@@ -19,11 +19,11 @@
 # IN THE SOFTWARE.
 
 # Project information
-site_name: DocTranslate
+site_name: DocTranslater
 site_url: https://miguelenes.github.io/doctranslate/
-site_author: Miguel Enes & DocTranslate contributors
+site_author: Miguel Enes & DocTranslater contributors
 site_description: >-
-  DocTranslate — PDF translation with layout preservation, multi-provider LLM routing,
+  DocTranslater — PDF translation with layout preservation, multi-provider LLM routing,
   and local OpenAI-compatible backends (fork of funstory-ai/DocTranslate, AGPL-3.0).
 
 # Repository
@@ -110,7 +110,7 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/miguelenes/doctranslate
     - icon: fontawesome/brands/python
-      link: https://pypi.org/project/DocTranslate/
+      link: https://pypi.org/project/DocTranslater/
 
 extra_css:
   - stylesheets/extra.css
@@ -168,5 +168,6 @@ nav:
     - PDF pipeline: ai/pdf-pipeline.md
     - Translator stack: ai/translator-stack.md
     - Verification: ai/verification.md
+    - CLI vNext baseline: ai/cli-vnext-baseline.md
     - MCP suggestions: ai/mcp-suggestions.md
     - Phase 2 (optional): ai/phase2-skills.md

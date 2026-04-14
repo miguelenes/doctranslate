@@ -10,7 +10,7 @@
 ---
 
 ## Derivative Work
-**DocTranslate** is a derivative fork based on BabelDOC, created by **Miguel Enes** in 2025.
+**DocTranslater** is a derivative fork based on BabelDOC, created by **Miguel Enes** in 2025.
 
 ### What Changed
 
@@ -26,7 +26,7 @@
    - Package directory: `babeldoc/` → `doctranslate/`
    - Configuration section: `[babeldoc]` → `[doctranslate]`
    - Cache folder: `~/.cache/babeldoc` → `~/.cache/doctranslate`
-   - Project name: BabelDOC → DocTranslate
+   - Distribution name: BabelDOC → DocTranslate → DocTranslater (Python import package remains `doctranslate`)
    - Documentation rewritten with new branding and examples
 
 3. **Preserved Components** (unchanged from BabelDOC)
@@ -40,14 +40,14 @@
 ### Attribution
 This project includes and builds upon the excellent work of the BabelDOC team. The core document translation pipeline remains substantially the same, with architectural enhancements and rebranding.
 
-If you use DocTranslate as a service (AGPL §13), you must provide source code access to users.
+If you use DocTranslater as a service (AGPL §13), you must provide source code access to users.
 
 ---
 
 ## Copyright Notices
 
 ### Files with New Copyright
-Files significantly modified for DocTranslate include new copyright headers:
+Files significantly modified for DocTranslater include new copyright headers:
 ```python
 # Copyright (C) 2024 funstory-ai Limited
 # Copyright (C) 2025 Miguel Enes — Modified: [description]

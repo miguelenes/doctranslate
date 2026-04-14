@@ -14,8 +14,8 @@ If you change `pyproject.toml` dependencies, run **`uv lock`** and commit **`uv.
 
 | Check | Command |
 |-------|---------|
-| CLI parses | `uv run doctranslate --help` |
-| Assets (if touching models/assets) | `uv run doctranslate --warmup` |
+| CLI parses | `uv run doctranslate --help` and `uv run doc-translate --help` |
+| Assets (if touching models/assets) | `uv run doctranslate assets warmup` (legacy `doctranslate --warmup` still works with a deprecation warning) |
 | Unit tests | `uv run pytest tests/ -q` |
 | Single file / test node | `uv run pytest tests/<file>::<test> -q` |
 
@@ -25,7 +25,7 @@ If you change `pyproject.toml` dependencies, run **`uv lock`** and commit **`uv.
 
 ## Translator / config changes
 
-- Router/local validation path: `uv run doctranslate --translator router --config <file> --validate-translators` or local equivalent per [Local translation](../local-translation.md).
+- Router/local validation path (vNext): `uv run doctranslate config validate --translator router -c <file>` or `... --translator local ...` (legacy: `doctranslate --validate-translators --translator router --config <file>`) per [Local translation](../local-translation.md).
 - Add or extend tests in `tests/`; avoid requiring paid APIs in default tests (CI job is “no paid APIs”).
 
 ## Docs changes

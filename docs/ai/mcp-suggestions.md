@@ -15,7 +15,7 @@ Use MCPs when they reduce hallucinations or automate repo-external lookups. This
 |-----|-------------|
 | **Atlassian** (Jira/Confluence) | If your org tracks specs, bugs, or runbooks there; link issues in PRs, not secrets. |
 
-## Low value / out of scope for core DocTranslate work
+## Low value / out of scope for core DocTranslater work
 
 - **Cloudflare** Workers/Pages/D1/R2 MCPs — unrelated unless you add a Cloudflare deployment to this repo.
 - **Laravel Forge** — unrelated to this codebase.

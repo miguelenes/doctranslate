@@ -1,6 +1,6 @@
-# DocTranslate
+# DocTranslater
 
-Translate **PDFs** while keeping layout, figures, and structure as intact as possible. DocTranslate turns pages into an intermediate representation, sends text to your chosen LLM backend, then typesets the result back into a new PDF.
+Translate **PDFs** while keeping layout, figures, and structure as intact as possible. DocTranslater turns pages into an intermediate representation, sends text to your chosen LLM backend, then typesets the result back into a new PDF.
 
 **This repo:** [miguelenes/doctranslate](https://github.com/miguelenes/doctranslate) — a maintained fork of [funstory-ai/DocTranslate](https://github.com/funstory-ai/DocTranslate). Fork lineage and license notes live under [Attribution](#attribution) at the end of this file so they do not slow you down.
 
@@ -39,23 +39,31 @@ uv run doctranslate --help
 uv run doc-translate --help
 ```
 
-Set your API key and translate a file (replace paths and languages as needed):
+Set your API key and translate a file (replace paths and languages as needed). **vNext CLI** (recommended): subcommands and clearer flags. **Legacy** flat flags still work but print a deprecation warning.
 
 ```bash
 export OPENAI_API_KEY="sk-..."
 
+# vNext (no --openai gate; use --provider openai)
+uv run doctranslate translate input.pdf \
+  --provider openai \
+  --source-lang en --target-lang zh \
+  -o ./out
+
+# Legacy equivalent
 uv run doctranslate --openai \
   --files input.pdf \
   --lang-in en --lang-out zh \
-  --output output_zh.pdf
+  -o ./out
 ```
 
-**When it works:** you should see a new PDF at `--output`. If something fails, check [Troubleshooting](#troubleshooting) below or run `uv run doctranslate --help` for flags specific to your setup.
+**When it works:** you should see new PDFs under the output **directory** (`-o` / `--output-dir`). If something fails, check [Troubleshooting](#troubleshooting) below or run `uv run doctranslate --help` / `uv run doctranslate translate --help`.
 
 **Scanned or messy PDFs?** Try OCR before layout (still PDF → IL → LLM → PDF):
 
 ```bash
-uv run doctranslate --openai --files scan.pdf --lang-in en --lang-out zh --ocr-mode auto
+uv run doctranslate translate scan.pdf --provider openai \
+  --source-lang en --target-lang zh --ocr-mode auto
 ```
 
 Details: [Configuration](docs/configuration.md) (`--ocr-mode`, `--ocr-pages`, `--ocr-debug`).
@@ -64,7 +72,7 @@ Details: [Configuration](docs/configuration.md) (`--ocr-mode`, `--ocr-pages`, `-
 
 ## What you get
 
-DocTranslate is aimed at **technical and layout-heavy PDFs**: papers, manuals, specs, and reports where you care about paragraphs, tables, and figures staying readable.
+DocTranslater is aimed at **technical and layout-heavy PDFs**: papers, manuals, specs, and reports where you care about paragraphs, tables, and figures staying readable.
 
 **Highlights**
 
@@ -89,13 +97,21 @@ The sections below assume you already ran `uv sync --locked --group dev` and use
 ```bash
 export OPENAI_API_KEY="sk-..."
 
-uv run doctranslate --openai \
-  --files input.pdf \
-  --lang-in en --lang-out zh \
-  --output output_zh.pdf
+uv run doctranslate translate input.pdf \
+  --provider openai \
+  --source-lang en --target-lang zh \
+  -o ./out
 ```
 
-Use `--openai-model`, `--openai-base-url`, and optional `--openai-term-extraction-*` as documented in `doctranslate --help`.
+Warm assets / offline bundle (vNext):
+
+```bash
+uv run doctranslate assets warmup
+uv run doctranslate assets pack-offline /path/to/bundle_dir
+uv run doctranslate assets restore-offline /path/to/bundle.tar.zst
+```
+
+Use `--openai-model`, `--openai-base-url`, and optional `--openai-term-extraction-*` (append as extra flags after vNext options, or see `doctranslate translate --help`).
 
 **API behavior note:** on the default OpenAI host, simple `translate()` calls may use the **Responses** API, while JSON-heavy `llm_translate()` flows (term extraction, batched IL translation) may use **structured parse**. If you set a custom `--openai-base-url` gateway, chat completions are used throughout.
 
@@ -104,11 +120,11 @@ Use `--openai-model`, `--openai-base-url`, and optional `--openai-term-extractio
 Best when you want **profiles**, **failover**, or **mixing providers**. Point the CLI at a config file:
 
 ```bash
-uv run doctranslate --translator router \
-  --config doctranslate.toml \
-  --files input.pdf \
-  --lang-in en --lang-out es \
-  --output output.pdf
+uv run doctranslate translate input.pdf \
+  --provider router \
+  -c doctranslate.toml \
+  --source-lang en --target-lang es \
+  -o ./out
 ```
 
 **Example `doctranslate.toml`** (nested providers + profiles; secrets via environment variables):
@@ -146,7 +162,8 @@ api_key_env = "ANTHROPIC_API_KEY"
 Validate configuration without running a full job:
 
 ```bash
-uv run doctranslate --translator router --config doctranslate.toml --validate-translators
+uv run doctranslate config validate --translator router -c doctranslate.toml
+# legacy: doctranslate --translator router --config doctranslate.toml --validate-translators
 ```
 
 More examples and JSON metrics export: [docs/multi-translator.md](docs/multi-translator.md).
@@ -156,16 +173,17 @@ More examples and JSON metrics export: [docs/multi-translator.md](docs/multi-tra
 Example with [Ollama](https://ollama.com/):
 
 ```bash
-uv run doctranslate --translator local \
+uv run doctranslate translate input.pdf \
+  --provider local \
   --local-backend ollama \
   --local-model qwen2.5:7b \
-  --files input.pdf --lang-in en --lang-out zh \
-  --output output.pdf
+  --source-lang en --target-lang zh \
+  -o ./out
 ```
 
 vLLM, OpenAI-compatible URLs, batch tuning, and troubleshooting: **[Local translation](docs/local-translation.md)**.
 
-### Using DocTranslate from Python
+### Using DocTranslater from Python
 
 For router mode from code, use `doctranslate.translator.factory.build_translators` with `translator_mode="router"` and a config path, or build a `TranslatorRouter` with `LiteLLMProviderExecutor` instances for advanced or test scenarios — see `tests/test_translator_router.py`.
 
@@ -173,7 +191,7 @@ For router mode from code, use `doctranslate.translator.factory.build_translator
 
 ## Architecture (short version)
 
-DocTranslate is a **PDF → intermediate language (IL) → LLM → PDF** pipeline. In plain terms: it understands page structure, translates text in context, then lays translated text back onto the page instead of pasting a single blob of text.
+DocTranslater is a **PDF → intermediate language (IL) → LLM → PDF** pipeline. In plain terms: it understands page structure, translates text in context, then lays translated text back onto the page instead of pasting a single blob of text.
 
 ```
 PDF Input
@@ -284,13 +302,13 @@ If you use pip in an editable install: `pip install -e .`
 **Translation is slow**
 
 - Router: try `least_loaded` or `cost_aware` where appropriate.
-- Enable parallel page processing with `--split-pages N` when suitable.
+- Enable split translation with `--max-pages-per-part` (legacy) or `doctranslate translate … --split-pages N` (vNext).
 - Use a faster (sometimes lower-quality) model for drafts.
 
 **Layout looks wrong after translation**
 
-- Check `--font-fallback` for scripts your fonts must cover.
-- Try disabling `--watermark` to rule out overlap.
+- Tune fonts with `--primary-font-family` (see `doctranslate translate --help` / legacy `--help`).
+- Try `--watermark-mode no_watermark` (vNext) or `--watermark-output-mode no_watermark` (legacy); deprecated `--no-watermark` is still accepted on the legacy path only.
 - Confirm the source is not an image-only scan without OCR — see `--ocr-mode` above.
 
 **Getting help**
@@ -313,7 +331,7 @@ If you use pip in an editable install: `pip install -e .`
 
 ## Attribution
 
-**DocTranslate** (this fork) builds on **[DocTranslate](https://github.com/funstory-ai/DocTranslate)** by **funstory-ai Limited**, under **AGPL-3.0**.
+**DocTranslater** (this fork) builds on **[DocTranslate](https://github.com/funstory-ai/DocTranslate)** by **funstory-ai Limited**, under **AGPL-3.0**.
 
 **Shared with upstream**
 
@@ -328,13 +346,13 @@ If you use pip in an editable install: `pip install -e .`
 - Rebranded CLI, package layout, and documentation refresh
 - General architecture and extensibility improvements
 
-**License compliance:** this fork and upstream are **GNU Affero General Public License v3.0 (AGPL-3.0)**. If you run DocTranslate as a service, you must offer corresponding source to users (AGPL §13). Full text: `LICENSE` and `LICENSE.ADDITIONS`.
+**License compliance:** this fork and upstream are **GNU Affero General Public License v3.0 (AGPL-3.0)**. If you run DocTranslater as a service, you must offer corresponding source to users (AGPL §13). Full text: `LICENSE` and `LICENSE.ADDITIONS`.
 
 ---
 
 ## License
 
-DocTranslate is licensed under **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+DocTranslater is licensed under **GNU Affero General Public License v3.0 (AGPL-3.0)**.
 
 - You may use, modify, and distribute this software under the license terms.
 - Modifications must remain under AGPL-3.0.

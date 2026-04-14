@@ -1,6 +1,6 @@
 # Translation memory (TM)
 
-DocTranslate stores **exact** translation pairs in SQLite (`~/.cache/doctranslate/cache.v2.db`, table `_translationcache`). **Translation memory** extends this with:
+DocTranslater stores **exact** translation pairs in SQLite (`~/.cache/doctranslate/cache.v2.db`, table `_translationcache`). **Translation memory** extends this with:
 
 | Layer | Behavior |
 |-------|-----------|

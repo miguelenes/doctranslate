@@ -1,4 +1,4 @@
-# DocTranslate
+# DocTranslater
 
 **High-quality PDF translation** with layout preservation, multi-provider LLM routing, and local OpenAI-compatible backends.
 
@@ -15,12 +15,15 @@ uv sync --locked --group dev
 uv run doctranslate --help
 ```
 
-**Translate with OpenAI-compatible API:**
+**Translate with OpenAI-compatible API (vNext CLI):**
 
 ```bash
 export OPENAI_API_KEY=sk-...
-uv run doctranslate --openai --files input.pdf --lang-in en --lang-out zh --output ./out
+uv run doctranslate translate input.pdf --provider openai \
+  --source-lang en --target-lang zh -o ./out
 ```
+
+Legacy flat flags (`--openai --files …`) still work but log a deprecation warning; see [Migration](migration.md).
 
 **Local (Ollama):** see [Local translation](local-translation.md).
 
@@ -54,4 +57,4 @@ See [Contributing](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md
 
 ## License
 
-DocTranslate is licensed under **AGPL-3.0**. See the repository `LICENSE` file.
+DocTranslater is licensed under **AGPL-3.0**. See the repository `LICENSE` file.

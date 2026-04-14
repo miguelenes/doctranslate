@@ -1,6 +1,6 @@
-# Contributing to DocTranslate
+# Contributing to DocTranslater
 
-## How to contribute to DocTranslate
+## How to contribute to DocTranslater
 
 ### **About Language**
 
@@ -34,7 +34,7 @@ Please pay special attention to:
 
 - Additionally, [translation_config.py](https://github.com/miguelenes/doctranslate/blob/main/doctranslate/format/pdf/translation_config.py) shows that the layout model implementation actually used in this project is passed in from outside. You can implement a layout model class according to the relevant interface, and then pass it through this parameter at runtime.
 
-### **If you wish to contribute to DocTranslate**
+### **If you wish to contribute to DocTranslater**
 
 > [!TIP]
 >
@@ -88,7 +88,7 @@ git commit -m "<semantic commit message>"
 
 2. Development and Testing
 
-- Use the `uv run DocTranslate` command for development and testing.
+- Use the `uv run doctranslate` command for development and testing.
 
 - When you need print log, please use `log.debug()` to print info. **DO NOT USE `print()`**
 

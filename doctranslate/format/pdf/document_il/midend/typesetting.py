@@ -1206,7 +1206,7 @@ class Typesetting:
             graphic_state=il_version_1.GraphicState(),
         )
         text = (
-            f"Translated with DocTranslate {WATERMARK_VERSION} — "
+            f"Translated with DocTranslater {WATERMARK_VERSION} — "
             "https://github.com/miguelenes/doctranslate (AGPL-3.0). "
             "AI-generated translation; please verify critical content."
         )

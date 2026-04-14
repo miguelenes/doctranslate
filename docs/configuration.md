@@ -1,6 +1,8 @@
 # Configuration
 
-DocTranslate reads CLI flags first (via `configargparse`), and can merge a TOML file passed with `-c` / `--config`. For **multi-provider routing**, nested tables under **`[doctranslate]`** define providers and route profiles. Legacy configs may use **`[babeldoc]`** with the same nested shape; prefer `[doctranslate]` for new files (see [Migration](migration.md)).
+DocTranslater reads CLI flags first (via `configargparse` on the **legacy** flat path, and `argparse` on the **vNext** subcommand path). A TOML file passed with `-c` / `--config` merges into defaults. For **multi-provider routing**, nested tables under **`[doctranslate]`** define providers and route profiles. Legacy configs may use **`[babeldoc]`** with the same nested shape; prefer `[doctranslate]` for new files (see [Migration](migration.md)).
+
+**vNext CLI:** prefer `doctranslate translate …` with `--provider` and the renamed flags in [Migration](migration.md); global defaults can be set with `doctranslate -c defaults.toml translate …`.
 
 ## Merge order (router / nested TOML)
 

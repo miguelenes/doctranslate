@@ -1,12 +1,15 @@
 # Project map (for humans and coding agents)
 
-DocTranslate is a Python 3.10+ package: CLI entry `doctranslate` → `doctranslate.main:cli`. This fork extends upstream with multi-provider routing and local translation.
+DocTranslater is a Python 3.10+ package (PyPI name **DocTranslater**; import package `doctranslate`): CLI entries `doctranslate` / `doctranslater` → `doctranslate.main:cli`. This fork extends upstream with multi-provider routing and local translation.
 
 ## Key directories
 
 | Path | Role |
 |------|------|
-| `doctranslate/main.py` | CLI: `create_parser()`, `main()`, `cli()`; `configargparse` + optional TOML (`-c` / `--config`). |
+| `doctranslate/main.py` | Thin entry: `cli()` → `cli/dispatch.py`; `create_parser` aliases legacy parser. |
+| `doctranslate/cli/` | vNext subcommands (`translate`, `assets`, `config`, …), argv mapping, JSON output helpers. |
+| `doctranslate/cli/legacy_parser.py` | Flat `configargparse` surface (legacy + tests). |
+| `doctranslate/cli/translate_run.py` | Shared async translation pipeline + progress UI. |
 | `doctranslate/format/pdf/high_level.py` | PDF translation orchestration; `TRANSLATE_STAGES`; async/thread boundaries. |
 | `doctranslate/format/pdf/document_il/` | Intermediate representation (IL): frontend/midend/backend, typesetting, translators. |
 | `doctranslate/translator/` | Translator modes: OpenAI legacy, `TranslatorRouter`, LiteLLM executors, local → synthetic router. |
@@ -23,7 +26,7 @@ DocTranslate is a Python 3.10+ package: CLI entry `doctranslate` → `doctransla
 
 | Task | Start here |
 |------|------------|
-| New CLI flag or default | `doctranslate/main.py` (`create_parser`, argument groups). |
+| New CLI flag or default | vNext: `doctranslate/cli/vnext_argv.py` + passthrough; legacy: `doctranslate/cli/legacy_parser.py`. |
 | Router / TOML / local knobs | `doctranslate/translator/config.py`, `factory.py`, `local_config.py`, `router.py`. |
 | PDF stage order or wiring | `doctranslate/format/pdf/high_level.py` and stage classes under `document_il/`. |
 | Public docs for config | `docs/configuration.md`, `docs/multi-translator.md`, `docs/local-translation.md`, `README.md`. |

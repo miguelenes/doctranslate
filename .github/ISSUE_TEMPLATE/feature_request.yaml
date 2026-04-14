@@ -1,11 +1,11 @@
 name: "✨ Feature Request"
-description: Suggest a new idea or improvement for DocTranslate
+description: Suggest a new idea or improvement for DocTranslater
 labels: ['enhancement']
 body:
   - type: markdown
     attributes:
       value: |
-        Thank you for helping improve **DocTranslate**! Please fill out the form below to suggest a feature.
+        Thank you for helping improve **DocTranslater**! Please fill out the form below to suggest a feature.
 
   - type: checkboxes
     id: checks
@@ -16,14 +16,14 @@ body:
           required: true
         - label: I have fully read and understood the [README](https://github.com/miguelenes/doctranslate/blob/main/README.md)
           required: true
-        - label: This feature is not related to DocTranslate CLI. The CLI is only used for debugging purposes, we do not accept any feature requests related to the CLI.
+        - label: This feature is not related to DocTranslater CLI. The CLI is only used for debugging purposes, we do not accept any feature requests related to the CLI.
           required: true
   
   - type: markdown
     attributes:
       value: |
-        如果您想自部署 DocTranslate，请使用 [PDFMathTranslate-next](https://github.com/PDFMathTranslate-next/PDFMathTranslate-next) 代替。若其功能无法满足，请向 [PDFMathTranslate-next](https://github.com/PDFMathTranslate-next/PDFMathTranslate-next) 提交功能请求。
-        If you wish to self-host DocTranslate, please use [PDFMathTranslate-next](https://github.com/PDFMathTranslate-next/PDFMathTranslate-next) instead. If its features do not meet your needs, please submit a feature request to [PDFMathTranslate-next](https://github.com/PDFMathTranslate-next/PDFMathTranslate-next).
+        如果您想自部署 DocTranslater，请使用 [PDFMathTranslate-next](https://github.com/PDFMathTranslate-next/PDFMathTranslate-next) 代替。若其功能无法满足，请向 [PDFMathTranslate-next](https://github.com/PDFMathTranslate-next/PDFMathTranslate-next) 提交功能请求。
+        If you wish to self-host DocTranslater, please use [PDFMathTranslate-next](https://github.com/PDFMathTranslate-next/PDFMathTranslate-next) instead. If its features do not meet your needs, please submit a feature request to [PDFMathTranslate-next](https://github.com/PDFMathTranslate-next/PDFMathTranslate-next).
 
 
   - type: textarea

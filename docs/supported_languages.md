@@ -1,8 +1,8 @@
 # Supported Languages
 
-For languages in the table below that do not rely on ligature support, DocTranslate provides good support. For languages
-that partially rely on ligatures, DocTranslate's translation results can generally meet self-reading needs. For languages
-that completely rely on ligatures (such as some Indian languages), DocTranslate does not currently support them.
+For languages in the table below that do not rely on ligature support, DocTranslater provides good support. For languages
+that partially rely on ligatures, DocTranslater's translation results can generally meet self-reading needs. For languages
+that completely rely on ligatures (such as some Indian languages), DocTranslater does not currently support them.
 
 We are working hard to develop support for ligatures as soon as possible.
 <!-- | Kazakh (Cyrillic)    | kk            | None                | -->

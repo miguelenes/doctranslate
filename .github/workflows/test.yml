@@ -40,10 +40,11 @@ jobs:
         run: uv sync --locked --group dev
       - name: Warm up cache
         run: |
-          uv run doctranslate --warmup
+          uv run doctranslate assets warmup
       - name: Run unit tests
         run: |
           uv run doctranslate --help
+          uv run doc-translate --help
           uv run pytest tests/ -q
       - name: Validate documentation (MkDocs strict)
         env:
@@ -51,11 +52,11 @@ jobs:
         run: uv run mkdocs build --strict
       - name: Generate offline assets package
         run: |
-          uv run doctranslate --generate-offline-assets /tmp/offline_assets
+          uv run doctranslate assets pack-offline /tmp/offline_assets
       - name: Restore offline assets package
         run: |
           rm -rf ~/.cache/doctranslate
-          uv run doctranslate --restore-offline-assets /tmp/offline_assets
+          uv run doctranslate assets restore-offline /tmp/offline_assets
       - name: Clean up
         run: |
           rm -rf /tmp/offline_assets
@@ -100,7 +101,7 @@ jobs:
         run: uv sync --locked --group dev
       - name: Warm up cache
         if: steps.openai_smoke.outputs.ok == 'true'
-        run: uv run doctranslate --warmup
+        run: uv run doctranslate assets warmup
       - name: Translate sample PDF (OpenAI)
         if: steps.openai_smoke.outputs.ok == 'true'
         env:
@@ -108,7 +109,7 @@ jobs:
           OPENAI_BASE_URL: ${{ secrets.OPENAIAPIURL }}
           OPENAI_MODEL: ${{ secrets.OPENAIMODEL }}
         run: |
-          uv run doctranslate --openai --files examples/ci/test.pdf \
+          uv run doctranslate translate examples/ci/test.pdf --provider openai \
             --openai-api-key "$OPENAI_API_KEY" \
             --openai-base-url "$OPENAI_BASE_URL" \
             --openai-model "$OPENAI_MODEL"

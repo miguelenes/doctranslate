@@ -1,0 +1,8 @@
+"""Stable CLI exit codes (vNext contract)."""
+
+EXIT_OK = 0
+EXIT_USAGE = 2
+EXIT_VALIDATION = 3
+EXIT_TRANSLATION = 4
+EXIT_EXTERNAL = 5
+EXIT_PARTIAL = 6

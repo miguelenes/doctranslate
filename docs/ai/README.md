@@ -8,6 +8,7 @@ These pages are **canonical project context** for Codex (`AGENTS.md`), Cursor (r
 | [PDF pipeline](pdf-pipeline.md) | `TRANSLATE_STAGES` and stage boundaries. |
 | [Translator stack](translator-stack.md) | OpenAI vs router vs local; config merge pitfalls. |
 | [Verification](verification.md) | Commands and “done means”. |
+| [CLI vNext baseline](cli-vnext-baseline.md) | Legacy vs vNext CLI inventory and migration anchor. |
 | [MCP suggestions](mcp-suggestions.md) | Which MCPs help this repo. |
 | [Phase 2 skills](phase2-skills.md) | Optional follow-up skills/agents. |
 

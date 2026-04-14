@@ -1,7 +1,7 @@
 [project]
-name = "DocTranslate"
+name = "DocTranslater"
 version = "0.5.24"
-description = "DocTranslate — PDF translation with layout preservation and multi-provider LLM routing"
+description = "DocTranslater — PDF translation with layout preservation and multi-provider LLM routing"
 license = "AGPL-3.0"
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
@@ -81,10 +81,15 @@ Issues = "https://github.com/miguelenes/doctranslate/issues"
 [project.scripts]
 doctranslate = "doctranslate.main:cli"
 doc-translate = "doctranslate.main:cli"
+doctranslater = "doctranslate.main:cli"
+doc-translater = "doctranslate.main:cli"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["doctranslate"]
 
 [tool.uv]
 # ORT 1.24+ has no cp310 wheels; apply to the full graph (transitive deps too).

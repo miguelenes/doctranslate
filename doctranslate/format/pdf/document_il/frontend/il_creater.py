@@ -854,7 +854,7 @@ class ILCreater:
             passthrough_per_char_instruction_parts
         )
 
-        # 可能会影响部分 graphic state 准确度。不过 DocTranslate 仅使用 passthrough_per_char_instruction
+        # 可能会影响部分 graphic state 准确度。不过 DocTranslater 仅使用 passthrough_per_char_instruction
         # 所以应该是没啥影响
         # 但是池化 graphic state 后可以减少内存占用
         if passthrough_per_char_instruction not in self.graphic_state_pool:
