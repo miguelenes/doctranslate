@@ -105,14 +105,44 @@ class DetectScannedFile:
         scanned = 0
         non_scanned = 0
         non_scanned_threshold = total - threshold
+        ssim_cut = self.translation_config.ocr_scanned_ssim_threshold
+        need_all_page_scores = self.translation_config.ocr_mode != "off"
         with self.translation_config.progress_monitor.stage_start(
             self.stage_name,
             total,
         ) as progress:
             for page in pages_to_translate:
-                if scanned < threshold and non_scanned < non_scanned_threshold:
-                    # Only continue detection if both counts are below thresholds
-                    is_scanned = self.detect_page_is_scanned(page, mupdf, pdf_creater)
+                global_idx = (
+                    self.translation_config.split_part_origin_offset + page.page_number
+                )
+                if (
+                    not need_all_page_scores
+                    and scanned < threshold
+                    and non_scanned < non_scanned_threshold
+                ):
+                    is_scanned, similarity = self.detect_page_is_scanned_with_score(
+                        page, mupdf, pdf_creater, ssim_cut
+                    )
+                    self.translation_config.shared_context_cross_split_part.page_scan_ssim[
+                        global_idx
+                    ] = similarity
+                    self.translation_config.shared_context_cross_split_part.page_scan_is_scanned[
+                        global_idx
+                    ] = is_scanned
+                    if is_scanned:
+                        scanned += 1
+                    else:
+                        non_scanned += 1
+                elif need_all_page_scores:
+                    is_scanned, similarity = self.detect_page_is_scanned_with_score(
+                        page, mupdf, pdf_creater, ssim_cut
+                    )
+                    self.translation_config.shared_context_cross_split_part.page_scan_ssim[
+                        global_idx
+                    ] = similarity
+                    self.translation_config.shared_context_cross_split_part.page_scan_is_scanned[
+                        global_idx
+                    ] = is_scanned
                     if is_scanned:
                         scanned += 1
                     else:
@@ -123,6 +153,14 @@ class DetectScannedFile:
                 progress.advance(1)
 
         if scanned >= threshold:
+            if self.translation_config.ocr_mode != "off":
+                logger.warning(
+                    "Detected %s scanned pages (>=80%% of translatable pages). "
+                    "Continuing with OCR routing (ocr_mode=%s).",
+                    scanned,
+                    self.translation_config.ocr_mode,
+                )
+                return
             if self.translation_config.auto_enable_ocr_workaround:
                 logger.warning(
                     f"Detected {scanned} scanned pages, which is more than 80% of the total pages. "
@@ -148,9 +186,13 @@ class DetectScannedFile:
                 if not char.debug_info:
                     char.pdf_style.graphic_state = BLACK
 
-    def detect_page_is_scanned(
-        self, page: il_version_1.Page, pdf: pymupdf.Document, pdf_creater: PDFCreater
-    ) -> bool:
+    def detect_page_is_scanned_with_score(
+        self,
+        page: il_version_1.Page,
+        pdf: pymupdf.Document,
+        pdf_creater: PDFCreater,
+        ssim_threshold: float,
+    ) -> tuple[bool, float]:
         before_page_image = pdf[page.page_number].get_pixmap()
         before_page_image = np.frombuffer(before_page_image.samples, np.uint8).reshape(
             before_page_image.height,
@@ -170,5 +212,18 @@ class DetectScannedFile:
         )[:, :, ::-1]
         before_page_image = cv2.cvtColor(before_page_image, cv2.COLOR_RGB2GRAY)
         after_page_image = cv2.cvtColor(after_page_image, cv2.COLOR_RGB2GRAY)
-        similarity = structural_similarity(before_page_image, after_page_image)
-        return similarity > 0.95
+        similarity = float(
+            structural_similarity(before_page_image, after_page_image),
+        )
+        is_scanned = similarity > ssim_threshold
+        self._save_debug_box_to_page(page, similarity)
+        return is_scanned, similarity
+
+    def detect_page_is_scanned(
+        self, page: il_version_1.Page, pdf: pymupdf.Document, pdf_creater: PDFCreater
+    ) -> bool:
+        ssim_cut = self.translation_config.ocr_scanned_ssim_threshold
+        scanned, _ = self.detect_page_is_scanned_with_score(
+            page, pdf, pdf_creater, ssim_cut
+        )
+        return scanned

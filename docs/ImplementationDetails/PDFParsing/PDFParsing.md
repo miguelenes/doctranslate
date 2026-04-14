@@ -140,4 +140,8 @@ The parsing process can be customized through `TranslationConfig`:
    - CID font handling options
 3. Layout processing options:
    - Page selection
-   - Content filtering rules 
+   - Content filtering rules
+
+## Optional OCR fallback
+
+When `--ocr-mode` is not `off`, the **OCRRouting** stage (after `DetectScannedFile`, before `LayoutParser`) may replace or merge `Page.pdf_character` entries using **RapidOCR** on a rasterized page image, mapped into the same PDF user-space coordinates as the layout model. See `doctranslate/format/pdf/document_il/midend/ocr_routing.py` and [Configuration](../../configuration.md).

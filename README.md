@@ -130,6 +130,16 @@ Validate configuration without running a job:
 doctranslate --translator router --config doctranslate.toml --validate-translators
 ```
 
+### Scanned or low-quality PDFs (OCR fallback)
+
+For pages where text extraction is poor or the document is treated as scanned, you can enable **RapidOCR** before layout (still IL → LLM → typesetting). Example:
+
+```bash
+doctranslate --openai --files scan.pdf --lang-in en --lang-out zh --ocr-mode auto
+```
+
+See **[Configuration](docs/configuration.md)** for `--ocr-mode`, `--ocr-pages`, and `--ocr-debug`.
+
 ### Programmatic setup
 
 Use `doctranslate.translator.factory.build_translators` with `translator_mode="router"` and a config path, or construct `TranslatorRouter` with `LiteLLMProviderExecutor` instances for advanced/testing scenarios (see `tests/test_translator_router.py`).

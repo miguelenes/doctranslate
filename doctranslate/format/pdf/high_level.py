@@ -49,6 +49,7 @@ from doctranslate.format.pdf.document_il.midend.il_translator_llm_only import (
     ILTranslatorLLMOnly,
 )
 from doctranslate.format.pdf.document_il.midend.layout_parser import LayoutParser
+from doctranslate.format.pdf.document_il.midend.ocr_routing import OcrRouting
 from doctranslate.format.pdf.document_il.midend.paragraph_finder import ParagraphFinder
 from doctranslate.format.pdf.document_il.midend.styles_and_formulas import (
     StylesAndFormulas,
@@ -75,6 +76,7 @@ logger = logging.getLogger(__name__)
 TRANSLATE_STAGES = [
     (ILCreater.stage_name, 14.12),  # Parse PDF and Create IR
     (DetectScannedFile.stage_name, 2.45),  # DetectScannedFile
+    (OcrRouting.stage_name, 3.5),  # OCR routing / injection
     (LayoutParser.stage_name, 14.03),  # Parse Page Layout
     (TableParser.stage_name, 1.0),  # Parse Table
     (ParagraphFinder.stage_name, 6.26),  # Parse Paragraphs
@@ -350,6 +352,7 @@ def get_translation_stage(
         should_remove.extend(
             [
                 DetectScannedFile.stage_name,
+                OcrRouting.stage_name,
                 LayoutParser.stage_name,
                 TableParser.stage_name,
                 ParagraphFinder.stage_name,
@@ -653,6 +656,14 @@ def do_translate(
                             try:
                                 # Create a copy of config for this part
                                 part_config = copy.copy(translation_config)
+                                part_config.original_page_ranges = (
+                                    list(translation_config.page_ranges)
+                                    if translation_config.page_ranges
+                                    else None
+                                )
+                                part_config.split_part_origin_offset = int(
+                                    split_point.start_page,
+                                )
                                 part_config.skip_clean = True
                                 should_translate_pages = []
                                 for page in range(
@@ -919,8 +930,10 @@ def _do_translate_single(
     translation_config.progress_monitor = pm
 
     if translation_config.shared_context_cross_split_part.auto_enabled_ocr_workaround:
-        translation_config.ocr_workaround = True
-        translation_config.skip_scanned_detection = True
+        # Real OCR routing conflicts with the legacy glyph-clearing workaround.
+        if translation_config.ocr_mode == "off":
+            translation_config.ocr_workaround = True
+            translation_config.skip_scanned_detection = True
 
     original_pdf_path = translation_config.input_file
     if translation_config.debug:
@@ -1003,7 +1016,12 @@ def _do_translate_single(
         )
 
     if check_cid_char(docs):
-        raise ExtractTextError("The document contains too many CID chars.")
+        if translation_config.ocr_mode == "off":
+            raise ExtractTextError("The document contains too many CID chars.")
+        logger.warning(
+            "Document has many CID characters; continuing because ocr_mode=%s",
+            translation_config.ocr_mode,
+        )
 
     # Skip all translation processing if only_parse_generate_pdf is enabled
     if translation_config.only_parse_generate_pdf:
@@ -1031,6 +1049,15 @@ def _do_translate_single(
                 docs,
                 translation_config.get_working_file_path("detect_scanned_file.json"),
             )
+
+    logger.debug("start OCR routing")
+    docs = OcrRouting(translation_config).process(docs, doc_pdf2zh)
+    logger.debug("finish OCR routing")
+    if translation_config.debug:
+        xml_converter.write_json(
+            docs,
+            translation_config.get_working_file_path("ocr_routing_il.json"),
+        )
 
     # Generate layouts for all pages
     logger.debug("start generating layouts")

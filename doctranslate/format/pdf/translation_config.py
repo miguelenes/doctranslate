@@ -36,6 +36,9 @@ class SharedContextCrossSplitPart:
         self.auto_extracted_glossary: Glossary | None = None
         self.raw_extracted_terms: list[tuple[str, str]] = []
         self.auto_enabled_ocr_workaround = False
+        # Per original-document page index (0-based): SSIM from scanned detection (part 0).
+        self.page_scan_ssim: dict[int, float] = {}
+        self.page_scan_is_scanned: dict[int, bool] = {}
         # Statistics for valid characters/text across the whole file
         self.valid_char_count_total: int = 0
         self.total_valid_text_token_count: int = 0
@@ -217,6 +220,14 @@ class TranslationConfig:
         tm_embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
         tm_import_path: str | None = None,
         tm_export_path: str | None = None,
+        # OCR / layout fallback routing (optional; default off preserves legacy behavior)
+        ocr_mode: str = "off",
+        ocr_pages: str | None = None,
+        ocr_lang_hints: list[str] | None = None,
+        ocr_debug_dump: bool = False,
+        ocr_scanned_ssim_threshold: float = 0.95,
+        ocr_low_text_density_threshold: float = 0.02,
+        split_part_origin_offset: int = 0,
     ):
         self.translator = translator
         self.term_extraction_translator = term_extraction_translator or translator
@@ -408,6 +419,29 @@ class TranslationConfig:
         self.tm_import_path = tm_import_path
         self.tm_export_path = tm_export_path
 
+        self.ocr_mode = (ocr_mode or "off").strip().lower()
+        if self.ocr_mode not in ("off", "auto", "force", "hybrid"):
+            raise ValueError(
+                f"ocr_mode must be one of off|auto|force|hybrid, got {ocr_mode!r}",
+            )
+        self.ocr_pages = ocr_pages
+        self.ocr_page_ranges = self.parse_pages(ocr_pages) if ocr_pages else None
+        self.ocr_lang_hints = list(ocr_lang_hints) if ocr_lang_hints else []
+        self.ocr_debug_dump = bool(ocr_debug_dump or (debug and self.ocr_mode != "off"))
+        self.ocr_scanned_ssim_threshold = float(ocr_scanned_ssim_threshold)
+        self.ocr_low_text_density_threshold = float(ocr_low_text_density_threshold)
+        # Original `--pages` filter (1-based page numbers). Kept for split parts when
+        # `page_ranges` is rewritten to local part indices.
+        self.original_page_ranges: list[tuple[int, int]] | None = (
+            list(self.page_ranges) if self.page_ranges else None
+        )
+        # 0-based index of first page of this PDF in the original document (split parts).
+        self.split_part_origin_offset: int = int(split_part_origin_offset)
+        # When True, ParagraphFinder must not clear pdf_character after OCR injection.
+        self.ocr_glyph_clear_disabled: bool = False
+        # Last OCR routing report (for tests / debug JSON).
+        self.last_ocr_routing_report: dict | None = None
+
         self._apply_translation_memory_to_translators()
 
     def _tm_document_scope(self) -> str:
@@ -503,6 +537,31 @@ class TranslationConfig:
 
         for start, end in self.page_ranges:
             if start <= page_number and (end == -1 or page_number <= end):
+                return True
+        return False
+
+    def global_page_1based(self, local_page_number_0based: int) -> int:
+        """Map a 0-based page index in the current (possibly split) PDF to 1-based original doc page."""
+        return self.split_part_origin_offset + int(local_page_number_0based) + 1
+
+    def should_translate_global_page(self, global_1based: int) -> bool:
+        """Like should_translate_page but uses original document page numbers (same as --pages)."""
+        ranges = self.original_page_ranges
+        if isinstance(ranges, list) and len(ranges) == 0:
+            return False
+        if not ranges:
+            return True
+        for start, end in ranges:
+            if start <= global_1based and (end == -1 or global_1based <= end):
+                return True
+        return False
+
+    def ocr_pages_allow_global(self, global_1based: int) -> bool:
+        """If --ocr-pages is set, OCR is only allowed on those original pages."""
+        if not self.ocr_page_ranges:
+            return True
+        for start, end in self.ocr_page_ranges:
+            if start <= global_1based and (end == -1 or global_1based <= end):
                 return True
         return False
 

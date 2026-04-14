@@ -357,6 +357,38 @@ def create_parser():
         help="Translate table text (experimental)",
     )
     translation_group.add_argument(
+        "--ocr-mode",
+        type=str,
+        choices=["off", "auto", "force", "hybrid"],
+        default="off",
+        help=(
+            "OCR/layout fallback: off (default), auto (scanned or very low extracted text), "
+            "force (OCR all translatable pages within --ocr-pages if set), "
+            "hybrid (merge OCR boxes that do not overlap native text)."
+        ),
+    )
+    translation_group.add_argument(
+        "--ocr-pages",
+        type=str,
+        default=None,
+        help=(
+            "Restrict OCR to these original-document pages (same syntax as --pages). "
+            "If omitted with --ocr-mode=force, all translatable pages are OCR'd."
+        ),
+    )
+    translation_group.add_argument(
+        "--ocr-lang",
+        type=str,
+        default=None,
+        help="Comma-separated OCR language hints (logged for future engine tuning; MVP uses RapidOCR defaults).",
+    )
+    translation_group.add_argument(
+        "--ocr-debug",
+        action="store_true",
+        default=False,
+        help="Write ocr_routing.json under the working directory (in addition to --debug IL dumps).",
+    )
+    translation_group.add_argument(
         "--show-char-box",
         action="store_true",
         default=False,
@@ -969,6 +1001,10 @@ async def main():
     total_term_extraction_completion_tokens = 0
     total_term_extraction_cache_hit_prompt_tokens = 0
 
+    ocr_lang_hints = None
+    if getattr(args, "ocr_lang", None):
+        ocr_lang_hints = [x.strip() for x in args.ocr_lang.split(",") if x.strip()]
+
     for file in pending_files:
         # 清理文件路径，去除两端的引号
         file = file.strip("\"'")
@@ -1048,6 +1084,10 @@ async def main():
             tm_embedding_model=args.tm_embedding_model,
             tm_import_path=args.tm_import_path,
             tm_export_path=args.tm_export_path,
+            ocr_mode=args.ocr_mode,
+            ocr_pages=args.ocr_pages,
+            ocr_lang_hints=ocr_lang_hints,
+            ocr_debug_dump=args.ocr_debug,
         )
 
         def nop(_x):

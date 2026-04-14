@@ -7,18 +7,19 @@ The public PDF path is driven from `doctranslate.format.pdf.high_level`. Stages 
 From `TRANSLATE_STAGES` in `doctranslate/format/pdf/high_level.py`:
 
 1. **ILCreater** — Parse PDF and build intermediate representation (IR/IL).
-2. **DetectScannedFile** — Scanned-page detection.
-3. **LayoutParser** — Page layout (YOLO-based layout model is injected/configured externally).
-4. **TableParser** — Tables.
-5. **ParagraphFinder** — Paragraph grouping.
-6. **StylesAndFormulas** — Styles and formula-like text.
-7. **AutomaticTermExtractor** — Glossary term extraction (LLM, often JSON-shaped).
-8. **ILTranslator** — Paragraph translation (LLM batches).
-9. **Typesetting** — Reflow into geometry.
-10. **FontMapper** — Fonts.
-11. **PDFCreater** — Drawing instructions.
-12. **SUBSET_FONT_STAGE_NAME** — Font subsetting.
-13. **SAVE_PDF_STAGE_NAME** — Write PDF.
+2. **DetectScannedFile** — Scanned-page detection (SSIM); records per-page scores in shared context when OCR routing is enabled.
+3. **OCRRouting** — Optional RapidOCR injection into `pdf_character` before layout (see `--ocr-mode` in [Configuration](../configuration.md)).
+4. **LayoutParser** — Page layout (YOLO-based layout model is injected/configured externally).
+5. **TableParser** — Tables.
+6. **ParagraphFinder** — Paragraph grouping.
+7. **StylesAndFormulas** — Styles and formula-like text.
+8. **AutomaticTermExtractor** — Glossary term extraction (LLM, often JSON-shaped).
+9. **ILTranslator** — Paragraph translation (LLM batches).
+10. **Typesetting** — Reflow into geometry.
+11. **FontMapper** — Fonts.
+12. **PDFCreater** — Drawing instructions.
+13. **SUBSET_FONT_STAGE_NAME** — Font subsetting.
+14. **SAVE_PDF_STAGE_NAME** — Write PDF.
 
 ## Agent guidelines
 

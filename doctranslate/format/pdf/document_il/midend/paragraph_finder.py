@@ -299,7 +299,11 @@ class ParagraphFinder:
         for paragraph in paragraphs:
             self.update_paragraph_data(paragraph, update_unicode=True)
 
-        if self.translation_config.ocr_workaround:
+        if self.translation_config.ocr_workaround and not getattr(
+            self.translation_config,
+            "ocr_glyph_clear_disabled",
+            False,
+        ):
             self.add_text_fill_background(page)
             # since this is ocr file,
             # image characters are not needed

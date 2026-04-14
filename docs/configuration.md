@@ -114,6 +114,19 @@ metrics_json_path = ""               # path when metrics_output includes json
 
 `ollama` providers do not require an API key in config validation when no `api_key_env` is set.
 
+## OCR / layout fallback (CLI)
+
+Optional **RapidOCR** (`rapidocr-onnxruntime`) path for difficult PDFs. It runs after scanned detection and **replaces or merges** `pdf_character` data before `LayoutParser`, so downstream translation and typesetting stay on the normal IL pipeline.
+
+| Flag | Description |
+|------|-------------|
+| `--ocr-mode` | `off` (default), `auto` (SSIM “scanned” pages or very low extracted text density), `force` (OCR all allowed pages), `hybrid` (merge non-overlapping OCR boxes with native text). |
+| `--ocr-pages` | Optional page filter (same syntax as `--pages`). Intersects with `--pages` when both are set. |
+| `--ocr-lang` | Comma-separated hints (reserved for future engine tuning; logged in MVP). |
+| `--ocr-debug` | Writes `ocr_routing.json` under the job working directory with per-page route signals. |
+
+When `--ocr-mode` is not `off`, the pipeline **does not abort** on “heavy scanned” detection (and does not raise `ExtractTextError` for CID-heavy text as aggressively); use only when you intend OCR.
+
 ## Translation cache
 
 The on-disk translation cache uses **`cache.v2.db`**. Cache keys include a provider / engine identifier (widened in v2). Changing provider ids or models may change cache keys.

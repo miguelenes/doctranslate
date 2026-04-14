@@ -45,8 +45,9 @@ CLEAN_PROBABILITY = 0.001
 MAX_CACHE_ROWS = 50_000
 _cleanup_lock = threading.Lock()
 
-# TM cleanup (deterministic + mutex)
-_tm_cleanup_lock = threading.Lock()
+# TM writes + trim share one RLock: set() holds across upsert+cleanup so rows
+# cannot race past max_tm_rows; _tm_cleanup re-enters the same lock from set().
+_tm_cleanup_lock = threading.RLock()
 _tm_write_counter = 0
 _tm_write_counter_lock = threading.Lock()
 
@@ -479,15 +480,20 @@ class TranslationCache:
                 translation=translation,
             )
             if self.tm_runtime.mode != TMMode.OFF:
-                self._tm_upsert(
-                    original_text,
-                    translation,
-                    origin_mode="live",
-                    store_embedding=self.tm_runtime.mode == TMMode.SEMANTIC,
-                )
-            if random.random() < CLEAN_PROBABILITY:  # noqa: S311
-                self._cleanup()
-            self._bump_tm_write_and_cleanup()
+                with _tm_cleanup_lock:
+                    self._tm_upsert(
+                        original_text,
+                        translation,
+                        origin_mode="live",
+                        store_embedding=self.tm_runtime.mode == TMMode.SEMANTIC,
+                    )
+                    if random.random() < CLEAN_PROBABILITY:  # noqa: S311
+                        self._cleanup()
+                    self._bump_tm_write_and_cleanup()
+            else:
+                if random.random() < CLEAN_PROBABILITY:  # noqa: S311
+                    self._cleanup()
+                self._bump_tm_write_and_cleanup()
         except peewee.OperationalError as e:
             if "database is locked" in str(e):
                 logger.debug("Cache is locked")
@@ -557,9 +563,7 @@ class TranslationCache:
         self._tm_cleanup()
 
     def _tm_cleanup(self) -> None:
-        if not _tm_cleanup_lock.acquire(blocking=False):
-            return
-        try:
+        with _tm_cleanup_lock:
             max_id = _TmEntry.select(fn.MAX(_TmEntry.id)).scalar()
             cap = self.tm_runtime.max_tm_rows
             if not max_id or max_id <= cap:
@@ -567,8 +571,6 @@ class TranslationCache:
             threshold = max_id - cap
             logger.info("Cleaning up translation memory (trim ids <= %s)", threshold)
             _TmEntry.delete().where(_TmEntry.id <= threshold).execute()
-        finally:
-            _tm_cleanup_lock.release()
 
     def _cleanup(self) -> None:
         if not _cleanup_lock.acquire(blocking=False):

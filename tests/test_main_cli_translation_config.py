@@ -43,3 +43,28 @@ def test_parser_accepts_translator_local_flags():
     )
     assert args.translator == "local"
     assert args.local_model == "qwen2.5:7b"
+
+
+def test_parser_accepts_ocr_flags():
+    p = create_parser()
+    args = p.parse_args(
+        [
+            "--translator",
+            "local",
+            "--local-model",
+            "m",
+            "--files",
+            "x.pdf",
+            "--ocr-mode",
+            "hybrid",
+            "--ocr-pages",
+            "1,3-5",
+            "--ocr-lang",
+            "en,ja",
+            "--ocr-debug",
+        ],
+    )
+    assert args.ocr_mode == "hybrid"
+    assert args.ocr_pages == "1,3-5"
+    assert args.ocr_lang == "en,ja"
+    assert args.ocr_debug is True
