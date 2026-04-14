@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import time
 from collections.abc import AsyncIterator
 from datetime import datetime
 from datetime import timedelta
@@ -19,6 +20,32 @@ from doctranslate.schemas.public_api import TranslationErrorPayload
 from doctranslate.schemas.public_api import TranslationResult
 
 logger = logging.getLogger(__name__)
+
+
+def _worker_job_wall_seconds(created_at: datetime) -> float:
+    return max(0.0, (utcnow() - created_at).total_seconds())
+
+
+def _emit_worker_job_terminal(
+    *,
+    kind: str,
+    state: str,
+    created_at: datetime,
+    failure_category: str = "",
+) -> None:
+    from doctranslate.observability.metrics import record_job_duration
+    from doctranslate.observability.metrics import record_job_terminal
+
+    record_job_terminal(
+        kind=kind,
+        state=state,
+        failure_category=failure_category or "none",
+    )
+    record_job_duration(
+        kind=kind,
+        state=state,
+        seconds=_worker_job_wall_seconds(created_at),
+    )
 
 
 def _retention_deadline(
@@ -143,6 +170,12 @@ async def _consume_translate_events(
                 result=None,
                 message=None,
             )
+            _emit_worker_job_terminal(
+                kind=kind,
+                state="failed",
+                created_at=created_at,
+                failure_category=str(err_payload.code.value),
+            )
             return
         if et == "finish":
             tr = ev.get("translation_result")
@@ -171,6 +204,11 @@ async def _consume_translate_events(
                 error=None,
                 result=result,
                 message=None,
+            )
+            _emit_worker_job_terminal(
+                kind=kind,
+                state="succeeded",
+                created_at=created_at,
             )
             return
 
@@ -222,6 +260,12 @@ async def execute_translation_job(
             result=None,
             message=None,
         )
+        _emit_worker_job_terminal(
+            kind="translation",
+            state="failed",
+            created_at=ca_bad,
+            failure_category="missing_request",
+        )
         return
 
     metadata_store.increment_attempt_count(job_id)
@@ -252,119 +296,154 @@ async def execute_translation_job(
             result=None,
             message=None,
         )
+        _emit_worker_job_terminal(
+            kind="translation",
+            state="failed",
+            created_at=created_at,
+            failure_category="validation",
+        )
         return
 
-    now = utcnow()
-    persist_job_row(
-        metadata_store=metadata_store,
-        artifact_store=artifact_store,
-        dual_write_json_meta=dual_write_json_meta,
-        artifact_retention_seconds=artifact_retention_seconds,
-        job_id=job_id,
-        kind="translation",
-        state="running",
-        created_at=created_at,
-        updated_at=now,
-        progress=None,
-        error=None,
-        result=None,
-        message=None,
-        request_json=req_json,
-        worker_heartbeat_at=now,
-    )
+    from doctranslate.observability.context import bound_observability_context
+    from doctranslate.observability.tracing import attach_context_from_traceparent
+    from doctranslate.observability.tracing import detach_context
+    from doctranslate.observability.tracing import span
 
+    ctx_tok = attach_context_from_traceparent(raw.get("otel_traceparent"))
     try:
-        if job_timeout_seconds and job_timeout_seconds > 0:
-            await asyncio.wait_for(
-                _consume_translate_events(
-                    job_id=job_id,
-                    events=async_translate(req),
+        with bound_observability_context(job_id=job_id, job_kind="translation"):
+            with span("job.execute", job_id=job_id, kind="translation"):
+                now = utcnow()
+                persist_job_row(
                     metadata_store=metadata_store,
                     artifact_store=artifact_store,
                     dual_write_json_meta=dual_write_json_meta,
                     artifact_retention_seconds=artifact_retention_seconds,
-                    created_at=created_at,
+                    job_id=job_id,
                     kind="translation",
-                    cancel_check_every=3,
-                ),
-                timeout=job_timeout_seconds,
-            )
-        else:
-            await _consume_translate_events(
-                job_id=job_id,
-                events=async_translate(req),
-                metadata_store=metadata_store,
-                artifact_store=artifact_store,
-                dual_write_json_meta=dual_write_json_meta,
-                artifact_retention_seconds=artifact_retention_seconds,
-                created_at=created_at,
-                kind="translation",
-                cancel_check_every=3,
-            )
-    except asyncio.TimeoutError:
-        persist_job_row(
-            metadata_store=metadata_store,
-            artifact_store=artifact_store,
-            dual_write_json_meta=dual_write_json_meta,
-            artifact_retention_seconds=artifact_retention_seconds,
-            job_id=job_id,
-            kind="translation",
-            state="failed",
-            created_at=created_at,
-            updated_at=utcnow(),
-            progress=None,
-            error=TranslationErrorPayload(
-                code=PublicErrorCode.INTERNAL_ERROR,
-                message="Job exceeded configured timeout.",
-                retryable=True,
-                details={"timeout_seconds": job_timeout_seconds},
-            ),
-            result=None,
-            message=None,
-        )
-    except asyncio.CancelledError:
-        persist_job_row(
-            metadata_store=metadata_store,
-            artifact_store=artifact_store,
-            dual_write_json_meta=dual_write_json_meta,
-            artifact_retention_seconds=artifact_retention_seconds,
-            job_id=job_id,
-            kind="translation",
-            state="canceled",
-            created_at=created_at,
-            updated_at=utcnow(),
-            progress=None,
-            error=TranslationErrorPayload(
-                code=PublicErrorCode.CANCELED,
-                message="Translation canceled.",
-                retryable=False,
-            ),
-            result=None,
-            message=None,
-        )
-        raise
-    except Exception as exc:
-        logger.exception("Translation job failed (worker)")
-        persist_job_row(
-            metadata_store=metadata_store,
-            artifact_store=artifact_store,
-            dual_write_json_meta=dual_write_json_meta,
-            artifact_retention_seconds=artifact_retention_seconds,
-            job_id=job_id,
-            kind="translation",
-            state="failed",
-            created_at=created_at,
-            updated_at=utcnow(),
-            progress=None,
-            error=TranslationErrorPayload(
-                code=PublicErrorCode.INTERNAL_ERROR,
-                message=str(exc),
-                retryable=False,
-                details={"exception_type": type(exc).__name__},
-            ),
-            result=None,
-            message=None,
-        )
+                    state="running",
+                    created_at=created_at,
+                    updated_at=now,
+                    progress=None,
+                    error=None,
+                    result=None,
+                    message=None,
+                    request_json=req_json,
+                    worker_heartbeat_at=now,
+                )
+
+                try:
+                    if job_timeout_seconds and job_timeout_seconds > 0:
+                        await asyncio.wait_for(
+                            _consume_translate_events(
+                                job_id=job_id,
+                                events=async_translate(req),
+                                metadata_store=metadata_store,
+                                artifact_store=artifact_store,
+                                dual_write_json_meta=dual_write_json_meta,
+                                artifact_retention_seconds=artifact_retention_seconds,
+                                created_at=created_at,
+                                kind="translation",
+                                cancel_check_every=3,
+                            ),
+                            timeout=job_timeout_seconds,
+                        )
+                    else:
+                        await _consume_translate_events(
+                            job_id=job_id,
+                            events=async_translate(req),
+                            metadata_store=metadata_store,
+                            artifact_store=artifact_store,
+                            dual_write_json_meta=dual_write_json_meta,
+                            artifact_retention_seconds=artifact_retention_seconds,
+                            created_at=created_at,
+                            kind="translation",
+                            cancel_check_every=3,
+                        )
+                except asyncio.TimeoutError:
+                    persist_job_row(
+                        metadata_store=metadata_store,
+                        artifact_store=artifact_store,
+                        dual_write_json_meta=dual_write_json_meta,
+                        artifact_retention_seconds=artifact_retention_seconds,
+                        job_id=job_id,
+                        kind="translation",
+                        state="failed",
+                        created_at=created_at,
+                        updated_at=utcnow(),
+                        progress=None,
+                        error=TranslationErrorPayload(
+                            code=PublicErrorCode.INTERNAL_ERROR,
+                            message="Job exceeded configured timeout.",
+                            retryable=True,
+                            details={"timeout_seconds": job_timeout_seconds},
+                        ),
+                        result=None,
+                        message=None,
+                    )
+                    _emit_worker_job_terminal(
+                        kind="translation",
+                        state="failed",
+                        created_at=created_at,
+                        failure_category="timeout",
+                    )
+                except asyncio.CancelledError:
+                    persist_job_row(
+                        metadata_store=metadata_store,
+                        artifact_store=artifact_store,
+                        dual_write_json_meta=dual_write_json_meta,
+                        artifact_retention_seconds=artifact_retention_seconds,
+                        job_id=job_id,
+                        kind="translation",
+                        state="canceled",
+                        created_at=created_at,
+                        updated_at=utcnow(),
+                        progress=None,
+                        error=TranslationErrorPayload(
+                            code=PublicErrorCode.CANCELED,
+                            message="Translation canceled.",
+                            retryable=False,
+                        ),
+                        result=None,
+                        message=None,
+                    )
+                    _emit_worker_job_terminal(
+                        kind="translation",
+                        state="canceled",
+                        created_at=created_at,
+                        failure_category="canceled",
+                    )
+                    raise
+                except Exception as exc:
+                    logger.exception("Translation job failed (worker)")
+                    persist_job_row(
+                        metadata_store=metadata_store,
+                        artifact_store=artifact_store,
+                        dual_write_json_meta=dual_write_json_meta,
+                        artifact_retention_seconds=artifact_retention_seconds,
+                        job_id=job_id,
+                        kind="translation",
+                        state="failed",
+                        created_at=created_at,
+                        updated_at=utcnow(),
+                        progress=None,
+                        error=TranslationErrorPayload(
+                            code=PublicErrorCode.INTERNAL_ERROR,
+                            message=str(exc),
+                            retryable=False,
+                            details={"exception_type": type(exc).__name__},
+                        ),
+                        result=None,
+                        message=None,
+                    )
+                    _emit_worker_job_terminal(
+                        kind="translation",
+                        state="failed",
+                        created_at=created_at,
+                        failure_category=type(exc).__name__,
+                    )
+    finally:
+        detach_context(ctx_tok)
 
 
 async def execute_warmup_job(
@@ -376,6 +455,12 @@ async def execute_warmup_job(
     artifact_retention_seconds: float,
 ) -> None:
     """Run asset warmup for ``job_id`` (ARQ worker entry)."""
+    from doctranslate.observability.context import bound_observability_context
+    from doctranslate.observability.metrics import record_assets_warmup
+    from doctranslate.observability.tracing import attach_context_from_traceparent
+    from doctranslate.observability.tracing import detach_context
+    from doctranslate.observability.tracing import span
+
     raw = metadata_store.get_job_raw(job_id)
     if raw is None:
         return
@@ -384,81 +469,111 @@ async def execute_warmup_job(
     created_at = datetime.fromisoformat(
         str(raw["created_at"]).replace("Z", "+00:00"),
     )
-    now = utcnow()
-    persist_job_row(
-        metadata_store=metadata_store,
-        artifact_store=artifact_store,
-        dual_write_json_meta=dual_write_json_meta,
-        artifact_retention_seconds=artifact_retention_seconds,
-        job_id=job_id,
-        kind="warmup",
-        state="running",
-        created_at=created_at,
-        updated_at=now,
-        progress=None,
-        error=None,
-        result=None,
-        message=None,
-    )
+    ctx_tok = attach_context_from_traceparent(raw.get("otel_traceparent"))
     try:
-        from doctranslate.assets import assets as assets_mod
+        with bound_observability_context(job_id=job_id, job_kind="warmup"):
+            with span("job.warmup", job_id=job_id, kind="warmup"):
+                now = utcnow()
+                persist_job_row(
+                    metadata_store=metadata_store,
+                    artifact_store=artifact_store,
+                    dual_write_json_meta=dual_write_json_meta,
+                    artifact_retention_seconds=artifact_retention_seconds,
+                    job_id=job_id,
+                    kind="warmup",
+                    state="running",
+                    created_at=created_at,
+                    updated_at=now,
+                    progress=None,
+                    error=None,
+                    result=None,
+                    message=None,
+                )
+                t0 = time.perf_counter()
+                try:
+                    from doctranslate.assets import assets as assets_mod
 
-        await asyncio.to_thread(assets_mod.warmup)
-        persist_job_row(
-            metadata_store=metadata_store,
-            artifact_store=artifact_store,
-            dual_write_json_meta=dual_write_json_meta,
-            artifact_retention_seconds=artifact_retention_seconds,
-            job_id=job_id,
-            kind="warmup",
-            state="succeeded",
-            created_at=created_at,
-            updated_at=utcnow(),
-            progress=None,
-            error=None,
-            result=None,
-            message="Warmup completed",
-        )
-    except asyncio.CancelledError:
-        persist_job_row(
-            metadata_store=metadata_store,
-            artifact_store=artifact_store,
-            dual_write_json_meta=dual_write_json_meta,
-            artifact_retention_seconds=artifact_retention_seconds,
-            job_id=job_id,
-            kind="warmup",
-            state="canceled",
-            created_at=created_at,
-            updated_at=utcnow(),
-            progress=None,
-            error=TranslationErrorPayload(
-                code=PublicErrorCode.CANCELED,
-                message="Warmup canceled.",
-                retryable=False,
-            ),
-            result=None,
-            message=None,
-        )
-        raise
-    except Exception as exc:
-        logger.exception("Warmup job failed (worker)")
-        persist_job_row(
-            metadata_store=metadata_store,
-            artifact_store=artifact_store,
-            dual_write_json_meta=dual_write_json_meta,
-            artifact_retention_seconds=artifact_retention_seconds,
-            job_id=job_id,
-            kind="warmup",
-            state="failed",
-            created_at=created_at,
-            updated_at=utcnow(),
-            progress=None,
-            error=TranslationErrorPayload(
-                code=PublicErrorCode.INTERNAL_ERROR,
-                message=str(exc),
-                retryable=False,
-                details={"exception_type": type(exc).__name__},
-            ),
-            result=None,
-            message=None,
-        )
+                    await asyncio.to_thread(assets_mod.warmup)
+                    dt = time.perf_counter() - t0
+                    record_assets_warmup(outcome="success", duration_seconds=dt)
+                    persist_job_row(
+                        metadata_store=metadata_store,
+                        artifact_store=artifact_store,
+                        dual_write_json_meta=dual_write_json_meta,
+                        artifact_retention_seconds=artifact_retention_seconds,
+                        job_id=job_id,
+                        kind="warmup",
+                        state="succeeded",
+                        created_at=created_at,
+                        updated_at=utcnow(),
+                        progress=None,
+                        error=None,
+                        result=None,
+                        message="Warmup completed",
+                    )
+                    _emit_worker_job_terminal(
+                        kind="warmup",
+                        state="succeeded",
+                        created_at=created_at,
+                    )
+                except asyncio.CancelledError:
+                    dt = time.perf_counter() - t0
+                    record_assets_warmup(outcome="canceled", duration_seconds=dt)
+                    persist_job_row(
+                        metadata_store=metadata_store,
+                        artifact_store=artifact_store,
+                        dual_write_json_meta=dual_write_json_meta,
+                        artifact_retention_seconds=artifact_retention_seconds,
+                        job_id=job_id,
+                        kind="warmup",
+                        state="canceled",
+                        created_at=created_at,
+                        updated_at=utcnow(),
+                        progress=None,
+                        error=TranslationErrorPayload(
+                            code=PublicErrorCode.CANCELED,
+                            message="Warmup canceled.",
+                            retryable=False,
+                        ),
+                        result=None,
+                        message=None,
+                    )
+                    _emit_worker_job_terminal(
+                        kind="warmup",
+                        state="canceled",
+                        created_at=created_at,
+                        failure_category="canceled",
+                    )
+                    raise
+                except Exception as exc:
+                    dt = time.perf_counter() - t0
+                    record_assets_warmup(outcome="failed", duration_seconds=dt)
+                    logger.exception("Warmup job failed (worker)")
+                    persist_job_row(
+                        metadata_store=metadata_store,
+                        artifact_store=artifact_store,
+                        dual_write_json_meta=dual_write_json_meta,
+                        artifact_retention_seconds=artifact_retention_seconds,
+                        job_id=job_id,
+                        kind="warmup",
+                        state="failed",
+                        created_at=created_at,
+                        updated_at=utcnow(),
+                        progress=None,
+                        error=TranslationErrorPayload(
+                            code=PublicErrorCode.INTERNAL_ERROR,
+                            message=str(exc),
+                            retryable=False,
+                            details={"exception_type": type(exc).__name__},
+                        ),
+                        result=None,
+                        message=None,
+                    )
+                    _emit_worker_job_terminal(
+                        kind="warmup",
+                        state="failed",
+                        created_at=created_at,
+                        failure_category=type(exc).__name__,
+                    )
+    finally:
+        detach_context(ctx_tok)

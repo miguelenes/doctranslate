@@ -1,4 +1,4 @@
-"""HTTP API health and runtime endpoints."""
+"""HTTP API observability: metrics endpoint and request correlation."""
 
 from __future__ import annotations
 
@@ -25,26 +25,22 @@ def api_client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> TestClient:
     reset_observability_settings_cache()
 
 
-def test_health_live(api_client: TestClient) -> None:
-    r = api_client.get("/v1/health/live")
+def test_metrics_endpoint(api_client: TestClient) -> None:
+    r = api_client.get("/metrics")
     assert r.status_code == 200
-    assert r.json() == {"status": "ok"}
+    text = r.text
+    assert "#" in text or "HELP" in text or "doctranslate" in text
 
 
-def test_runtime(api_client: TestClient) -> None:
-    r = api_client.get("/v1/runtime")
-    assert r.status_code == 200
-    data = r.json()
-    assert data["app"] == "doctranslate-http-api"
-    assert "package_version" in data
-    assert data["public_schema_version"] == "1"
-
-
-def test_health_ready(api_client: TestClient) -> None:
-    r = api_client.get("/v1/health/ready")
-    assert r.status_code == 200
+def test_request_id_on_error_and_header(api_client: TestClient) -> None:
+    r = api_client.post(
+        "/v1/jobs",
+        data={"translation_request": "not-json{"},
+        files={"input_pdf": ("x.pdf", b"%PDF-1.4\n", "application/pdf")},
+    )
+    assert r.status_code == 400
     body = r.json()
-    assert "ready" in body
-    assert "checks" in body
-    assert body["checks"]["data_root_writable"] is True
-    assert body["checks"]["job_queue_healthy"] is True
+    assert body.get("ok") is False
+    assert body.get("request_id")
+    hdr = r.headers.get("X-Request-ID")
+    assert hdr == body["request_id"]

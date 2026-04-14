@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 
 from doctranslate.http_api.job_manager import JobManager
 from doctranslate.http_api.job_service import HttpJobService
+from doctranslate.http_api.observability_setup import install_observability
 from doctranslate.http_api.queue_backends.arq_backend import ArqQueueBackend
 from doctranslate.http_api.redis_settings import redis_settings_from_url
 from doctranslate.http_api.routes import assets as assets_routes
@@ -141,6 +142,7 @@ def create_app() -> FastAPI:
     app.include_router(config_routes.router)
     app.include_router(inspect_routes.router)
     app.include_router(jobs_routes.router)
+    install_observability(app)
     return app
 
 

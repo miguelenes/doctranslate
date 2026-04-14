@@ -32,6 +32,7 @@ from doctranslate.http_api.models import JobStatusResponse
 from doctranslate.http_api.presign import presign_gcs_url
 from doctranslate.http_api.presign import presign_s3_get_url
 from doctranslate.http_api.range_requests import parse_bytes_range
+from doctranslate.observability.context import get_request_id
 from doctranslate.schemas.enums import ArtifactKind
 from doctranslate.schemas.enums import PublicErrorCode
 from doctranslate.schemas.public_api import TranslationErrorPayload
@@ -106,6 +107,7 @@ async def create_job(
                 message=f"Invalid JSON in translation_request field: {e}",
                 retryable=False,
             ),
+            request_id=get_request_id(),
         ) from e
 
     if input_pdf is not None:
@@ -131,6 +133,7 @@ async def create_job(
                         message=str(e),
                         retryable=False,
                     ),
+                    request_id=get_request_id(),
                 ) from e
             raise
         except OSError as e:
@@ -141,6 +144,7 @@ async def create_job(
                     message=str(e),
                     retryable=False,
                 ),
+                request_id=get_request_id(),
             ) from e
 
         merged = {**data, "input_pdf": str(dest.resolve())}
@@ -154,6 +158,7 @@ async def create_job(
                     message=str(e),
                     retryable=False,
                 ),
+                request_id=get_request_id(),
             ) from e
         try:
             await job_service.create_translation_job(
@@ -169,6 +174,7 @@ async def create_job(
                     message="Server busy; too many active or queued jobs.",
                     retryable=True,
                 ),
+                request_id=get_request_id(),
             ) from None
         return JobCreateResponse(
             job_id=job_id,
@@ -186,6 +192,7 @@ async def create_job(
                 message="input_pdf is required when no file upload is provided",
                 retryable=False,
             ),
+            request_id=get_request_id(),
         )
     path = Path(raw_path)
     err = job_service.validate_mounted_input(path)
@@ -193,6 +200,7 @@ async def create_job(
         raise http_error(
             status_code=status.HTTP_400_BAD_REQUEST,
             error=err,
+            request_id=get_request_id(),
         )
     try:
         req = validate_request(data)
@@ -204,6 +212,7 @@ async def create_job(
                 message=str(e),
                 retryable=False,
             ),
+            request_id=get_request_id(),
         ) from e
     try:
         job_id = await job_service.create_translation_job(req, input_pdf_path=path)
@@ -215,6 +224,7 @@ async def create_job(
                 message="Server busy; too many active or queued jobs.",
                 retryable=True,
             ),
+            request_id=get_request_id(),
         ) from None
     return JobCreateResponse(
         job_id=job_id,

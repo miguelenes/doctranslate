@@ -84,7 +84,7 @@ Tune per document size and OCR flags; these are **documentation defaults**, not 
 - **Autoscaling**: scale replicas; avoid many Uvicorn workers per replica for memory-heavy ONNX + PDF work.
 - **Concurrency**: lower `DOCTRANSLATE_API_MAX_CONCURRENT_JOBS` when OOM risk is high; combine with max instances / max tasks.
 - **Isolation**: separate **inspect/config** traffic from **translate** workers when possible.
-- **Observability**: ship container **stdout/stderr** to your platform logs; include **job_id** from API responses in client logs.
+- **Observability**: ship container **stdout/stderr** to your platform logs; include **job_id** from API responses in client logs. Enable **Prometheus** (`/metrics`) and optional **OTLP** tracing via `DOCTRANSLATE_*` variables — see [Observability](observability.md).
 - **Startup / assets**: use `/v1/health/ready` with `DOCTRANSLATE_API_REQUIRE_ASSETS_READY=true` when you require a warmed cache before serving (see [HTTP API](http-api.md)).
 - **Multi-instance HTTP API**: the in-process `JobManager` is **per replica**; clients must poll the **same** instance that accepted `202` **or** you must add an external job store—documented in [HTTP API](http-api.md#serverless-and-multi-instance-behavior).
 

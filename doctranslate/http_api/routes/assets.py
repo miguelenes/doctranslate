@@ -8,6 +8,7 @@ from fastapi import status
 from doctranslate.http_api.deps import JobServiceDep
 from doctranslate.http_api.errors import http_error
 from doctranslate.http_api.models import JobCreateResponse
+from doctranslate.observability.context import get_request_id
 from doctranslate.schemas.enums import PublicErrorCode
 from doctranslate.schemas.public_api import TranslationErrorPayload
 
@@ -30,6 +31,7 @@ async def post_warmup(job_service: JobServiceDep) -> JobCreateResponse:
                 message="Server busy; too many active or queued jobs.",
                 retryable=True,
             ),
+            request_id=get_request_id(),
         ) from None
     return JobCreateResponse(
         job_id=job_id,

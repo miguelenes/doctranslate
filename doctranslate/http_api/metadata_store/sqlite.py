@@ -72,6 +72,8 @@ def _migrate_schema(conn: sqlite3.Connection) -> None:
         alters.append("ALTER TABLE jobs ADD COLUMN cancel_requested_at TEXT")
     if "worker_heartbeat_at" not in cols:
         alters.append("ALTER TABLE jobs ADD COLUMN worker_heartbeat_at TEXT")
+    if "otel_traceparent" not in cols:
+        alters.append("ALTER TABLE jobs ADD COLUMN otel_traceparent TEXT")
     for stmt in alters:
         try:
             conn.execute(stmt)
@@ -109,6 +111,13 @@ class SqliteJobMetadataStore:
         )
         row = cur.fetchone()
         return int(row[0]) if row else 0
+
+    def count_jobs_by_state(self) -> dict[str, int]:
+        """Return counts keyed by ``state`` for queue depth metrics."""
+        cur = self._conn.execute(
+            "SELECT state, COUNT(*) AS n FROM jobs GROUP BY state",
+        )
+        return {str(r[0]): int(r[1]) for r in cur.fetchall()}
 
     def mark_cancel_requested(
         self,
@@ -162,6 +171,7 @@ class SqliteJobMetadataStore:
         request_json: str | None = None,
         cancel_requested_at: Any | None = None,
         worker_heartbeat_at: Any | None = None,
+        otel_traceparent: str | None = None,
     ) -> None:
         progress_json = json.dumps(progress) if progress is not None else None
         error_json = error.model_dump_json() if error else None
@@ -202,8 +212,8 @@ class SqliteJobMetadataStore:
             INSERT INTO jobs (
                 job_id, kind, state, created_at, updated_at,
                 progress_json, error_json, result_json, message, retention_expires_at,
-                request_json, cancel_requested_at, worker_heartbeat_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                request_json, cancel_requested_at, worker_heartbeat_at, otel_traceparent
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(job_id) DO UPDATE SET
                 kind = excluded.kind,
                 state = excluded.state,
@@ -220,6 +230,9 @@ class SqliteJobMetadataStore:
                 ),
                 worker_heartbeat_at = COALESCE(
                     excluded.worker_heartbeat_at, jobs.worker_heartbeat_at
+                ),
+                otel_traceparent = COALESCE(
+                    jobs.otel_traceparent, excluded.otel_traceparent
                 )
             """,
             (
@@ -236,6 +249,7 @@ class SqliteJobMetadataStore:
                 request_json,
                 creq,
                 whb,
+                otel_traceparent,
             ),
         )
         self._conn.commit()
@@ -271,6 +285,8 @@ class SqliteJobMetadataStore:
             out["worker_heartbeat_at"] = d["worker_heartbeat_at"]
         if d.get("attempt_count") is not None:
             out["attempt_count"] = int(d["attempt_count"])
+        if d.get("otel_traceparent"):
+            out["otel_traceparent"] = d["otel_traceparent"]
         return out
 
     def delete_job(self, job_id: str) -> None:

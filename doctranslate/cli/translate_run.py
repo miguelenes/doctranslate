@@ -192,6 +192,18 @@ async def run_legacy_translate_pipeline(
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
 
+    from doctranslate.observability.config import get_observability_settings
+    from doctranslate.observability.context import new_cli_run_id
+    from doctranslate.observability.context import set_cli_run_id
+    from doctranslate.observability.logging import configure_logging
+    from doctranslate.observability.metrics import init_metrics
+
+    _obs = get_observability_settings()
+    configure_logging(_obs)
+    if _obs.metrics_enabled:
+        init_metrics(_obs.metrics_namespace)
+    set_cli_run_id(new_cli_run_id())
+
     if getattr(args, "request_json", None):
         return await _run_translate_request_json(parser, args)
 

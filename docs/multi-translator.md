@@ -50,6 +50,8 @@ Automatic glossary term extraction issues JSON-shaped prompts. Define a profile 
 
 With `metrics_output = "json"` or `both`, and `metrics_json_path` set (or overridden by CLI), the router can write structured usage summaries. Logs always include a human-readable summary when `log` or `both` is selected.
 
+When **Prometheus** metrics are enabled for the process (`DOCTRANSLATE_METRICS_ENABLED`, see [Observability](observability.md)), the same router emits labeled **service** counters and histograms (outcomes, latency, tokens, estimated cost) alongside these end-of-run summaries—use one or both depending on whether you need files/logs vs scrape targets.
+
 ## Example
 
 ```bash

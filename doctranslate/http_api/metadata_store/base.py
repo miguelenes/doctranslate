@@ -27,6 +27,10 @@ class JobMetadataStore(Protocol):
         result: TranslationResult | None,
         message: str | None,
         retention_expires_at: Any | None,
+        request_json: str | None = None,
+        cancel_requested_at: Any | None = None,
+        worker_heartbeat_at: Any | None = None,
+        otel_traceparent: str | None = None,
     ) -> None:
         """Insert or replace the job row."""
 

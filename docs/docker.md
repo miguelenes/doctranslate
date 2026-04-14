@@ -128,6 +128,8 @@ An **optional** HTTP API is included (`DocTranslater[api]`); see [HTTP API](http
 
 Images declare `HEALTHCHECK` using `doctranslate --version`. For readiness that includes downloaded assets, use a warm target or mount a populated cache volume.
 
+For HTTP services (`runtime-api`), you can also scrape **`/metrics`** and ship JSON logs from stdout when observability is enabled; see [Observability](observability.md).
+
 ## Security
 
 - Images run as user `doctranslater` (UID **1000**).

@@ -17,6 +17,10 @@ from doctranslate.http_api.job_validation import validate_mounted_input
 from doctranslate.http_api.metadata_store.sqlite import SqliteJobMetadataStore
 from doctranslate.http_api.queue_backends.arq_backend import ArqQueueBackend
 from doctranslate.http_api.storage import utcnow
+from doctranslate.observability.metrics import record_job_created
+from doctranslate.observability.metrics import record_job_enqueue_failure
+from doctranslate.observability.tracing import inject_traceparent_carrier
+from doctranslate.observability.tracing import traceparent_from_carrier
 from doctranslate.schemas.enums import PublicErrorCode
 from doctranslate.schemas.public_api import TranslationErrorPayload
 from doctranslate.schemas.public_api import TranslationOptions
@@ -80,6 +84,12 @@ class HttpJobService:
             return await self._job_manager.count_queued()
         return self._metadata_store.count_jobs_in_state("queued")
 
+    async def job_queue_counts_by_state(self) -> dict[str, int]:
+        """Counts for observability gauges (in-process uses memory; ARQ uses SQLite)."""
+        if self._settings.queue_backend == "inprocess":
+            return await self._job_manager.job_state_counts()
+        return self._metadata_store.count_jobs_by_state()
+
     async def create_warmup_job(self) -> str:
         if self._settings.queue_backend == "inprocess":
             return await self._job_manager.create_warmup_job()
@@ -91,6 +101,8 @@ class HttpJobService:
             job_id = str(uuid.uuid4())
             self._artifact_store.ensure_workspace(job_id)
             now = utcnow()
+            carrier = inject_traceparent_carrier()
+            tp = traceparent_from_carrier(carrier)
             self._metadata_store.upsert_job(
                 job_id=job_id,
                 kind="warmup",
@@ -102,12 +114,14 @@ class HttpJobService:
                 result=None,
                 message=None,
                 retention_expires_at=None,
+                otel_traceparent=tp,
             )
             try:
                 assert self._arq_backend is not None
                 await self._arq_backend.enqueue_warmup(job_id)
             except Exception as exc:
                 logger.exception("Warmup enqueue failed")
+                record_job_enqueue_failure(kind="warmup", reason="enqueue")
                 self._metadata_store.upsert_job(
                     job_id=job_id,
                     kind="warmup",
@@ -123,8 +137,13 @@ class HttpJobService:
                     result=None,
                     message=None,
                     retention_expires_at=None,
+                    otel_traceparent=tp,
                 )
                 raise
+            record_job_created(
+                kind="warmup",
+                queue_backend=self._settings.queue_backend,
+            )
         return job_id
 
     async def create_translation_job(
@@ -161,6 +180,8 @@ class HttpJobService:
             )
             now = utcnow()
             req_json = req.model_dump_json()
+            carrier = inject_traceparent_carrier()
+            tp = traceparent_from_carrier(carrier)
             self._metadata_store.upsert_job(
                 job_id=jid,
                 kind="translation",
@@ -173,12 +194,14 @@ class HttpJobService:
                 message=None,
                 retention_expires_at=None,
                 request_json=req_json,
+                otel_traceparent=tp,
             )
             try:
                 assert self._arq_backend is not None
                 await self._arq_backend.enqueue_translation(jid)
             except Exception as exc:
                 logger.exception("Translation enqueue failed for job %s", jid)
+                record_job_enqueue_failure(kind="translation", reason="enqueue")
                 self._metadata_store.upsert_job(
                     job_id=jid,
                     kind="translation",
@@ -195,8 +218,13 @@ class HttpJobService:
                     message=None,
                     retention_expires_at=None,
                     request_json=req_json,
+                    otel_traceparent=tp,
                 )
                 raise
+            record_job_created(
+                kind="translation",
+                queue_backend=self._settings.queue_backend,
+            )
         return jid
 
     async def cancel(self, job_id: str) -> bool:

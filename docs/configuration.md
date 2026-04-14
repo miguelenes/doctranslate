@@ -88,6 +88,8 @@ metrics_output = "log"                 # log | json | both
 metrics_json_path = ""               # path when metrics_output includes json
 ```
 
+**Service observability** (HTTP API, workers, CLI) is separate from `metrics_output`: Prometheus counters/histograms, structured JSON logs, and optional OTLP tracing are controlled with `DOCTRANSLATE_*` environment variables. See [Observability](observability.md).
+
 ### Profiles (`[doctranslate.profiles.<name>]`)
 
 - `providers` — ordered list of provider **ids** (strings).

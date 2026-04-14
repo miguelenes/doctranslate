@@ -12,6 +12,7 @@ These pages are **canonical project context** for Codex (`AGENTS.md`), Cursor (r
 | [Docker](../docker.md) (human docs) | Container images, volumes, warm vs slim targets ([profiles](../docker-profiles.md)). |
 | [Library API](../library-api.md) (human docs) | Stable Python/JSON embedding (`doctranslate.api` / `doctranslate.schemas`). |
 | [HTTP API](../http-api.md) (human docs) | Optional FastAPI service (`doctranslate serve`, `DocTranslater[api]`). |
+| [Observability](../observability.md) (human docs) | Logs, Prometheus `/metrics`, request IDs, optional OTLP tracing. |
 | [HTTP API storage](../http-api-storage-backends.md) (human docs) | SQLite metadata, fsspec/S3/GCS mirrors, TTL, migration. |
 | [Serverless containers](../serverless-containers.md) (human docs) | Cloud Run / Fargate / App Runner / Modal / Runpod patterns and image matrix. |
 | [Serverless runtime reference](../serverless-runtime-reference.md) (human docs) | Env vars and image ↔ workload compatibility for deployments. |

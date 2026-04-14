@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import sys
 
 from fastapi import APIRouter
@@ -15,6 +16,8 @@ from doctranslate.http_api.models import AssetStatusResponse
 from doctranslate.http_api.models import HealthLiveResponse
 from doctranslate.http_api.models import HealthReadyResponse
 from doctranslate.http_api.models import RuntimeInfoResponse
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["health"])
 
@@ -86,6 +89,20 @@ async def health_ready(
         messages.append("job queue broker unreachable")
 
     ready = all(checks.values())
+    try:
+        from doctranslate.observability.config import get_observability_settings
+        from doctranslate.observability.metrics import init_metrics
+        from doctranslate.observability.metrics import set_job_queue_depth
+
+        obs = get_observability_settings()
+        if init_metrics(obs.metrics_namespace):
+            counts = await job_service.job_queue_counts_by_state()
+            backend = job_service.queue_backend
+            for st, n in counts.items():
+                set_job_queue_depth(state=st, queue_backend=backend, value=n)
+    except Exception:
+        logger.debug("job queue depth metrics skipped", exc_info=True)
+
     return HealthReadyResponse(
         ready=ready,
         checks=checks,

@@ -143,6 +143,10 @@ curl -sS "http://127.0.0.1:8000/v1/jobs/$JOB_ID/result"
 
 Full matrix and image tags: [Serverless runtime & image reference](serverless-runtime-reference.md).
 
+## Observability
+
+Structured JSON logs, Prometheus (`GET /metrics`), request correlation (`X-Request-ID`), and optional OpenTelemetry tracing are documented in **[Observability](observability.md)**.
+
 ## ASGI import
 
 Uvicorn can load the pre-built app:

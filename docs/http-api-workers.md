@@ -84,6 +84,10 @@ Default remains **`inprocess`** (no Redis). To try ARQ locally:
 2. Export `DOCTRANSLATE_API_QUEUE_BACKEND=arq` and `DOCTRANSLATE_API_REDIS_URL=redis://127.0.0.1:6379/0`.
 3. Run `uv run doctranslate serve` in one terminal and `uv run doctranslate worker` in another (same `DOCTRANSLATE_API_DATA_ROOT`).
 
+## Observability
+
+Workers run in a **separate process** from the API: configure the same `DOCTRANSLATE_*` logging and metrics environment variables, scrape metrics per process, and rely on persisted **`traceparent`** on queued jobs for distributed traces when OTLP is enabled. See [Observability](observability.md).
+
 ## See also
 
 - [HTTP API](http-api.md) — endpoints and env reference

@@ -154,6 +154,7 @@ nav:
   - Local translation: local-translation.md
   - API:
     - Stable library API: library-api.md
+    - Observability: observability.md
     - HTTP API: http-api.md
     - HTTP API workers: http-api-workers.md
     - HTTP API storage: http-api-storage-backends.md

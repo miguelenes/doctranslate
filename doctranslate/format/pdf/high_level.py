@@ -343,8 +343,11 @@ def start_parse_il(
 
 
 def translate(translation_config: TranslationConfig) -> TranslateResult:
+    from doctranslate.observability.tracing import span
+
     with ProgressMonitor(get_translation_stage(translation_config)) as pm:
-        return do_translate(pm, translation_config)
+        with span("pipeline.translate_sync"):
+            return do_translate(pm, translation_config)
 
 
 def get_translation_stage(
@@ -803,6 +806,19 @@ def do_translate(
                 pass
         result.original_pdf_path = translation_config.input_file
         result.peak_memory_usage = peak_memory_usage
+        try:
+            from doctranslate.observability.metrics import init_metrics
+            from doctranslate.observability.metrics import (
+                record_pipeline_peak_memory_mb,
+            )
+
+            if init_metrics() and peak_memory_usage:
+                record_pipeline_peak_memory_mb(
+                    kind="translation",
+                    mb=float(peak_memory_usage),
+                )
+        except Exception:
+            pass
 
         fix_cmap(result, translation_config)
         add_metadata(result, translation_config)

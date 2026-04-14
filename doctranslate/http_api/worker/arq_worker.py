@@ -21,6 +21,20 @@ def _queue_name() -> str:
 
 async def run_translation_job(_ctx: object, job_id: str) -> None:
     from doctranslate.bootstrap import ensure_user_cache_dirs
+    from doctranslate.observability.config import get_observability_settings
+    from doctranslate.observability.logging import configure_logging
+    from doctranslate.observability.metrics import init_metrics
+    from doctranslate.observability.tracing import setup_tracing
+
+    _s = get_observability_settings()
+    configure_logging(_s)
+    if _s.metrics_enabled:
+        init_metrics(_s.metrics_namespace)
+    setup_tracing(
+        enabled=_s.otel_enabled,
+        service_name=_s.otel_service_name,
+        resource_attributes=_s.otel_resource_attributes,
+    )
 
     ensure_user_cache_dirs()
     from doctranslate.http_api.settings import get_settings
@@ -47,6 +61,20 @@ async def run_translation_job(_ctx: object, job_id: str) -> None:
 
 async def run_warmup_job(_ctx: object, job_id: str) -> None:
     from doctranslate.bootstrap import ensure_user_cache_dirs
+    from doctranslate.observability.config import get_observability_settings
+    from doctranslate.observability.logging import configure_logging
+    from doctranslate.observability.metrics import init_metrics
+    from doctranslate.observability.tracing import setup_tracing
+
+    _s = get_observability_settings()
+    configure_logging(_s)
+    if _s.metrics_enabled:
+        init_metrics(_s.metrics_namespace)
+    setup_tracing(
+        enabled=_s.otel_enabled,
+        service_name=_s.otel_service_name,
+        resource_attributes=_s.otel_resource_attributes,
+    )
 
     ensure_user_cache_dirs()
     from doctranslate.http_api.settings import get_settings

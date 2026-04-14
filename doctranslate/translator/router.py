@@ -247,6 +247,12 @@ class TranslatorRouter(BaseTranslator):
     def _record_success(
         self, pid: str, latency_ms: float, usage: Any, cost: float
     ) -> None:
+        from doctranslate.observability.metrics import init_metrics
+        from doctranslate.observability.metrics import record_translator_cost
+        from doctranslate.observability.metrics import record_translator_latency
+        from doctranslate.observability.metrics import record_translator_outcome
+        from doctranslate.observability.metrics import record_translator_tokens
+
         m = self._metrics[pid]
         m.total_requests += 1
         m.successful_requests += 1
@@ -258,6 +264,38 @@ class TranslatorRouter(BaseTranslator):
         self.prompt_token_count.inc(int(usage.prompt_tokens or 0))
         self.completion_token_count.inc(int(usage.completion_tokens or 0))
         self.cache_hit_prompt_token_count.inc(int(usage.cache_hit_prompt_tokens or 0))
+        if init_metrics():
+            prof = self.profile_name
+            record_translator_outcome(
+                profile=prof,
+                provider=pid,
+                outcome="success",
+            )
+            record_translator_latency(
+                profile=prof,
+                provider=pid,
+                seconds=latency_ms / 1000.0,
+            )
+            record_translator_tokens(
+                profile=prof,
+                provider=pid,
+                usage_kind="total",
+                amount=int(usage.total_tokens or 0),
+            )
+            record_translator_tokens(
+                profile=prof,
+                provider=pid,
+                usage_kind="prompt",
+                amount=int(usage.prompt_tokens or 0),
+            )
+            record_translator_tokens(
+                profile=prof,
+                provider=pid,
+                usage_kind="completion",
+                amount=int(usage.completion_tokens or 0),
+            )
+            if cost:
+                record_translator_cost(profile=prof, provider=pid, usd=cost)
 
     def _record_failure_only(self, pid: str, exc: BaseException) -> FailureCategory:
         from doctranslate.translator.providers.litellm_provider import (
@@ -273,6 +311,16 @@ class TranslatorRouter(BaseTranslator):
         m.last_error = str(exc)
         m.last_error_time = datetime.now()
         self._set_cooldown(pid, cat)
+        from doctranslate.observability.metrics import init_metrics
+        from doctranslate.observability.metrics import record_translator_outcome
+
+        if init_metrics():
+            record_translator_outcome(
+                profile=self.profile_name,
+                provider=pid,
+                outcome="failure",
+                failure_category=cat.value,
+            )
         return cat
 
     def _route(
@@ -302,17 +350,48 @@ class TranslatorRouter(BaseTranslator):
                 continue
             m = self._metrics.setdefault(pid, ProviderMetrics(provider_id=pid))
             m.concurrent_requests += 1
+            from doctranslate.observability.metrics import init_metrics
+            from doctranslate.observability.metrics import translator_concurrent_delta
+
+            if init_metrics():
+                translator_concurrent_delta(
+                    profile=self.profile_name,
+                    provider=pid,
+                    delta=1,
+                )
             try:
                 ex = self._executors[pid]
                 result = ex.complete(messages, json_mode=json_mode)
                 self._record_success(
                     pid, result.latency_ms, result.usage, result.estimated_cost_usd
                 )
+                from doctranslate.observability.metrics import init_metrics
+                from doctranslate.observability.metrics import (
+                    translator_concurrent_delta,
+                )
+
+                if init_metrics():
+                    translator_concurrent_delta(
+                        profile=self.profile_name,
+                        provider=pid,
+                        delta=-1,
+                    )
                 logger.info(
                     "Translation OK provider=%s profile=%s", pid, self.profile_name
                 )
                 return result.text
             except Exception as e:
+                from doctranslate.observability.metrics import init_metrics
+                from doctranslate.observability.metrics import (
+                    translator_concurrent_delta,
+                )
+
+                if init_metrics():
+                    translator_concurrent_delta(
+                        profile=self.profile_name,
+                        provider=pid,
+                        delta=-1,
+                    )
                 if isinstance(e, ContentFilterError):
                     m.concurrent_requests = max(0, m.concurrent_requests - 1)
                     raise

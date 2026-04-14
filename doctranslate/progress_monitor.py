@@ -278,6 +278,7 @@ class TranslationStage:
         self.lock = lock
 
     def __enter__(self):
+        self._obs_t0 = time.perf_counter()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -289,6 +290,32 @@ class TranslationStage:
                 )
             self.pm.stage_update(self, diff)
             self.current = self.total
+            try:
+                from doctranslate.observability.metrics import init_metrics
+                from doctranslate.observability.metrics import (
+                    record_pipeline_stage_duration,
+                )
+                from doctranslate.observability.metrics import (
+                    record_pipeline_stage_event,
+                )
+
+                if init_metrics():
+                    dt = time.perf_counter() - getattr(
+                        self,
+                        "_obs_t0",
+                        time.perf_counter(),
+                    )
+                    record_pipeline_stage_duration(
+                        stage=self.name,
+                        kind="translation",
+                        seconds=dt,
+                    )
+                    record_pipeline_stage_event(
+                        stage=self.name,
+                        event_type="end",
+                    )
+            except Exception:
+                pass
             self.pm.stage_done(self)
 
     def advance(self, n: int = 1):

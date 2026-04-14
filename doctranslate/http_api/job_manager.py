@@ -22,6 +22,9 @@ from doctranslate.http_api.storage import JobPaths
 from doctranslate.http_api.storage import read_meta
 from doctranslate.http_api.storage import utcnow
 from doctranslate.http_api.storage import write_meta
+from doctranslate.observability.metrics import record_job_created
+from doctranslate.observability.metrics import record_job_duration
+from doctranslate.observability.metrics import record_job_terminal
 from doctranslate.schemas.enums import PublicErrorCode
 from doctranslate.schemas.public_api import TranslationErrorPayload
 from doctranslate.schemas.public_api import TranslationOptions
@@ -132,6 +135,23 @@ class JobManager:
         async with self._lock:
             return sum(1 for r in self._jobs.values() if r["state"] == "queued")
 
+    async def job_state_counts(self) -> dict[str, int]:
+        async with self._lock:
+            out: dict[str, int] = {}
+            for r in self._jobs.values():
+                s = str(r["state"])
+                out[s] = out.get(s, 0) + 1
+            return out
+
+    def _job_wall_seconds(self, rec: dict[str, Any]) -> float:
+        created = rec.get("created_at")
+        if created is None:
+            return 0.0
+        now = utcnow()
+        if hasattr(created, "timestamp"):
+            return max(0.0, (now - created).total_seconds())
+        return 0.0
+
     async def create_warmup_job(self) -> str:
         async with self._lock:
             n_queued = sum(1 for r in self._jobs.values() if r["state"] == "queued")
@@ -159,6 +179,7 @@ class JobManager:
                 name=f"warmup-{job_id}",
             )
             self._tasks[job_id] = task
+            record_job_created(kind="warmup", queue_backend="inprocess")
         return job_id
 
     async def _run_warmup_wrapped(self, job_id: str) -> None:
@@ -213,6 +234,7 @@ class JobManager:
                 name=f"translate-{jid}",
             )
             self._tasks[jid] = task
+            record_job_created(kind="translation", queue_backend="inprocess")
         return jid
 
     def validate_mounted_input(self, path: Path) -> TranslationErrorPayload | None:
@@ -278,6 +300,12 @@ class JobManager:
                 rec["updated_at"] = utcnow()
                 rec["message"] = "Warmup completed"
                 self._persist(job_id)
+                record_job_terminal(kind="warmup", state="succeeded")
+                record_job_duration(
+                    kind="warmup",
+                    state="succeeded",
+                    seconds=self._job_wall_seconds(rec),
+                )
         except asyncio.CancelledError:
             rec["state"] = "canceled"
             rec["updated_at"] = utcnow()
@@ -287,6 +315,12 @@ class JobManager:
                 retryable=False,
             )
             self._persist(job_id)
+            record_job_terminal(kind="warmup", state="canceled", failure_category="canceled")
+            record_job_duration(
+                kind="warmup",
+                state="canceled",
+                seconds=self._job_wall_seconds(rec),
+            )
             raise
         except Exception as exc:
             logger.exception("Warmup job failed")
@@ -299,6 +333,16 @@ class JobManager:
                 details={"exception_type": type(exc).__name__},
             )
             self._persist(job_id)
+            record_job_terminal(
+                kind="warmup",
+                state="failed",
+                failure_category=type(exc).__name__,
+            )
+            record_job_duration(
+                kind="warmup",
+                state="failed",
+                seconds=self._job_wall_seconds(rec),
+            )
 
     async def _run_translation(self, job_id: str) -> None:
         rec = self._jobs[job_id]
@@ -327,6 +371,12 @@ class JobManager:
                 details={"timeout_seconds": self._job_timeout},
             )
             self._persist(job_id)
+            record_job_terminal(kind="translation", state="failed", failure_category="timeout")
+            record_job_duration(
+                kind="translation",
+                state="failed",
+                seconds=self._job_wall_seconds(rec),
+            )
         except asyncio.CancelledError:
             rec["state"] = "canceled"
             rec["updated_at"] = utcnow()
@@ -336,6 +386,16 @@ class JobManager:
                 retryable=False,
             )
             self._persist(job_id)
+            record_job_terminal(
+                kind="translation",
+                state="canceled",
+                failure_category="canceled",
+            )
+            record_job_duration(
+                kind="translation",
+                state="canceled",
+                seconds=self._job_wall_seconds(rec),
+            )
             raise
         except Exception as exc:
             logger.exception("Translation job failed")
@@ -348,6 +408,16 @@ class JobManager:
                 details={"exception_type": type(exc).__name__},
             )
             self._persist(job_id)
+            record_job_terminal(
+                kind="translation",
+                state="failed",
+                failure_category=type(exc).__name__,
+            )
+            record_job_duration(
+                kind="translation",
+                state="failed",
+                seconds=self._job_wall_seconds(rec),
+            )
         finally:
             self._tasks.pop(job_id, None)
 
@@ -374,6 +444,22 @@ class JobManager:
                     )
                 rec["updated_at"] = utcnow()
                 self._persist(job_id)
+                err_obj = rec.get("error")
+                code = (
+                    str(err_obj.code.value)
+                    if err_obj is not None and hasattr(err_obj.code, "value")
+                    else "error"
+                )
+                record_job_terminal(
+                    kind="translation",
+                    state="failed",
+                    failure_category=str(code),
+                )
+                record_job_duration(
+                    kind="translation",
+                    state="failed",
+                    seconds=self._job_wall_seconds(rec),
+                )
                 return
             if et == "finish":
                 tr = ev.get("translation_result")
@@ -391,4 +477,10 @@ class JobManager:
                 rec["state"] = "succeeded"
                 rec["updated_at"] = utcnow()
                 self._persist(job_id)
+                record_job_terminal(kind="translation", state="succeeded")
+                record_job_duration(
+                    kind="translation",
+                    state="succeeded",
+                    seconds=self._job_wall_seconds(rec),
+                )
                 return
