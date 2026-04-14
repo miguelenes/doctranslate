@@ -36,8 +36,16 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev --no-editable $extras
 
 FROM builder-cpu-sync AS builder-api
+ARG INCLUDE_GLOSSARY=0
+ARG INCLUDE_OCR=0
+# Keep the same extras as builder-cpu-sync; a bare `--extra api` sync would prune
+# the venv (dropping e.g. httpx from `llm`) and break imports used by the API.
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked --no-dev --no-editable --extra api
+    set -eux; \
+    extras="--extra pdf --extra cli --extra llm --extra tm --extra vision --extra api"; \
+    if [ "$INCLUDE_OCR" = "1" ]; then extras="$extras --extra ocr"; fi; \
+    if [ "$INCLUDE_GLOSSARY" = "1" ]; then extras="$extras --extra glossary"; fi; \
+    uv sync --locked --no-dev --no-editable $extras
 
 FROM builder-cpu-sync AS builder-cpu-warm
 USER root

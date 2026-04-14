@@ -2,124 +2,148 @@
 
 from __future__ import annotations
 
+import json
 import os
 import tempfile
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel
-from pydantic import ConfigDict
+from pydantic import AliasChoices
 from pydantic import Field
-from pydantic import model_validator
+from pydantic import field_validator
+from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict
 
 
-def _env_bool(key: str, default: bool) -> bool:
-    raw = os.environ.get(key)
-    if raw is None:
-        return default
-    return raw.strip().lower() in {"1", "true", "yes", "on"}
+def _default_mount_prefixes() -> list[str]:
+    return [
+        p.strip()
+        for p in os.environ.get(
+            "DOCTRANSLATE_API_MOUNT_ALLOW_PREFIXES",
+            "/work,/in,/data",
+        ).split(",")
+        if p.strip()
+    ]
 
 
-def _env_int(key: str, default: int) -> int:
-    raw = os.environ.get(key)
-    if raw is None or not raw.strip():
-        return default
-    return int(raw)
-
-
-def _env_float(key: str, default: float) -> float:
-    raw = os.environ.get(key)
-    if raw is None or not raw.strip():
-        return default
-    return float(raw)
-
-
-def _tmp_root_from_env() -> Path | None:
-    p = os.environ.get("DOCTRANSLATE_API_TMP_ROOT")
-    if not p or not p.strip():
-        return None
-    return Path(p).expanduser()
-
-
-class ApiSettings(BaseModel):
+class ApiSettings(BaseSettings):
     """Settings for :mod:`doctranslate.http_api`."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = SettingsConfigDict(
+        env_prefix="DOCTRANSLATE_API_",
+        extra="ignore",
+    )
 
     data_root: Path = Field(
-        default_factory=lambda: Path(
-            os.environ.get(
-                "DOCTRANSLATE_API_DATA_ROOT",
-                str(Path(tempfile.gettempdir()) / "doctranslate-api"),
-            ),
-        ).expanduser(),
+        default_factory=lambda: Path(tempfile.gettempdir()) / "doctranslate-api",
     )
     tmp_root: Path | None = Field(
-        default_factory=_tmp_root_from_env,
+        default=None,
         description="Optional separate temp root; defaults to data_root/tmp.",
+        validation_alias=AliasChoices("TMP_ROOT", "tmp_root"),
     )
-    mounted_path_allow_prefixes: list[str] = Field(
-        default_factory=lambda: [
-            p.strip()
-            for p in os.environ.get(
-                "DOCTRANSLATE_API_MOUNT_ALLOW_PREFIXES",
-                "/work,/in,/data",
-            ).split(",")
-            if p.strip()
-        ],
-    )
-    allow_mounted_paths: bool = Field(
-        default_factory=lambda: _env_bool("DOCTRANSLATE_API_ALLOW_MOUNTED_PATHS", True),
-    )
-    max_upload_bytes: int = Field(
-        default_factory=lambda: _env_int(
-            "DOCTRANSLATE_API_MAX_UPLOAD_BYTES", 256_000_000
+    mount_allow_prefixes: list[str] = Field(
+        default_factory=_default_mount_prefixes,
+        validation_alias=AliasChoices(
+            "MOUNT_ALLOW_PREFIXES",
+            "mount_allow_prefixes",
+            "mounted_path_allow_prefixes",
         ),
     )
-    max_concurrent_jobs: int = Field(
-        default_factory=lambda: _env_int("DOCTRANSLATE_API_MAX_CONCURRENT_JOBS", 2),
-    )
-    max_queued_jobs: int = Field(
-        default_factory=lambda: _env_int("DOCTRANSLATE_API_MAX_QUEUED_JOBS", 32),
-    )
+    allow_mounted_paths: bool = True
+    max_upload_bytes: int = Field(default=256_000_000)
+    max_concurrent_jobs: int = Field(default=2)
+    max_queued_jobs: int = Field(default=32)
     job_timeout_seconds: float = Field(
-        default_factory=lambda: _env_float("DOCTRANSLATE_API_JOB_TIMEOUT_SECONDS", 0.0),
-        description="0 disables per-job timeout.",
+        default=0.0, description="0 disables per-job timeout."
     )
     artifact_retention_seconds: float = Field(
-        default_factory=lambda: _env_float(
-            "DOCTRANSLATE_API_ARTIFACT_RETENTION_SECONDS",
-            86_400.0,
-        ),
+        default=86_400.0,
         description="0 disables TTL cleanup.",
     )
-    require_assets_ready: bool = Field(
-        default_factory=lambda: _env_bool(
-            "DOCTRANSLATE_API_REQUIRE_ASSETS_READY", False
-        ),
+    require_assets_ready: bool = Field(default=False)
+    warmup_on_startup: Literal["none", "lazy", "eager"] = Field(default="none")
+
+    # --- Pluggable storage / metadata ---
+    artifact_storage: Literal["local", "remote"] = Field(
+        default="local",
+        description="local: disk only; remote: mirror uploads/outputs to fsspec URL.",
     )
-    warmup_on_startup: Literal["none", "lazy", "eager"] = Field(
-        default_factory=lambda: (
-            os.environ.get(
-                "DOCTRANSLATE_API_WARMUP_ON_STARTUP",
-                "none",
-            )
-            .strip()
-            .lower()
-        ),  # type: ignore[arg-type]
+    artifact_remote_root: str = Field(
+        default="",
+        description="fsspec URL root (e.g. s3://bucket/prefix or file:///tmp/remote).",
+    )
+    fsspec_storage_options_json: str = Field(
+        default="",
+        description="JSON object passed as storage_options to fsspec (e.g. S3 keys).",
+    )
+    metadata_sqlite_path: Path | None = Field(
+        default=None,
+        description="SQLite DB path; default data_root/http_api_metadata.db",
+    )
+    dual_write_json_meta: bool = Field(
+        default=True,
+        description="Also write legacy jobs/<id>/meta.json when true.",
+    )
+    read_json_meta_fallback: bool = Field(
+        default=True,
+        description="If SQLite misses a row, try reading legacy meta.json.",
+    )
+    artifact_download_mode: Literal["proxy", "redirect"] = Field(
+        default="proxy",
+        description="redirect: use presigned URLs in /result when possible.",
+    )
+    presign_expires_seconds: int = Field(default=3600, ge=60, le=604_800)
+    ttl_cleanup_interval_seconds: float = Field(
+        default=300.0,
+        ge=30.0,
+        description="Background TTL sweep interval in seconds.",
     )
 
-    @model_validator(mode="after")
-    def _normalize_warmup(self) -> ApiSettings:
-        if self.warmup_on_startup not in {"none", "lazy", "eager"}:
-            object.__setattr__(self, "warmup_on_startup", "none")
-        return self
+    @field_validator("mount_allow_prefixes", mode="before")
+    @classmethod
+    def _split_mount_prefixes(cls, v: object) -> list[str]:
+        if isinstance(v, list):
+            return [str(x).strip() for x in v if str(x).strip()]
+        if isinstance(v, str):
+            return [p.strip() for p in v.split(",") if p.strip()]
+        return _default_mount_prefixes()
+
+    @field_validator("warmup_on_startup", mode="before")
+    @classmethod
+    def _normalize_warmup(cls, v: object) -> str:
+        s = str(v).strip().lower() if v is not None else "none"
+        if s not in {"none", "lazy", "eager"}:
+            return "none"
+        return s
+
+    @field_validator("metadata_sqlite_path", mode="before")
+    @classmethod
+    def _coerce_metadata_path(cls, v: object) -> Path | None:
+        if v is None or v == "":
+            return None
+        return Path(str(v)).expanduser()
 
     def resolved_tmp_root(self) -> Path:
         if self.tmp_root is not None:
             return self.tmp_root.expanduser()
         return self.data_root / "tmp"
+
+    @property
+    def mounted_path_allow_prefixes(self) -> list[str]:
+        """Alias for compatibility with older field name."""
+        return self.mount_allow_prefixes
+
+    def parsed_fsspec_storage_options(self) -> dict:
+        raw = (self.fsspec_storage_options_json or "").strip()
+        if not raw:
+            return {}
+        try:
+            out = json.loads(raw)
+        except json.JSONDecodeError:
+            return {}
+        return out if isinstance(out, dict) else {}
 
 
 @lru_cache(maxsize=1)

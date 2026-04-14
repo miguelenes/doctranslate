@@ -19,7 +19,8 @@ from doctranslate.http_api.routes import health as health_routes
 from doctranslate.http_api.routes import inspect as inspect_routes
 from doctranslate.http_api.routes import jobs as jobs_routes
 from doctranslate.http_api.settings import get_settings
-from doctranslate.http_api.storage import LocalArtifactStore
+from doctranslate.http_api.storage_factory import build_artifact_store
+from doctranslate.http_api.storage_factory import build_metadata_store
 
 logger = logging.getLogger(__name__)
 
@@ -32,21 +33,54 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     settings.data_root.mkdir(parents=True, exist_ok=True)
     settings.resolved_tmp_root().mkdir(parents=True, exist_ok=True)
-    store = LocalArtifactStore(settings.data_root)
+    artifact_store = build_artifact_store(settings)
+    metadata_store = build_metadata_store(settings)
+    app.state.artifact_store = artifact_store
+    app.state.metadata_store = metadata_store
     app.state.job_manager = JobManager(
-        store=store,
+        artifact_store=artifact_store,
+        metadata_store=metadata_store,
         max_concurrent=settings.max_concurrent_jobs,
         max_queued=settings.max_queued_jobs,
         job_timeout_seconds=settings.job_timeout_seconds,
-        mounted_allow_prefixes=settings.mounted_path_allow_prefixes,
+        mounted_allow_prefixes=settings.mount_allow_prefixes,
         allow_mounted_paths=settings.allow_mounted_paths,
+        dual_write_json_meta=settings.dual_write_json_meta,
+        read_json_meta_fallback=settings.read_json_meta_fallback,
+        artifact_retention_seconds=settings.artifact_retention_seconds,
     )
+    stop_ttl = asyncio.Event()
+
+    async def _ttl_sweep() -> None:
+        while not stop_ttl.is_set():
+            try:
+                await asyncio.wait_for(
+                    stop_ttl.wait(),
+                    timeout=settings.ttl_cleanup_interval_seconds,
+                )
+                break
+            except asyncio.TimeoutError:
+                try:
+                    await app.state.job_manager.run_ttl_cleanup_once()
+                except Exception:
+                    logger.exception("TTL cleanup sweep failed")
+
+    ttl_task = asyncio.create_task(_ttl_sweep(), name="http-api-ttl")
     if settings.warmup_on_startup == "eager":
         from doctranslate.assets import assets as assets_mod
 
         logger.info("Running eager asset warmup on startup")
         await asyncio.to_thread(assets_mod.warmup)
-    yield
+    try:
+        yield
+    finally:
+        stop_ttl.set()
+        ttl_task.cancel()
+        try:
+            await ttl_task
+        except asyncio.CancelledError:
+            pass
+        metadata_store.close()
 
 
 def create_app() -> FastAPI:

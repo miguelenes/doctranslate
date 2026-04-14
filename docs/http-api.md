@@ -29,13 +29,15 @@ uv run doctranslate serve --host 127.0.0.1 --port 8000
 
 ## Serverless and multi-instance behavior
 
-The HTTP API uses an **in-process** `JobManager` (bounded concurrency + on-disk `meta.json` per job). That implies:
+The HTTP API uses an **in-process** `JobManager` (bounded concurrency). Job records live in **SQLite** under `DOCTRANSLATE_API_DATA_ROOT` by default (with optional dual-write to legacy `meta.json` per job). That implies:
 
 - **`POST /v1/jobs` returns `202`** with a `job_id`; **`GET /v1/jobs/{id}`** polls state on **that same container instance** unless you add infrastructure that pins the client to the instance (e.g. Cloud Run **session affinity**, ALB **stickiness**).
-- **Horizontal scaling** adds replicas that **do not share** the in-memory queue. For production multi-replica APIs, prefer an **external job queue** and **object storage** for inputs/outputs, or accept single-replica semantics.
-- **Restarts**: completed/failed jobs may still be **readable from disk** if `DOCTRANSLATE_API_DATA_ROOT` persists; **in-flight** tasks do not survive process restart.
+- **Horizontal scaling** adds replicas that **do not share** the in-memory queue. For production multi-replica APIs, prefer an **external job queue** and **object storage** for inputs/outputs, put the SQLite DB on **shared storage** if you need shared metadata, or accept single-replica semantics.
+- **Restarts**: completed/failed jobs remain **readable from SQLite** (and disk blobs if `DOCTRANSLATE_API_DATA_ROOT` persists); **in-flight** tasks do not survive process restart.
 
 For platform guidance, see [Serverless containers](serverless-containers.md) and [Deploy on Cloud Run](deploy-cloud-run.md).
+
+For **blob mirrors (S3/GCS), presigned downloads, TTL cleanup, and migration** from legacy `meta.json`, see [HTTP API storage and metadata](http-api-storage-backends.md).
 
 ## Docker
 
@@ -88,7 +90,7 @@ curl -sS "http://127.0.0.1:8000/v1/jobs/$JOB_ID/result"
 | `GET` | `/v1/jobs/{id}` | Job status / last progress event |
 | `POST` | `/v1/jobs/{id}/cancel` | Best-effort cancel |
 | `GET` | `/v1/jobs/{id}/result` | Result + artifact URLs |
-| `GET` | `/v1/jobs/{id}/artifacts/{kind}` | Download one artifact |
+| `GET` | `/v1/jobs/{id}/artifacts/{kind}` | Download one artifact (supports `Range`, optional redirect to presigned URL) |
 
 ## Environment variables
 
@@ -104,7 +106,16 @@ curl -sS "http://127.0.0.1:8000/v1/jobs/$JOB_ID/result"
 | `DOCTRANSLATE_API_JOB_TIMEOUT_SECONDS` | `0` | Per-job wall clock (`0` = off) |
 | `DOCTRANSLATE_API_REQUIRE_ASSETS_READY` | `false` | If `true`, readiness requires warmed assets |
 | `DOCTRANSLATE_API_WARMUP_ON_STARTUP` | `none` | `none` \| `lazy` \| `eager` (only `eager` is implemented: run `assets.warmup` at startup) |
-| `DOCTRANSLATE_API_ARTIFACT_RETENTION_SECONDS` | `86400` | Reserved for future TTL cleanup of job workspaces — **not enforced** by the HTTP layer today; use external lifecycle rules |
+| `DOCTRANSLATE_API_ARTIFACT_RETENTION_SECONDS` | `86400` | After terminal job states, schedule workspace + metadata deletion (0 disables) |
+| `DOCTRANSLATE_API_TTL_CLEANUP_INTERVAL_SECONDS` | `300` | Background sweep interval for expired jobs |
+| `DOCTRANSLATE_API_METADATA_SQLITE_PATH` | *(unset)* | Override SQLite DB path (default `<DATA_ROOT>/http_api_metadata.db`) |
+| `DOCTRANSLATE_API_DUAL_WRITE_JSON_META` | `true` | Also write `jobs/<id>/meta.json` |
+| `DOCTRANSLATE_API_READ_JSON_META_FALLBACK` | `true` | If SQLite misses a row, read legacy `meta.json` |
+| `DOCTRANSLATE_API_ARTIFACT_STORAGE` | `local` | `local` or `remote` (fsspec mirror) |
+| `DOCTRANSLATE_API_ARTIFACT_REMOTE_ROOT` | *(unset)* | e.g. `s3://bucket/prefix` (requires `[api-s3]`) |
+| `DOCTRANSLATE_API_FSSPEC_STORAGE_OPTIONS_JSON` | *(empty)* | JSON object for fsspec / s3fs / gcsfs options |
+| `DOCTRANSLATE_API_ARTIFACT_DOWNLOAD_MODE` | `proxy` | `proxy` or `redirect` (presigned URLs when available) |
+| `DOCTRANSLATE_API_PRESIGN_EXPIRES_SECONDS` | `3600` | Presigned URL TTL |
 
 ## Production notes
 

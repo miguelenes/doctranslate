@@ -195,21 +195,19 @@ async def run_legacy_translate_pipeline(
     if getattr(args, "request_json", None):
         return await _run_translate_request_json(parser, args)
 
-    if args.generate_offline_assets:
-        doctranslate.assets.assets.generate_offline_assets_package(
-            Path(args.generate_offline_assets)
-        )
+    gen_offline = getattr(args, "generate_offline_assets", None)
+    if gen_offline:
+        doctranslate.assets.assets.generate_offline_assets_package(Path(gen_offline))
         logger.info("Offline assets package generated, exiting...")
         return
 
-    if args.restore_offline_assets:
-        doctranslate.assets.assets.restore_offline_assets_package(
-            Path(args.restore_offline_assets)
-        )
+    restore_offline = getattr(args, "restore_offline_assets", None)
+    if restore_offline:
+        doctranslate.assets.assets.restore_offline_assets_package(Path(restore_offline))
         logger.info("Offline assets package restored, exiting...")
         return
 
-    if args.warmup:
+    if getattr(args, "warmup", False):
         doctranslate.assets.assets.warmup()
         logger.info("Warmup completed, exiting...")
         return

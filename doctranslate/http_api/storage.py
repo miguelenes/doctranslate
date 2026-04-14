@@ -72,7 +72,12 @@ def _json_default(obj: Any) -> Any:
 
 
 class LocalArtifactStore:
-    """Maps job output directory to downloadable artifacts."""
+    """
+    Legacy local job layout helper.
+
+    Prefer :class:`doctranslate.http_api.artifact_store.LocalFilesystemArtifactStore`
+    for new code; the HTTP API wires storage via :mod:`doctranslate.http_api.storage_factory`.
+    """
 
     def __init__(self, data_root: Path) -> None:
         self.data_root = data_root

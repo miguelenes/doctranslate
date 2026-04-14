@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import uuid
 from pathlib import Path
 from typing import Any
 
+import fsspec.core
 from fastapi import APIRouter
 from fastapi import File
 from fastapi import Form
@@ -15,6 +17,9 @@ from fastapi import Request
 from fastapi import UploadFile
 from fastapi import status
 from fastapi.responses import FileResponse
+from fastapi.responses import RedirectResponse
+from fastapi.responses import Response
+from fastapi.responses import StreamingResponse
 from pydantic import ValidationError
 
 from doctranslate.http_api.deps import JobManagerDep
@@ -24,6 +29,9 @@ from doctranslate.http_api.models import ArtifactLink
 from doctranslate.http_api.models import JobCreateResponse
 from doctranslate.http_api.models import JobResultResponse
 from doctranslate.http_api.models import JobStatusResponse
+from doctranslate.http_api.presign import presign_gcs_url
+from doctranslate.http_api.presign import presign_s3_get_url
+from doctranslate.http_api.range_requests import parse_bytes_range
 from doctranslate.schemas.enums import ArtifactKind
 from doctranslate.schemas.enums import PublicErrorCode
 from doctranslate.schemas.public_api import TranslationErrorPayload
@@ -42,6 +50,33 @@ def _record_to_status(job_id: str, rec: dict[str, Any]) -> JobStatusResponse:
         error=rec.get("error"),
         message=rec.get("message"),
     )
+
+
+def _artifact_download_link(
+    *,
+    request: Request,
+    job_id: str,
+    item: Any,
+    settings: Any,
+) -> str:
+    base = str(request.base_url).rstrip("/")
+    if settings.artifact_download_mode == "redirect":
+        path_str = item.path
+        if path_str.startswith("s3://"):
+            signed = presign_s3_get_url(
+                path_str,
+                expires_in=settings.presign_expires_seconds,
+            )
+            if signed:
+                return signed
+        if path_str.startswith("gs://") or path_str.startswith("gcs://"):
+            signed = presign_gcs_url(
+                path_str,
+                expires_in=settings.presign_expires_seconds,
+            )
+            if signed:
+                return signed
+    return f"{base}/v1/jobs/{job_id}/artifacts/{item.kind.value}"
 
 
 @router.post(
@@ -75,25 +110,18 @@ async def create_job(
 
     if input_pdf is not None:
         job_id = str(uuid.uuid4())
-        paths = job_manager.store.job_paths(job_id)
-        paths.mkdirs()
-        dest = paths.input_dir / (input_pdf.filename or "input.pdf")
-        if dest.suffix.lower() != ".pdf":
-            dest = dest.with_suffix(".pdf")
-        size = 0
-        chunk_size = 1024 * 1024
+        job_manager.artifact_store.ensure_workspace(job_id)
+
+        async def read_chunk(n: int) -> bytes:
+            return await input_pdf.read(n)
+
         try:
-            with dest.open("wb") as out:
-                while True:
-                    chunk = await input_pdf.read(chunk_size)
-                    if not chunk:
-                        break
-                    size += len(chunk)
-                    if size > settings.max_upload_bytes:
-                        raise ValueError(
-                            f"Upload exceeds max_upload_bytes={settings.max_upload_bytes}",
-                        )
-                    out.write(chunk)
+            dest = await job_manager.artifact_store.save_uploaded_input(
+                job_id,
+                input_pdf.filename,
+                settings.max_upload_bytes,
+                read_chunk,
+            )
         except ValueError as e:
             if "max_upload_bytes" in str(e):
                 raise http_error(
@@ -217,16 +245,21 @@ async def get_job_result(
     request: Request,
     job_id: str,
     job_manager: JobManagerDep,
+    settings: SettingsDep,
 ) -> JobResultResponse:
     rec = await job_manager.get_record(job_id)
     if rec is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
-    base = str(request.base_url).rstrip("/")
     artifacts: list[ArtifactLink] = []
     result = rec.get("result")
     if result is not None:
         for item in result.artifacts.items:
-            url = f"{base}/v1/jobs/{job_id}/artifacts/{item.kind.value}"
+            url = _artifact_download_link(
+                request=request,
+                job_id=job_id,
+                item=item,
+                settings=settings,
+            )
             artifacts.append(
                 ArtifactLink(
                     kind=item.kind,
@@ -246,12 +279,23 @@ async def get_job_result(
     )
 
 
-@router.get("/v1/jobs/{job_id}/artifacts/{kind}")
+def _remote_file_size(url: str, opts: dict[str, Any]) -> int:
+    fs, p = fsspec.core.url_to_fs(url, **opts)
+    info = fs.info(p)
+    return int(info.get("size") or info.get("Size") or 0)
+
+
+@router.get(
+    "/v1/jobs/{job_id}/artifacts/{kind}",
+    response_model=None,
+)
 async def download_artifact(
+    request: Request,
     job_id: str,
     kind: ArtifactKind,
     job_manager: JobManagerDep,
-) -> FileResponse:
+    settings: SettingsDep,
+) -> Response:
     rec = await job_manager.get_record(job_id)
     if rec is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown job")
@@ -261,15 +305,153 @@ async def download_artifact(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job has no result yet",
         )
-    path: Path | None = None
+    artifact = None
     media = "application/octet-stream"
     for item in result.artifacts.items:
         if item.kind == kind:
-            path = Path(item.path)
+            artifact = item
             media = item.media_type or media
             break
-    if path is None or not path.is_file():
+    if artifact is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Artifact not found"
         )
-    return FileResponse(path, filename=path.name, media_type=media)
+
+    if settings.artifact_download_mode == "redirect":
+        path_str = artifact.path
+        if path_str.startswith("s3://"):
+            signed = presign_s3_get_url(
+                path_str,
+                expires_in=settings.presign_expires_seconds,
+            )
+            if signed:
+                return RedirectResponse(url=signed, status_code=307)
+        if path_str.startswith("gs://") or path_str.startswith("gcs://"):
+            signed = presign_gcs_url(
+                path_str,
+                expires_in=settings.presign_expires_seconds,
+            )
+            if signed:
+                return RedirectResponse(url=signed, status_code=307)
+
+    mode, payload = job_manager.artifact_store.resolve_artifact_for_download(
+        job_id,
+        kind,
+        artifact,
+    )
+    filename = payload.get("filename") or "artifact.bin"
+    range_header = request.headers.get("range")
+
+    if mode == "path":
+        path: Path = payload["path"]
+        if not path.is_file():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Artifact not found"
+            )
+        size = path.stat().st_size
+        pr = parse_bytes_range(range_header, size)
+        if pr == "unsatisfiable":
+            return Response(
+                status_code=status.HTTP_416_REQUESTED_RANGE_NOT_SATISFIABLE,
+                headers={"Content-Range": f"bytes */{size}"},
+            )
+        if pr is None:
+            return FileResponse(
+                path,
+                filename=filename,
+                media_type=media,
+                headers={"Accept-Ranges": "bytes"},
+            )
+        start, end = pr
+        length = end - start + 1
+
+        async def local_body() -> Any:
+            with path.open("rb") as f:
+                f.seek(start)
+                remain = length
+                while remain > 0:
+                    chunk = await asyncio.to_thread(f.read, min(65536, remain))
+                    if not chunk:
+                        break
+                    remain -= len(chunk)
+                    yield chunk
+
+        return StreamingResponse(
+            local_body(),
+            status_code=206,
+            media_type=media,
+            headers={
+                "Content-Range": f"bytes {start}-{end}/{size}",
+                "Accept-Ranges": "bytes",
+                "Content-Length": str(length),
+                "Content-Disposition": f'attachment; filename="{filename}"',
+            },
+        )
+
+    if mode == "fsspec":
+        url = payload["url"]
+        opts = job_manager.artifact_store.fsspec_read_options()
+        try:
+            fsize = await asyncio.to_thread(_remote_file_size, url, opts)
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Artifact not found",
+            ) from None
+        pr = parse_bytes_range(range_header, fsize)
+        if pr == "unsatisfiable":
+            return Response(
+                status_code=status.HTTP_416_REQUESTED_RANGE_NOT_SATISFIABLE,
+                headers={"Content-Range": f"bytes */{fsize}"},
+            )
+
+        if pr is None:
+
+            def full_remote_sync() -> Any:
+                with fsspec.open(url, "rb", **opts) as f:
+                    while True:
+                        chunk = f.read(65536)
+                        if not chunk:
+                            break
+                        yield chunk
+
+            return StreamingResponse(
+                full_remote_sync(),
+                media_type=media,
+                headers={
+                    "Accept-Ranges": "bytes",
+                    "Content-Length": str(fsize),
+                    "Content-Disposition": f'attachment; filename="{filename}"',
+                },
+            )
+
+        start, end = pr
+        length = end - start + 1
+
+        def ranged_remote_sync() -> Any:
+            with fsspec.open(url, "rb", **opts) as f:
+                f.seek(start)
+                remain = length
+                while remain > 0:
+                    chunk = f.read(min(65536, remain))
+                    if not chunk:
+                        break
+                    remain -= len(chunk)
+                    yield chunk
+
+        return StreamingResponse(
+            ranged_remote_sync(),
+            status_code=206,
+            media_type=media,
+            headers={
+                "Content-Range": f"bytes {start}-{end}/{fsize}",
+                "Accept-Ranges": "bytes",
+                "Content-Length": str(length),
+                "Content-Disposition": f'attachment; filename="{filename}"',
+            },
+        )
+
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Unknown artifact storage mode",
+    )
