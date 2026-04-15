@@ -1002,6 +1002,8 @@
       
         
       
+        
+      
     
     
     
@@ -1121,6 +1123,34 @@
     
   
     HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-api-python-client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API Python client
   
 
     
@@ -1334,6 +1364,17 @@
     <span class="md-ellipsis">
       
         Schema versioning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#http-api-wire-contract-openapi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP API wire contract (OpenAPI)
       
     </span>
   </a>
@@ -2440,6 +2481,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#http-api-wire-contract-openapi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP API wire contract (OpenAPI)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2523,6 +2575,14 @@
 <li><strong><code>PROGRESS_EVENT_VERSION</code></strong> applies to streaming progress objects normalized by <code>progress_event_from_dict</code>.</li>
 </ul>
 <p>Clients should reject unknown major schema versions when strict compatibility is required.</p>
+<h2 id="http-api-wire-contract-openapi">HTTP API wire contract (OpenAPI)</h2>
+<p>The optional FastAPI service under <code>/v1</code> documents JSON shapes via <strong>OpenAPI</strong> (<code>/openapi.json</code>). This is <strong>separate</strong> from <code>doctranslate.schemas</code> semver: HTTP-only envelopes and fields live in <code>doctranslate.http_api.models</code>.</p>
+<ul>
+<li><strong>Errors:</strong> JSON error responses on <code>/v1/*</code> business failures use the <code>ApiErrorEnvelope</code> shape (<code>ok: false</code>, <code>schema_version</code>, optional <code>request_id</code>, structured <code>error</code> with <code>code</code>, <code>message</code>, <code>retryable</code>, optional <code>details</code>).</li>
+<li><strong>Progress events:</strong> <code>GET /v1/jobs/{id}/events</code> returns <code>event</code> objects aligned with <code>PROGRESS_EVENT_VERSION</code> / the <code>ProgressEvent</code> discriminated union in <code>doctranslate.schemas.public_api</code>.</li>
+<li><strong>Artifacts:</strong> <code>ArtifactKind</code> values follow the public enum; treat unknown kinds as forward-compatible.</li>
+<li><strong>OpenAPI artifact:</strong> <a href="https://github.com/miguelenes/doctranslate/blob/main/openapi/dist/openapi.json"><code>openapi/dist/openapi.json</code></a> is exported for CI and for the generated Python client (<code>clients/http-python/</code>).</li>
+</ul>
 
 
 

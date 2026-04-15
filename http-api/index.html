@@ -18,7 +18,7 @@
         <link rel="prev" href="../observability/">
       
       
-        <link rel="next" href="../http-api-workers/">
+        <link rel="next" href="../http-api-python-client/">
       
       
         
@@ -1002,6 +1002,8 @@
       
         
       
+        
+      
     
     
     
@@ -1404,6 +1406,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-api-python-client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API Python client
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -2777,6 +2807,7 @@
 <li>OpenAPI UI: <code>http://127.0.0.1:8000/docs</code></li>
 <li>OpenAPI JSON: <code>http://127.0.0.1:8000/openapi.json</code></li>
 </ul>
+<p>The repository keeps a <strong>checked-in OpenAPI snapshot</strong> at <a href="https://github.com/miguelenes/doctranslate/blob/main/openapi/dist/openapi.json"><code>openapi/dist/openapi.json</code></a> (regenerate with <code>uv run python scripts/export_openapi.py</code>). A <strong>generated Python client</strong> lives under <code>clients/http-python/</code>; see <strong><a href="../http-api-python-client/">HTTP API — Python client</a></strong>.</p>
 <h2 id="authentication">Authentication</h2>
 <p>The OSS HTTP API uses a <strong>single shared secret</strong> (opaque string, not a JWT). By default <strong>authentication is disabled</strong> so local scripts and tests keep working unchanged.</p>
 <table>
@@ -2968,6 +2999,11 @@
 <td><code>POST</code></td>
 <td><code>/v1/jobs</code></td>
 <td>Create translation job (<code>202</code>, multipart or mounted path)</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/jobs/json</code></td>
+<td>Create translation job (<code>202</code>, JSON body: typed <code>TranslationRequest</code>, optional <code>input_pdf_base64</code>, optional <code>webhook</code>)</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
@@ -3309,13 +3345,13 @@
         
         
           
-          <a href="../http-api-workers/" class="md-footer__link md-footer__link--next" aria-label="Next: HTTP API workers">
+          <a href="../http-api-python-client/" class="md-footer__link md-footer__link--next" aria-label="Next: HTTP API Python client">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                HTTP API workers
+                HTTP API Python client
               </div>
             </div>
             <div class="md-footer__button md-icon">

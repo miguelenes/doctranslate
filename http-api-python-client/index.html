@@ -12,36 +12,36 @@
         <meta name="author" content="Miguel Enes & DocTranslater contributors">
       
       
-        <link rel="canonical" href="https://miguelenes.github.io/doctranslate/ImplementationDetails/ParagraphFinding/ParagraphFinding/">
+        <link rel="canonical" href="https://miguelenes.github.io/doctranslate/http-api-python-client/">
       
       
-        <link rel="prev" href="https://github.com/miguelenes/doctranslate/blob/main/doctranslate/format/pdf/document_il/midend/layout_parser.py">
+        <link rel="prev" href="../http-api/">
       
       
-        <link rel="next" href="../../StylesAndFormulas/StylesAndFormulas/">
+        <link rel="next" href="../http-api-workers/">
       
       
         
       
       
-      <link rel="icon" href="../../../images/doctranslate-mark.svg">
+      <link rel="icon" href="../images/doctranslate-mark.svg">
       <meta name="generator" content="zensical-0.0.33">
     
     
       
-        <title>Paragraph Finding - DocTranslater</title>
+        <title>HTTP API — Python client (generated) - DocTranslater</title>
       
     
     
       
         
       
-      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.53a7feaf.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.53a7feaf.min.css">
       
         
           
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/modern/palette.dfe2e883.min.css">
       
       
 
@@ -60,9 +60,9 @@
       
     
     
-      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+      <link rel="stylesheet" href="../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
     
       
 
@@ -87,7 +87,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#paragraph-finding" class="md-skip">
+        <a href="#http-api-python-client-generated" class="md-skip">
           Skip to content
         </a>
       
@@ -101,9 +101,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="DocTranslater" class="md-header__button md-logo" aria-label="DocTranslater" data-md-component="logo">
+    <a href="./.." title="DocTranslater" class="md-header__button md-logo" aria-label="DocTranslater" data-md-component="logo">
       
-  <img src="../../../images/doctranslate-mark.svg" alt="DocTranslater">
+  <img src="../images/doctranslate-mark.svg" alt="DocTranslater">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Paragraph Finding
+              HTTP API — Python client (generated)
             
           </span>
         </div>
@@ -214,7 +214,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../.." class="md-tabs__link">
+      <a href="./.." class="md-tabs__link">
         
   
   Home
@@ -230,7 +230,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../supported_languages/" class="md-tabs__link">
+      <a href="../supported_languages/" class="md-tabs__link">
         
   
   Supported Languages
@@ -246,7 +246,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../configuration/" class="md-tabs__link">
+      <a href="../configuration/" class="md-tabs__link">
         
   
   Configuration
@@ -262,7 +262,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../troubleshooting/" class="md-tabs__link">
+      <a href="../troubleshooting/" class="md-tabs__link">
         
   
   Troubleshooting
@@ -280,7 +280,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../docker/" class="md-tabs__link">
+        <a href="../docker/" class="md-tabs__link">
           
   
   Docker
@@ -297,7 +297,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../benchmarks/" class="md-tabs__link">
+      <a href="../benchmarks/" class="md-tabs__link">
         
   
   Benchmarks
@@ -313,7 +313,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../translation-memory/" class="md-tabs__link">
+      <a href="../translation-memory/" class="md-tabs__link">
         
   
   Translation memory
@@ -329,7 +329,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../multi-translator/" class="md-tabs__link">
+      <a href="../multi-translator/" class="md-tabs__link">
         
   
   Multi-Provider Routing
@@ -345,7 +345,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../../local-translation/" class="md-tabs__link">
+      <a href="../local-translation/" class="md-tabs__link">
         
   
   Local translation
@@ -359,11 +359,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../../library-api/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../library-api/" class="md-tabs__link">
           
   
   API
@@ -378,13 +380,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../../il-spec-notes/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../il-spec-notes/" class="md-tabs__link">
           
   
   Implementation Details
@@ -403,7 +403,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../CODE_OF_CONDUCT/" class="md-tabs__link">
+        <a href="../CODE_OF_CONDUCT/" class="md-tabs__link">
           
   
   Community
@@ -422,7 +422,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../ai/" class="md-tabs__link">
+        <a href="../ai/" class="md-tabs__link">
           
   
   AI assistant context
@@ -455,9 +455,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="DocTranslater" class="md-nav__button md-logo" aria-label="DocTranslater" data-md-component="logo">
+    <a href="./.." title="DocTranslater" class="md-nav__button md-logo" aria-label="DocTranslater" data-md-component="logo">
       
-  <img src="../../../images/doctranslate-mark.svg" alt="DocTranslater">
+  <img src="../images/doctranslate-mark.svg" alt="DocTranslater">
 
     </a>
     DocTranslater
@@ -484,7 +484,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="./.." class="md-nav__link">
         
   
   
@@ -511,7 +511,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../supported_languages/" class="md-nav__link">
+      <a href="../supported_languages/" class="md-nav__link">
         
   
   
@@ -538,7 +538,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../configuration/" class="md-nav__link">
+      <a href="../configuration/" class="md-nav__link">
         
   
   
@@ -565,7 +565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../troubleshooting/" class="md-nav__link">
+      <a href="../troubleshooting/" class="md-nav__link">
         
   
   
@@ -629,7 +629,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../deploy-samples/" class="md-nav__link ">
+            <a href="../deploy-samples/" class="md-nav__link ">
               
   
   
@@ -671,7 +671,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../docker/" class="md-nav__link">
+      <a href="../docker/" class="md-nav__link">
         
   
   
@@ -699,7 +699,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../docker-profiles/" class="md-nav__link">
+      <a href="../docker-profiles/" class="md-nav__link">
         
   
   
@@ -727,7 +727,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../serverless-containers/" class="md-nav__link">
+      <a href="../serverless-containers/" class="md-nav__link">
         
   
   
@@ -755,7 +755,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../deploy-cloud-run/" class="md-nav__link">
+      <a href="../deploy-cloud-run/" class="md-nav__link">
         
   
   
@@ -783,7 +783,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../deploy-fargate-app-runner/" class="md-nav__link">
+      <a href="../deploy-fargate-app-runner/" class="md-nav__link">
         
   
   
@@ -811,7 +811,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../deploy-modal-runpod/" class="md-nav__link">
+      <a href="../deploy-modal-runpod/" class="md-nav__link">
         
   
   
@@ -839,7 +839,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../serverless-runtime-reference/" class="md-nav__link">
+      <a href="../serverless-runtime-reference/" class="md-nav__link">
         
   
   
@@ -876,7 +876,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../benchmarks/" class="md-nav__link">
+      <a href="../benchmarks/" class="md-nav__link">
         
   
   
@@ -903,7 +903,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../translation-memory/" class="md-nav__link">
+      <a href="../translation-memory/" class="md-nav__link">
         
   
   
@@ -930,7 +930,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../multi-translator/" class="md-nav__link">
+      <a href="../multi-translator/" class="md-nav__link">
         
   
   
@@ -957,7 +957,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../local-translation/" class="md-nav__link">
+      <a href="../local-translation/" class="md-nav__link">
         
   
   
@@ -981,321 +981,12 @@
       
   
   
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
-        
-          
-          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_10">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    API
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../library-api/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Stable library API
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../observability/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Observability
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../http-api/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    HTTP API
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../http-api-python-client/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    HTTP API Python client
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../http-api-workers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    HTTP API workers
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../http-api-storage-backends/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    HTTP API storage
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../public-api-policy/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Public API policy
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../AsyncTranslate/AsyncTranslate/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Async Translation API
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
     
   
   
   
     
     
-      
-        
-      
-        
-          
-        
-      
-        
       
         
       
@@ -1329,11 +1020,484 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../library-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stable library API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API Python client
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API Python client
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#regenerating" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regenerating
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-the-client-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the client locally
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using the client locally">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#typed-job-creation-post-v1jobsjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Typed job creation (POST /v1/jobs/json)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#helpers-convenience-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Helpers (convenience module)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sync-example-remote-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sync example (remote server)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Async example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#versioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Versioning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#licensing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Licensing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-api-workers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API workers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-api-storage-backends/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP API storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../public-api-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public API policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ImplementationDetails/AsyncTranslate/AsyncTranslate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Async Translation API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../" class="md-nav__link ">
+            <a href="../ImplementationDetails/" class="md-nav__link ">
               
   
   
@@ -1351,13 +1515,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_11">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1375,7 +1539,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../il-spec-notes/" class="md-nav__link">
+      <a href="../il-spec-notes/" class="md-nav__link">
         
   
   
@@ -1405,7 +1569,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../PDFParsing/PDFParsing/" class="md-nav__link">
+      <a href="../ImplementationDetails/PDFParsing/PDFParsing/" class="md-nav__link">
         
   
   
@@ -1458,37 +1622,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Paragraph Finding
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="././" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../ImplementationDetails/ParagraphFinding/ParagraphFinding/" class="md-nav__link">
         
   
   
@@ -1504,143 +1641,6 @@
   
 
       </a>
-      
-        
-
-
-<nav class="md-nav md-nav--secondary" aria-label="On this page">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      On this page
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#background" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Background
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#goal" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Goal
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#specific-implementation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Specific Implementation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Specific Implementation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-1-create-initial-paragraphs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: Create Initial Paragraphs
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-2-process-paragraph-spacing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: Process Paragraph Spacing
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-3-calculate-line-width-statistics" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Calculate Line Width Statistics
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-4-process-independent-paragraphs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4: Process Independent Paragraphs
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#additional-features" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Additional Features
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#limitations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Limitations
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration Options
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1653,7 +1653,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../StylesAndFormulas/StylesAndFormulas/" class="md-nav__link">
+      <a href="../ImplementationDetails/StylesAndFormulas/StylesAndFormulas/" class="md-nav__link">
         
   
   
@@ -1681,7 +1681,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ILTranslator/ILTranslator/" class="md-nav__link">
+      <a href="../ImplementationDetails/ILTranslator/ILTranslator/" class="md-nav__link">
         
   
   
@@ -1709,7 +1709,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../Typesetting/Typesetting/" class="md-nav__link">
+      <a href="../ImplementationDetails/Typesetting/Typesetting/" class="md-nav__link">
         
   
   
@@ -1765,7 +1765,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../PDFCreation/PDFCreation/" class="md-nav__link">
+      <a href="../ImplementationDetails/PDFCreation/PDFCreation/" class="md-nav__link">
         
   
   
@@ -1793,7 +1793,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../intro-to-pdf-object/" class="md-nav__link">
+      <a href="../intro-to-pdf-object/" class="md-nav__link">
         
   
   
@@ -1890,7 +1890,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../CODE_OF_CONDUCT/" class="md-nav__link">
+      <a href="../CODE_OF_CONDUCT/" class="md-nav__link">
         
   
   
@@ -1918,7 +1918,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../github-pages/" class="md-nav__link">
+      <a href="../github-pages/" class="md-nav__link">
         
   
   
@@ -1946,7 +1946,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../migration/" class="md-nav__link">
+      <a href="../migration/" class="md-nav__link">
         
   
   
@@ -2032,7 +2032,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../CONTRIBUTING/" class="md-nav__link">
+      <a href="../CONTRIBUTING/" class="md-nav__link">
         
   
   
@@ -2060,7 +2060,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../CONTRIBUTOR_REWARD/" class="md-nav__link">
+      <a href="../CONTRIBUTOR_REWARD/" class="md-nav__link">
         
   
   
@@ -2140,7 +2140,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../ai/" class="md-nav__link ">
+            <a href="../ai/" class="md-nav__link ">
               
   
   
@@ -2184,7 +2184,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../ai/project-map/" class="md-nav__link">
+      <a href="../ai/project-map/" class="md-nav__link">
         
   
   
@@ -2212,7 +2212,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../ai/pdf-pipeline/" class="md-nav__link">
+      <a href="../ai/pdf-pipeline/" class="md-nav__link">
         
   
   
@@ -2240,7 +2240,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../ai/translator-stack/" class="md-nav__link">
+      <a href="../ai/translator-stack/" class="md-nav__link">
         
   
   
@@ -2268,7 +2268,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../ai/verification/" class="md-nav__link">
+      <a href="../ai/verification/" class="md-nav__link">
         
   
   
@@ -2296,7 +2296,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../ai/package-layers/" class="md-nav__link">
+      <a href="../ai/package-layers/" class="md-nav__link">
         
   
   
@@ -2324,7 +2324,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../ai/mcp-suggestions/" class="md-nav__link">
+      <a href="../ai/mcp-suggestions/" class="md-nav__link">
         
   
   
@@ -2352,7 +2352,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../ai/phase2-skills/" class="md-nav__link">
+      <a href="../ai/phase2-skills/" class="md-nav__link">
         
   
   
@@ -2421,10 +2421,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#background" class="md-nav__link">
+  <a href="#regenerating" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Background
+        Regenerating
       
     </span>
   </a>
@@ -2432,33 +2432,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#goal" class="md-nav__link">
+  <a href="#using-the-client-locally" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Goal
+        Using the client locally
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#specific-implementation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Specific Implementation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Specific Implementation">
+    <nav class="md-nav" aria-label="Using the client locally">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#step-1-create-initial-paragraphs" class="md-nav__link">
+  <a href="#authentication" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 1: Create Initial Paragraphs
+        Authentication
       
     </span>
   </a>
@@ -2466,10 +2455,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-2-process-paragraph-spacing" class="md-nav__link">
+  <a href="#typed-job-creation-post-v1jobsjson" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 2: Process Paragraph Spacing
+        Typed job creation (POST /v1/jobs/json)
       
     </span>
   </a>
@@ -2477,10 +2466,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-3-calculate-line-width-statistics" class="md-nav__link">
+  <a href="#helpers-convenience-module" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 3: Calculate Line Width Statistics
+        Helpers (convenience module)
       
     </span>
   </a>
@@ -2488,10 +2477,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-4-process-independent-paragraphs" class="md-nav__link">
+  <a href="#sync-example-remote-server" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 4: Process Independent Paragraphs
+        Sync example (remote server)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Async example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker
       
     </span>
   </a>
@@ -2504,10 +2515,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#additional-features" class="md-nav__link">
+  <a href="#versioning" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Additional Features
+        Versioning
       
     </span>
   </a>
@@ -2515,21 +2526,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#limitations" class="md-nav__link">
+  <a href="#licensing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Limitations
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration Options
+        Licensing
       
     </span>
   </a>
@@ -2551,7 +2551,7 @@
                 
                   
   
-    <a href="https://github.com/miguelenes/doctranslate/edit/main/docs/ImplementationDetails/ParagraphFinding/ParagraphFinding.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/miguelenes/doctranslate/edit/main/docs/http-api-python-client.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-pen" viewBox="0 0 24 24"><path d="M12.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v9.34"/><path d="M14 2v5a1 1 0 0 0 1 1h5M10.378 12.622a1 1 0 0 1 3 3.003L8.36 20.637a2 2 0 0 1-.854.506l-2.867.837a.5.5 0 0 1-.62-.62l.836-2.869a2 2 0 0 1 .506-.853z"/></svg>
     </a>
@@ -2560,96 +2560,72 @@
     
       
     
-    <a href="https://github.com/miguelenes/doctranslate/raw/main/docs/ImplementationDetails/ParagraphFinding/ParagraphFinding.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/miguelenes/doctranslate/raw/main/docs/http-api-python-client.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-code-2" viewBox="0 0 24 24"><path d="M4 12.15V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3.35"/><path d="M14 2v5a1 1 0 0 0 1 1h5M5 16l-3 3 3 3M9 22l3-3-3-3"/></svg>
     </a>
   
 
 
-<h1 id="paragraph-finding">Paragraph Finding</h1>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This documentation may contain AI-generated content. While we strive for accuracy, there might be inaccuracies. Please report any issues via:</p>
+<h1 id="http-api-python-client-generated">HTTP API — Python client (generated)</h1>
+<p>DocTranslater ships a <strong>generated</strong> Python client under <code>clients/http-python/</code> (package <code>doc_translater_http_api_client</code>), produced from the committed OpenAPI document (<a href="https://github.com/miguelenes/doctranslate/blob/main/openapi/dist/openapi.json"><code>openapi/dist/openapi.json</code></a>).</p>
+<h2 id="regenerating">Regenerating</h2>
+<p>From the repository root (requires the <code>dev</code> dependency group, which includes <code>openapi-python-client</code>):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>scripts/export_openapi.py
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>scripts/regenerate_http_client.py
+</span></code></pre></div>
+<p>The second command runs <code>openapi-python-client</code> with <a href="https://github.com/miguelenes/doctranslate/blob/main/clients/http-python/openapi-generator.yaml"><code>clients/http-python/openapi-generator.yaml</code></a> and a post-step that restores PEP 621 packaging (<code>scripts/ensure_http_client_packaging.py</code>).</p>
+<h2 id="using-the-client-locally">Using the client locally</h2>
+<p>Add the client directory to <code>PYTHONPATH</code>, or install the tree in editable mode into your own environment:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">/clients/http-python</span><span class="si">${</span><span class="nv">PYTHONPATH</span><span class="p">:+:</span><span class="nv">$PYTHONPATH</span><span class="si">}</span><span class="s2">&quot;</span>
+</span></code></pre></div>
+<h3 id="authentication">Authentication</h3>
+<p>When <code>DOCTRANSLATE_API_AUTH_MODE=required</code>, use <code>AuthenticatedClient</code> with <code>token=...</code> (Bearer) or configure headers for the API key (see <a href="../http-api/#authentication"><code>http-api.md</code></a>).</p>
+<h3 id="typed-job-creation-post-v1jobsjson">Typed job creation (<code>POST /v1/jobs/json</code>)</h3>
+<p>The OpenAPI-first route accepts a JSON body (<code>JobCreateJsonBody</code>) with a nested <code>TranslationRequest</code>, optional <code>input_pdf_base64</code>, and optional <code>webhook</code>. Multipart <code>POST /v1/jobs</code> remains available for shell and Docker examples.</p>
+<h3 id="helpers-convenience-module">Helpers (<code>convenience</code> module)</h3>
+<p>The package re-exports small helpers:</p>
 <ul>
-<li><a href="https://github.com/miguelenes/doctranslate/issues">GitHub Issues</a></li>
-<li>Community contribution (PRs welcome!)</li>
+<li><code>wait_until_terminal_sync</code> / <code>wait_until_terminal_async</code> — poll <code>GET /v1/jobs/{id}</code> until a terminal state.</li>
+<li><code>iter_progress_events_sync</code> / <code>iter_progress_events_async</code> — page through <code>GET /v1/jobs/{id}/events</code>.</li>
+<li><code>stream_job_sse_sync</code> / <code>stream_job_sse_async</code> — parse <code>GET /v1/jobs/{id}/stream</code> (<code>text/event-stream</code>) into JSON <code>data</code> payloads (best-effort framing).</li>
+<li><code>download_artifact_bytes_*</code>, <code>head_artifact_*</code> — raw bytes / <code>HEAD</code> for artifact URLs.</li>
 </ul>
-</div>
-<h2 id="background">Background</h2>
-<p>After PDF analysis, we need to identify paragraphs from individual characters. This is a crucial step before translation and typesetting, as it helps maintain the logical structure of the document.</p>
-<h2 id="goal">Goal</h2>
-<ol>
-<li>Group characters into meaningful paragraphs while preserving the document's logical structure</li>
-<li>Handle special cases like table of contents, short lines, and multi-line paragraphs</li>
-<li>Maintain layout information for later typesetting</li>
-</ol>
-<h2 id="specific-implementation">Specific Implementation</h2>
-<p>The paragraph finding process consists of four main steps:</p>
-<h3 id="step-1-create-initial-paragraphs">Step 1: Create Initial Paragraphs</h3>
-<ol>
-<li>Group characters into lines based on their spatial relationships</li>
-<li>Create paragraphs based on layout information and XObject IDs</li>
-<li>Characters that don't belong to text layouts are skipped</li>
-</ol>
-<h3 id="step-2-process-paragraph-spacing">Step 2: Process Paragraph Spacing</h3>
-<ol>
-<li>Remove completely empty lines</li>
-<li>Handle trailing spaces within lines</li>
-<li>Update paragraph boundary boxes and metadata</li>
-</ol>
-<h3 id="step-3-calculate-line-width-statistics">Step 3: Calculate Line Width Statistics</h3>
-<ol>
-<li>Calculate the median width of all lines</li>
-<li>This information is used for identifying potential paragraph breaks</li>
-</ol>
-<h3 id="step-4-process-independent-paragraphs">Step 4: Process Independent Paragraphs</h3>
-<ol>
-<li>Analyze paragraphs with multiple lines</li>
-<li>Split paragraphs in two cases:</li>
-<li>When encountering table of contents entries (identified by consecutive dots)</li>
-<li>When finding lines significantly shorter than the median width (configurable via <code>short_line_split_factor</code>)</li>
-</ol>
-<h2 id="additional-features">Additional Features</h2>
-<ol>
-<li>Layout-aware processing:</li>
-<li>Respects different layout types (plain text, title, figure caption, etc.)</li>
-<li>
-<p>Maintains layout priority order for overlapping regions</p>
-</li>
-<li>
-<p>First line indent detection:</p>
-</li>
-<li>
-<p>Automatically detects and marks paragraphs with first line indentation</p>
-</li>
-<li>
-<p>Flexible character position detection:</p>
-</li>
-<li>Uses multiple position detection modes (middle, topleft, bottomright)</li>
-<li>Special handling for characters with unreliable height information</li>
-</ol>
-<h2 id="limitations">Limitations</h2>
-<ol>
-<li>
-<p>The current implementation assumes left-to-right text direction</p>
-</li>
-<li>
-<p>May not perfectly handle complex layouts with overlapping regions</p>
-</li>
-<li>
-<p>Table of contents detection relies on consecutive dots pattern</p>
-</li>
-<li>
-<p>Short line splitting might occasionally create incorrect paragraph breaks</p>
-</li>
-</ol>
-<h2 id="configuration-options">Configuration Options</h2>
-<p>The paragraph finding behavior can be customized through <code>TranslationConfig</code>:</p>
-<ol>
-<li><code>split_short_lines</code>: Enable/disable splitting paragraphs at short lines</li>
-<li><code>short_line_split_factor</code>: Threshold factor for short line detection (relative to median width) </li>
-</ol>
+<h3 id="sync-example-remote-server">Sync example (remote server)</h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">doc_translater_http_api_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuthenticatedClient</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">doc_translater_http_api_client</span><span class="w"> </span><span class="kn">import</span> <span class="n">wait_until_terminal_sync</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">doc_translater_http_api_client.api.jobs</span><span class="w"> </span><span class="kn">import</span> <span class="n">v1_jobs_create_json</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">doc_translater_http_api_client.models.job_create_json_body</span><span class="w"> </span><span class="kn">import</span> <span class="n">JobCreateJsonBody</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">doc_translater_http_api_client.models.translation_request</span><span class="w"> </span><span class="kn">import</span> <span class="n">TranslationRequest</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">client</span> <span class="o">=</span> <span class="n">AuthenticatedClient</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;https://api.example.com&quot;</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="s2">&quot;your-secret&quot;</span><span class="p">)</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">body</span> <span class="o">=</span> <span class="n">JobCreateJsonBody</span><span class="p">(</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">translation_request</span><span class="o">=</span><span class="n">TranslationRequest</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="p">{</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>            <span class="s2">&quot;schema_version&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>            <span class="s2">&quot;lang_in&quot;</span><span class="p">:</span> <span class="s2">&quot;en&quot;</span><span class="p">,</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>            <span class="s2">&quot;lang_out&quot;</span><span class="p">:</span> <span class="s2">&quot;zh&quot;</span><span class="p">,</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>            <span class="s2">&quot;input_pdf&quot;</span><span class="p">:</span> <span class="s2">&quot;/work/document.pdf&quot;</span><span class="p">,</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>            <span class="s2">&quot;translator&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="s2">&quot;openai&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;gpt-4o-mini&quot;</span><span class="p">}},</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>        <span class="p">}</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="p">),</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="p">)</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="n">created</span> <span class="o">=</span> <span class="n">v1_jobs_create_json</span><span class="o">.</span><span class="n">sync_detailed</span><span class="p">(</span><span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="n">job_id</span> <span class="o">=</span> <span class="n">created</span><span class="o">.</span><span class="n">parsed</span><span class="o">.</span><span class="n">job_id</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="n">final</span> <span class="o">=</span> <span class="n">wait_until_terminal_sync</span><span class="p">(</span><span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">job_id</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="async-example">Async example</h3>
+<p>Use <code>asyncio_detailed</code> variants from the <code>api</code> modules with <code>client.get_async_httpx_client()</code> patterns from the generated README, or call <code>wait_until_terminal_async</code> from the same <code>convenience</code> exports.</p>
+<h3 id="docker">Docker</h3>
+<p>Point <code>base_url</code> at the published service (for example <code>http://127.0.0.1:8000</code> when port-mapping the <code>runtime-api</code> image). See <a href="../docker/"><code>docker.md</code></a> for volumes, auth, and queue settings.</p>
+<h2 id="versioning">Versioning</h2>
+<ul>
+<li><strong>URL major:</strong> <code>/v1/...</code> paths.</li>
+<li><strong>Public JSON payloads:</strong> <code>PUBLIC_SCHEMA_VERSION</code> / <code>PROGRESS_EVENT_VERSION</code> from <code>GET /v1/runtime</code> align with <a href="../public-api-policy/"><code>doctranslate.schemas</code></a>.</li>
+<li><strong>Client package:</strong> <code>doc-translater-http-api-client</code> uses its own semver in <code>clients/http-python/pyproject.toml</code>; bump when the OpenAPI surface changes incompatibly.</li>
+</ul>
+<h2 id="licensing">Licensing</h2>
+<p>The generated client is AGPL-3.0, consistent with the main project.</p>
 
 
 
@@ -2687,7 +2663,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="https://github.com/miguelenes/doctranslate/blob/main/doctranslate/format/pdf/document_il/midend/layout_parser.py" class="md-footer__link md-footer__link--prev" aria-label="Previous: Layout Parser(.py)">
+          <a href="../http-api/" class="md-footer__link md-footer__link--prev" aria-label="Previous: HTTP API">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
@@ -2697,20 +2673,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Layout Parser(.py)
+                HTTP API
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../StylesAndFormulas/StylesAndFormulas/" class="md-footer__link md-footer__link--next" aria-label="Next: Styles and Formulas">
+          <a href="../http-api-workers/" class="md-footer__link md-footer__link--next" aria-label="Next: HTTP API workers">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Styles and Formulas
+                HTTP API workers
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -2778,10 +2754,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["announce.dismiss","content.action.edit","content.action.view","content.code.annotate","content.code.copy","content.code.select","content.tooltips","navigation.footer","navigation.indexes","navigation.sections","navigation.tabs","navigation.top","navigation.tracking","search.highlight","search.share","search.suggest","toc.follow"],"search":"../../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["announce.dismiss","content.action.edit","content.action.view","content.code.annotate","content.code.copy","content.code.select","content.tooltips","navigation.footer","navigation.indexes","navigation.sections","navigation.tabs","navigation.top","navigation.tracking","search.highlight","search.share","search.suggest","toc.follow"],"search":"../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.63456bd9.min.js"></script>
+      <script src="../assets/javascripts/bundle.63456bd9.min.js"></script>
       
     
   </body>
