@@ -8,6 +8,7 @@ These pages are **canonical project context** for Codex (`AGENTS.md`), Cursor (r
 | [PDF pipeline](pdf-pipeline.md) | `TRANSLATE_STAGES` and stage boundaries. |
 | [Translator stack](translator-stack.md) | OpenAI vs router vs local; config merge pitfalls. |
 | [Verification](verification.md) | Commands and “done means”. |
+| [Benchmarks](../benchmarks.md) (human docs) | Perf harness: `tests/perf/`, meso scripts, Locust, nightly workflows. |
 | [Package layers](package-layers.md) | Optional extras, public APIs, CI profiles. |
 | [Docker](../docker.md) (human docs) | Container images, volumes, warm vs slim targets ([profiles](../docker-profiles.md)). |
 | [Library API](../library-api.md) (human docs) | Stable Python/JSON embedding (`doctranslate.api` / `doctranslate.schemas`). |

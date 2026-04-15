@@ -63,7 +63,7 @@ Base dependencies are intentionally small: charset detection, Pydantic, TOML, an
 ## CI
 
 - **Minimal lane:** `uv sync --locked --group dev` (no extras) + `pytest tests/test_install_profiles.py::test_minimal_schemas_import`.
-- **Fast lane:** `uv sync --locked --group dev --extra full` + `pytest tests/ -m "not requires_pdf"` + MkDocs strict + wheel smoke + `scripts/check_cli_import_time.py`.
+- **Fast lane:** `uv sync --locked --group dev --extra full` + `pytest tests/ -m "not requires_pdf and not perf"` + MkDocs strict + wheel smoke + `scripts/check_cli_import_time.py`.
 - **Slim lane:** `uv sync --locked --group dev --extra pdf --extra cli` + `pytest tests/test_install_profiles.py::test_pdf_stack_opens_ci_fixture`.
 - **Full matrix:** `uv sync --locked --group dev --extra full` + full `pytest`, assets warmup, offline pack/restore.
 - **Docs (PR):** Zensical build when `docs/**` or `mkdocs.yml` changes (`.github/workflows/docs-pr.yml`).

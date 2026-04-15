@@ -245,6 +245,8 @@ max-complexity = 10 # 函数圈复杂度阈值
 "doctranslate/pdfminer/*" =["A","F", "I", "N", "S", "B", "C", "COM", "ARG", "PTH", "UP"]
 "doctranslate/http_api/worker/arq_worker.py" = ["ARG001"]
 "scripts/regenerate_http_client.py" = ["S603"]
+"scripts/perf_meso.py" = ["S603"]
+"scripts/perf_docker_metrics.py" = ["S603"]
 [dependency-groups]
 dev = [
     "arq>=0.26.0",
@@ -278,6 +280,10 @@ dev = [
     "zensical>=0.0.33",
     "openapi-python-client>=0.28.3",
 ]
+perf = [
+    "locust>=2.32.6",
+    "pytest-benchmark>=5.1.0",
+]
 
 [tool.pytest.ini_options]
 pythonpath = [".", "src", "clients/http-python"]
@@ -289,6 +295,7 @@ markers = [
     "requires_hyperscan: needs hyperscan (glossary acceleration)",
     "requires_semantic_tm: needs sentence-transformers / torch",
     "requires_full: needs the ``full`` optional dependency set (default CI)",
+    "perf: performance / benchmark tests (install dependency-group ``perf``)",
 ]
 
 [bumpver]

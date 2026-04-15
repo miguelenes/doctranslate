@@ -205,6 +205,10 @@ uv run memray run --native --aggregate doctranslate/main.py \
   translate input.pdf -o ./memray_out --translator local --local-model qwen2.5:7b
 ```
 
+##### Performance benchmarks (OSS)
+
+Install the **perf** dependency group (`uv sync --locked --group dev --group perf --extra full`), then see [Benchmarks](benchmarks.md) for `tests/perf/`, `scripts/perf_meso.py`, Locust, and scheduled workflows. Default `pytest tests/` excludes `-m perf`; keep microbenchmarks deterministic (no paid APIs as merge gates).
+
 ##### Documentation builds
 
 CI runs **MkDocs** with `--strict` on the full test job. **GitHub Pages** uses **Zensical** (see `.github/workflows/docs.yml`). After editing `docs/` or `mkdocs.yml`, verify both locally when possible:

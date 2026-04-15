@@ -15,9 +15,15 @@ web/*.local
 memray*
 **/*.so
 *.pdf
+!benchmarks/corpus/**/*.pdf
 *.docx
 *.json
 !openapi/dist/openapi.json
+!workers/edge-api/package.json
+!workers/edge-api/package-lock.json
+workers/edge-api/node_modules/
+workers/edge-api/.venv-workers/
+workers/edge-api/.dev.vars
 **/*.pyc
 .venv
 .idea
@@ -50,3 +56,8 @@ babeldoc/format/playground
 temp.jpg
 AGENTS.md
 .serena
+
+# pytest-benchmark local storage
+.benchmarks/
+benchmarks/**/*.bin
+benchmarks/**/*.html

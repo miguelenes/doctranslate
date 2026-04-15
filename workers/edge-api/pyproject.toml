@@ -1,0 +1,26 @@
+[project]
+name = "doctranslater-edge-worker"
+version = "0.1.0"
+description = "Cloudflare Python Worker facade: validate TranslationRequest and forward to a full DocTranslater HTTP API."
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "DocTranslater",
+    "httpx>=0.27.0",
+    "python-multipart>=0.0.9",
+    "starlette>=0.40.0",
+]
+
+[tool.uv.sources]
+DocTranslater = { path = "../..", editable = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "workers-py",
+    "workers-runtime-sdk",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

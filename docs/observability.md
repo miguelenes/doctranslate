@@ -25,7 +25,7 @@ Standard **OTLP exporter** environment variables (for example `OTEL_EXPORTER_OTL
 ## HTTP API
 
 - **Request IDs:** Every response includes `X-Request-ID`. Error bodies (`ApiErrorEnvelope`) include the same `request_id` for log correlation.
-- **Prometheus:** `GET /metrics` exposes RED-style HTTP metrics, job queue depth (updated on readiness checks), job lifecycle histograms, pipeline stage timings (when the PDF stack runs), translator router counters, and asset warmup counters when metrics are enabled.
+- **Prometheus:** `GET /metrics` exposes RED-style HTTP metrics, job queue depth (updated on readiness checks), job lifecycle histograms, pipeline stage timings (when the PDF stack runs), translator router counters, and asset warmup counters when metrics are enabled. These histograms are the primary **runtime** regression signals in production (complement OSS microbenchmarks in [Benchmarks](benchmarks.md)).
 - **Tracing:** With `DOCTRANSLATE_OTEL_ENABLED=true` and a reachable OTLP collector, spans cover FastAPI requests (via auto-instrumentation), ARQ job execution (`job.execute`, `job.warmup`), and PDF `pipeline.translate_sync`. For **split API + worker** deployments, the API stores a W3C `traceparent` on queued jobs so the worker can continue the trace.
 
 ## Workers (ARQ)

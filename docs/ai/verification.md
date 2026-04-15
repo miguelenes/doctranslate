@@ -32,9 +32,11 @@ If you change `pyproject.toml` dependencies, run **`uv lock`** and commit **`uv.
 | Lane | Workflow job | Typical command locally |
 |------|----------------|-------------------------|
 | **Minimal** | `test-minimal-schemas` | `uv sync --locked --group dev` then `pytest tests/test_install_profiles.py::test_minimal_schemas_import -q` |
-| **Fast** | `test-fast` | `uv sync --locked --group dev --extra full` then `pytest tests/ -q -m "not requires_pdf"` |
+| **Fast** | `test-fast` | `uv sync --locked --group dev --extra full` then `pytest tests/ -q -m "not requires_pdf and not perf"` |
 | **Slim PDF** | `test-slim-pdf-cli` | `uv sync --locked --group dev --extra pdf --extra cli` then `pytest tests/test_install_profiles.py::test_pdf_stack_opens_ci_fixture -q` |
-| **Full matrix** | `test` | Full `pytest tests/ -q` plus assets warmup / offline pack smoke |
+| **Full matrix** | `test` | `pytest tests/ -q -m "not perf"` plus assets warmup / offline pack smoke |
+| **Perf PR** | `perf-pr` (optional) | `uv sync --locked --group dev --group perf --extra full` then `pytest tests/perf/ -m perf --benchmark-only` — see [Benchmarks](../benchmarks.md) |
+| **Perf nightly** | `perf-nightly` | Weekly: microbench JSON, `scripts/perf_meso.py`, Locust, Memray, Docker metrics — see [Benchmarks](../benchmarks.md) |
 | **Zensical (PR)** | `docs-pr` on `docs/**` or `mkdocs.yml` | `uv run zensical build --clean` |
 
 Tests that need the PDF / IL stack should be marked `@pytest.mark.requires_pdf` (see `pyproject.toml` `[tool.pytest.ini_options]` markers).
@@ -47,7 +49,9 @@ Tests that need the PDF / IL stack should be marked `@pytest.mark.requires_pdf` 
 | HTTP API (if touched) | `uv sync --locked --group dev --extra full` then `uv run pytest tests/test_http_api_*.py -q` |
 | Assets (if touching models/assets) | `uv run doctranslate assets warmup` |
 | Unit tests | `uv run pytest tests/ -q` |
-| Skip PDF-stack tests (fast) | `uv run pytest tests/ -q -m "not requires_pdf"` |
+| Skip PDF-stack tests (fast) | `uv run pytest tests/ -q -m "not requires_pdf and not perf"` |
+| Perf microbenchmarks | `uv sync --locked --group dev --group perf --extra full` then `uv run pytest tests/perf/ -q -m perf --benchmark-only` |
+| Meso CLI timings | `uv run python scripts/perf_meso.py` |
 | Single file / test node | `uv run pytest tests/<file>::<test> -q` |
 | Import profile (warn-only) | `uv run python scripts/check_cli_import_time.py` |
 

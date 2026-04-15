@@ -35,3 +35,29 @@ For OpenAI or router mode, wall time is dominated by **tokens × model speed × 
 ## Automation in CI
 
 The test workflow runs a **warn-only** import/parser timing check so large accidental regressions in CLI startup are visible in logs. It does **not** fail the build on threshold alone (see `scripts/check_cli_import_time.py`).
+
+### Layered harness (micro, meso, HTTP, Docker)
+
+Install perf tooling:
+
+```bash
+uv sync --locked --group dev --group perf --extra full
+```
+
+| Layer | What | Command / workflow |
+|-------|------|-------------------|
+| **Micro** | `pytest-benchmark` on parser, mocked router, HTTP inspect, parse-only PDF path | `uv run pytest tests/perf/ -m perf --benchmark-only` (default `pytest tests/` **excludes** `-m perf`; use an explicit `tests/perf/` run) |
+| **Meso** | Subprocess CLI timings (help, inspect JSON, `assets warmup`, `translate --skip-translation`) | `uv run python scripts/perf_meso.py` → JSON on stdout |
+| **HTTP load** | Locust against a running API | `uv run locust -f benchmarks/load/locustfile.py --headless -u 4 -r 1 -t 20s --host http://127.0.0.1:8999` (set `PERF_INSPECT_PDF` to an absolute path to include `/v1/inspect` in the mix) |
+| **Docker** | Image size + `doctranslate --version` in a fresh container + optional API health | `uv run python scripts/perf_docker_metrics.py` (builds `runtime-cpu` / `runtime-api` locally; can take a long time) |
+| **Memory** | Memray on short CLI paths | `uv sync --extra memray` then see [Contributing — Profile memory usage](CONTRIBUTING.md#profile-memory-usage); nightly workflow uploads a sample flamegraph when `examples/ci/test.pdf` exists |
+
+**Workflows:** [`.github/workflows/perf-pr.yml`](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/perf-pr.yml) (path-filtered PR microbenchmarks + JSON artifact), [`.github/workflows/perf-nightly.yml`](https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/perf-nightly.yml) (weekly schedule: microbench, meso JSON, Locust, Memray, Docker metrics with `continue-on-error` where builds may be slow).
+
+**Corpus plan:** [benchmarks/corpus/README.md](https://github.com/miguelenes/doctranslate/blob/main/benchmarks/corpus/README.md) — extend beyond `examples/ci/test.pdf` with licensed fixtures; keep PR jobs small.
+
+**Regression policy:** PR jobs are **informational** (artifacts + logs), not throughput SLAs. To tighten later, use `pytest-benchmark`’s `--benchmark-compare-fail` only after collecting a stable baseline on one OS/Python tuple.
+
+### Runtime metrics (operators)
+
+When the HTTP API runs with Prometheus enabled, histograms such as `doctranslate_pipeline_stage_duration_seconds`, `doctranslate_translator_latency_seconds`, and `doctranslate_job_duration_seconds` complement microbenchmarks for deployment-level drift; see [Observability](observability.md).

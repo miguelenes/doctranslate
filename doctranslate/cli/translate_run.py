@@ -462,7 +462,7 @@ async def run_legacy_translate_pipeline(
         working_dir = None
 
     watermark_output_mode = WatermarkOutputMode.Watermarked
-    if args.no_watermark:
+    if getattr(args, "no_watermark", False):
         watermark_output_mode = WatermarkOutputMode.NoWatermark
     elif args.watermark_output_mode == "both":
         watermark_output_mode = WatermarkOutputMode.Both

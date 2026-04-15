@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "doctranslater-edge-api",
+  "main": "src/worker.py",
+  "compatibility_date": "2026-04-15",
+  "compatibility_flags": ["python_workers", "python_dedicated_snapshot"],
+  "vars": {
+    "DOCTRANSLATE_UPSTREAM_URL": ""
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

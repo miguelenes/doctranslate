@@ -1,5 +1,5 @@
-# Weekly import/parser timing artifact (informational; does not gate merges).
-name: Perf smoke
+# Scheduled performance smoke: microbenchmarks, meso CLI timings, Locust, optional Memray, Docker metrics.
+name: Perf nightly
 
 on:
   schedule:
@@ -34,3 +34,220 @@ jobs:
         with:
           name: cli-import-profile
           path: import-profile.txt
+
+  microbench:
+    name: pytest-benchmark (full perf)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Setup uv with Python 3.12
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+          activate-environment: true
+      - name: Cached Assets
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/doctranslate
+          key: doctranslate-assets-${{ hashFiles('doctranslate/assets/embedding_assets_metadata.py') }}
+      - name: Install
+        run: uv sync --locked --group dev --group perf --extra full
+      - name: Warm up asset cache
+        run: uv run doctranslate assets warmup
+      - name: Microbenchmarks
+        run: |
+          uv run pytest tests/perf/ -q -m "perf and not requires_ocr and not requires_hyperscan" \
+            --benchmark-only \
+            --benchmark-json=perf-nightly-benchmark.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: perf-nightly-benchmark-json
+          path: perf-nightly-benchmark.json
+          if-no-files-found: warn
+
+  meso-cli:
+    name: Meso CLI timings
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Setup uv with Python 3.12
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+          activate-environment: true
+      - name: Cached Assets
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/doctranslate
+          key: doctranslate-assets-${{ hashFiles('doctranslate/assets/embedding_assets_metadata.py') }}
+      - name: Install
+        run: uv sync --locked --group dev --extra full
+      - name: Warm up asset cache
+        run: uv run doctranslate assets warmup
+      - name: Meso JSON
+        run: uv run python scripts/perf_meso.py | tee perf-meso.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: perf-meso-json
+          path: perf-meso.json
+
+  locust-api:
+    name: Locust (HTTP API)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Setup uv with Python 3.12
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+          activate-environment: true
+      - name: Cached Assets
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/doctranslate
+          key: doctranslate-assets-${{ hashFiles('doctranslate/assets/embedding_assets_metadata.py') }}
+      - name: Install
+        run: uv sync --locked --group dev --group perf --extra full
+      - name: Warm up asset cache
+        run: uv run doctranslate assets warmup
+      - name: Start API and run Locust
+        env:
+          DOCTRANSLATE_API_DATA_ROOT: ${{ runner.temp }}/api-data
+          DOCTRANSLATE_API_AUTH_MODE: disabled
+          PERF_INSPECT_PDF: ${{ github.workspace }}/examples/ci/test.pdf
+          DOCTRANSLATE_API_MOUNT_ALLOW_PREFIXES: ${{ github.workspace }}
+        run: |
+          set -e
+          mkdir -p "$DOCTRANSLATE_API_DATA_ROOT"
+          uv run uvicorn doctranslate.http_api.app:app --host 127.0.0.1 --port 8999 &
+          PID=$!
+          for i in $(seq 1 60); do
+            if curl -sf "http://127.0.0.1:8999/health" >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          uv run locust -f benchmarks/load/locustfile.py --headless \
+            --host http://127.0.0.1:8999 -u 4 -r 2 -t 20s \
+            --csv=locust-report --html locust-report.html || true
+          kill "$PID" || true
+          wait "$PID" 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: locust-report
+          path: |
+            locust-report.html
+            locust-report_stats.csv
+          if-no-files-found: warn
+
+  optional-corpus-perf:
+    name: Optional corpus / OCR markers
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Setup uv with Python 3.12
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+          activate-environment: true
+      - name: Cached Assets
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/doctranslate
+          key: doctranslate-assets-${{ hashFiles('doctranslate/assets/embedding_assets_metadata.py') }}
+      - name: Install
+        run: uv sync --locked --group dev --group perf --extra full
+      - name: Warm up asset cache
+        run: uv run doctranslate assets warmup
+      - name: Optional corpus perf tests
+        run: uv run pytest tests/perf/test_perf_optional_corpora.py -q --benchmark-disable
+
+  memray-inspect:
+    name: Memray (inspect subprocess)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Setup uv with Python 3.12
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+          activate-environment: true
+      - name: Install with memray
+        run: uv sync --locked --group dev --extra full --extra memray
+      - name: Memray run + flamegraph
+        run: |
+          PDF="${{ github.workspace }}/examples/ci/test.pdf"
+          if [ ! -f "$PDF" ]; then
+            echo "No sample PDF; skipping memray"
+            exit 0
+          fi
+          BIN="${{ runner.temp }}/memray-inspect.bin"
+          uv run memray run --force -o "$BIN" -m doctranslate.main -- \
+            --output-format json inspect "$PDF"
+          uv run memray flamegraph "$BIN" -o memray-inspect.html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: memray-inspect-html
+          path: memray-inspect.html
+          if-no-files-found: warn
+
+  docker-metrics:
+    name: Docker image metrics
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec089bf007adf93e6a16505937 # v3.11.1
+      - name: Setup uv with Python 3.12
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+          activate-environment: true
+      - name: Install (script only)
+        run: uv sync --locked --group dev
+      - name: Build images and record metrics
+        run: uv run python scripts/perf_docker_metrics.py | tee perf-docker.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: perf-docker-json
+          path: perf-docker.json
+          if-no-files-found: warn

@@ -6,13 +6,16 @@ import asyncio
 import json
 import logging
 import time
-from collections.abc import AsyncIterator, Iterator
-from typing import TYPE_CHECKING, Any
+from collections.abc import AsyncIterator
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
+from typing import Any
 
 import httpx
 
 if TYPE_CHECKING:
-    from doc_translater_http_api_client.client import AuthenticatedClient, Client
+    from doc_translater_http_api_client.client import AuthenticatedClient
+    from doc_translater_http_api_client.client import Client
     from doc_translater_http_api_client.models.job_events_response import JobEventsResponse
     from doc_translater_http_api_client.models.job_status_response import JobStatusResponse
 
