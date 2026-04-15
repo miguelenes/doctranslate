@@ -2585,7 +2585,7 @@
 <h2 id="http-api">HTTP API</h2>
 <ul>
 <li><strong>Request IDs:</strong> Every response includes <code>X-Request-ID</code>. Error bodies (<code>ApiErrorEnvelope</code>) include the same <code>request_id</code> for log correlation.</li>
-<li><strong>Prometheus:</strong> <code>GET /metrics</code> exposes RED-style HTTP metrics, job queue depth (updated on readiness checks), job lifecycle histograms, pipeline stage timings (when the PDF stack runs), translator router counters, and asset warmup counters when metrics are enabled.</li>
+<li><strong>Prometheus:</strong> <code>GET /metrics</code> exposes RED-style HTTP metrics, job queue depth (updated on readiness checks), job lifecycle histograms, pipeline stage timings (when the PDF stack runs), translator router counters, and asset warmup counters when metrics are enabled. These histograms are the primary <strong>runtime</strong> regression signals in production (complement OSS microbenchmarks in <a href="../benchmarks/">Benchmarks</a>).</li>
 <li><strong>Tracing:</strong> With <code>DOCTRANSLATE_OTEL_ENABLED=true</code> and a reachable OTLP collector, spans cover FastAPI requests (via auto-instrumentation), ARQ job execution (<code>job.execute</code>, <code>job.warmup</code>), and PDF <code>pipeline.translate_sync</code>. For <strong>split API + worker</strong> deployments, the API stores a W3C <code>traceparent</code> on queued jobs so the worker can continue the trace.</li>
 </ul>
 <h2 id="workers-arq">Workers (ARQ)</h2>

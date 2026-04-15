@@ -2567,7 +2567,7 @@
 <tr>
 <td><strong>Fast</strong></td>
 <td><code>test-fast</code></td>
-<td><code>uv sync --locked --group dev --extra full</code> then <code>pytest tests/ -q -m "not requires_pdf"</code></td>
+<td><code>uv sync --locked --group dev --extra full</code> then <code>pytest tests/ -q -m "not requires_pdf and not perf"</code></td>
 </tr>
 <tr>
 <td><strong>Slim PDF</strong></td>
@@ -2577,7 +2577,17 @@
 <tr>
 <td><strong>Full matrix</strong></td>
 <td><code>test</code></td>
-<td>Full <code>pytest tests/ -q</code> plus assets warmup / offline pack smoke</td>
+<td><code>pytest tests/ -q -m "not perf"</code> plus assets warmup / offline pack smoke</td>
+</tr>
+<tr>
+<td><strong>Perf PR</strong></td>
+<td><code>perf-pr</code> (optional)</td>
+<td><code>uv sync --locked --group dev --group perf --extra full</code> then <code>pytest tests/perf/ -m perf --benchmark-only</code> — see <a href="../../benchmarks/">Benchmarks</a></td>
+</tr>
+<tr>
+<td><strong>Perf nightly</strong></td>
+<td><code>perf-nightly</code></td>
+<td>Weekly: microbench JSON, <code>scripts/perf_meso.py</code>, Locust, Memray, Docker metrics — see <a href="../../benchmarks/">Benchmarks</a></td>
 </tr>
 <tr>
 <td><strong>Zensical (PR)</strong></td>
@@ -2614,7 +2624,15 @@
 </tr>
 <tr>
 <td>Skip PDF-stack tests (fast)</td>
-<td><code>uv run pytest tests/ -q -m "not requires_pdf"</code></td>
+<td><code>uv run pytest tests/ -q -m "not requires_pdf and not perf"</code></td>
+</tr>
+<tr>
+<td>Perf microbenchmarks</td>
+<td><code>uv sync --locked --group dev --group perf --extra full</code> then <code>uv run pytest tests/perf/ -q -m perf --benchmark-only</code></td>
+</tr>
+<tr>
+<td>Meso CLI timings</td>
+<td><code>uv run python scripts/perf_meso.py</code></td>
 </tr>
 <tr>
 <td>Single file / test node</td>

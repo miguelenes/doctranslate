@@ -2086,6 +2086,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#performance-benchmarks-oss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance benchmarks (OSS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#documentation-builds" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2651,6 +2662,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#performance-benchmarks-oss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance benchmarks (OSS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#documentation-builds" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2932,6 +2954,8 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>uv<span class="w"> </span>run<span class="w"> </span>memray<span class="w"> </span>run<span class="w"> </span>--native<span class="w"> </span>--aggregate<span class="w"> </span>doctranslate/main.py<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>translate<span class="w"> </span>input.pdf<span class="w"> </span>-o<span class="w"> </span>./memray_out<span class="w"> </span>--translator<span class="w"> </span><span class="nb">local</span><span class="w"> </span>--local-model<span class="w"> </span>qwen2.5:7b
 </span></code></pre></div>
+<h5 id="performance-benchmarks-oss">Performance benchmarks (OSS)</h5>
+<p>Install the <strong>perf</strong> dependency group (<code>uv sync --locked --group dev --group perf --extra full</code>), then see <a href="../benchmarks/">Benchmarks</a> for <code>tests/perf/</code>, <code>scripts/perf_meso.py</code>, Locust, and scheduled workflows. Default <code>pytest tests/</code> excludes <code>-m perf</code>; keep microbenchmarks deterministic (no paid APIs as merge gates).</p>
 <h5 id="documentation-builds">Documentation builds</h5>
 <p>CI runs <strong>MkDocs</strong> with <code>--strict</code> on the full test job. <strong>GitHub Pages</strong> uses <strong>Zensical</strong> (see <code>.github/workflows/docs.yml</code>). After editing <code>docs/</code> or <code>mkdocs.yml</code>, verify both locally when possible:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nv">NO_MKDOCS_2_WARNING</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>--strict

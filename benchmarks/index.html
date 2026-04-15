@@ -989,6 +989,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Automation in CI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#layered-harness-micro-meso-http-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layered harness (micro, meso, HTTP, Docker)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-metrics-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime metrics (operators)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -2407,6 +2435,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Automation in CI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#layered-harness-micro-meso-http-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layered harness (micro, meso, HTTP, Docker)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-metrics-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime metrics (operators)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -2467,6 +2523,51 @@
 </ul>
 <h2 id="automation-in-ci">Automation in CI</h2>
 <p>The test workflow runs a <strong>warn-only</strong> import/parser timing check so large accidental regressions in CLI startup are visible in logs. It does <strong>not</strong> fail the build on threshold alone (see <code>scripts/check_cli_import_time.py</code>).</p>
+<h3 id="layered-harness-micro-meso-http-docker">Layered harness (micro, meso, HTTP, Docker)</h3>
+<p>Install perf tooling:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>sync<span class="w"> </span>--locked<span class="w"> </span>--group<span class="w"> </span>dev<span class="w"> </span>--group<span class="w"> </span>perf<span class="w"> </span>--extra<span class="w"> </span>full
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>What</th>
+<th>Command / workflow</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Micro</strong></td>
+<td><code>pytest-benchmark</code> on parser, mocked router, HTTP inspect, parse-only PDF path</td>
+<td><code>uv run pytest tests/perf/ -m perf --benchmark-only</code> (default <code>pytest tests/</code> <strong>excludes</strong> <code>-m perf</code>; use an explicit <code>tests/perf/</code> run)</td>
+</tr>
+<tr>
+<td><strong>Meso</strong></td>
+<td>Subprocess CLI timings (help, inspect JSON, <code>assets warmup</code>, <code>translate --skip-translation</code>)</td>
+<td><code>uv run python scripts/perf_meso.py</code> → JSON on stdout</td>
+</tr>
+<tr>
+<td><strong>HTTP load</strong></td>
+<td>Locust against a running API</td>
+<td><code>uv run locust -f benchmarks/load/locustfile.py --headless -u 4 -r 1 -t 20s --host http://127.0.0.1:8999</code> (set <code>PERF_INSPECT_PDF</code> to an absolute path to include <code>/v1/inspect</code> in the mix)</td>
+</tr>
+<tr>
+<td><strong>Docker</strong></td>
+<td>Image size + <code>doctranslate --version</code> in a fresh container + optional API health</td>
+<td><code>uv run python scripts/perf_docker_metrics.py</code> (builds <code>runtime-cpu</code> / <code>runtime-api</code> locally; can take a long time)</td>
+</tr>
+<tr>
+<td><strong>Memory</strong></td>
+<td>Memray on short CLI paths</td>
+<td><code>uv sync --extra memray</code> then see <a href="../CONTRIBUTING/#profile-memory-usage">Contributing — Profile memory usage</a>; nightly workflow uploads a sample flamegraph when <code>examples/ci/test.pdf</code> exists</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Workflows:</strong> <a href="https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/perf-pr.yml"><code>.github/workflows/perf-pr.yml</code></a> (path-filtered PR microbenchmarks + JSON artifact), <a href="https://github.com/miguelenes/doctranslate/blob/main/.github/workflows/perf-nightly.yml"><code>.github/workflows/perf-nightly.yml</code></a> (weekly schedule: microbench, meso JSON, Locust, Memray, Docker metrics with <code>continue-on-error</code> where builds may be slow).</p>
+<p><strong>Corpus plan:</strong> <a href="https://github.com/miguelenes/doctranslate/blob/main/benchmarks/corpus/README.md">benchmarks/corpus/README.md</a> — extend beyond <code>examples/ci/test.pdf</code> with licensed fixtures; keep PR jobs small.</p>
+<p><strong>Regression policy:</strong> PR jobs are <strong>informational</strong> (artifacts + logs), not throughput SLAs. To tighten later, use <code>pytest-benchmark</code>’s <code>--benchmark-compare-fail</code> only after collecting a stable baseline on one OS/Python tuple.</p>
+<h3 id="runtime-metrics-operators">Runtime metrics (operators)</h3>
+<p>When the HTTP API runs with Prometheus enabled, histograms such as <code>doctranslate_pipeline_stage_duration_seconds</code>, <code>doctranslate_translator_latency_seconds</code>, and <code>doctranslate_job_duration_seconds</code> complement microbenchmarks for deployment-level drift; see <a href="../observability/">Observability</a>.</p>
 
 
 

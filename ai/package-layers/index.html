@@ -2628,7 +2628,7 @@
 <h2 id="ci">CI</h2>
 <ul>
 <li><strong>Minimal lane:</strong> <code>uv sync --locked --group dev</code> (no extras) + <code>pytest tests/test_install_profiles.py::test_minimal_schemas_import</code>.</li>
-<li><strong>Fast lane:</strong> <code>uv sync --locked --group dev --extra full</code> + <code>pytest tests/ -m "not requires_pdf"</code> + MkDocs strict + wheel smoke + <code>scripts/check_cli_import_time.py</code>.</li>
+<li><strong>Fast lane:</strong> <code>uv sync --locked --group dev --extra full</code> + <code>pytest tests/ -m "not requires_pdf and not perf"</code> + MkDocs strict + wheel smoke + <code>scripts/check_cli_import_time.py</code>.</li>
 <li><strong>Slim lane:</strong> <code>uv sync --locked --group dev --extra pdf --extra cli</code> + <code>pytest tests/test_install_profiles.py::test_pdf_stack_opens_ci_fixture</code>.</li>
 <li><strong>Full matrix:</strong> <code>uv sync --locked --group dev --extra full</code> + full <code>pytest</code>, assets warmup, offline pack/restore.</li>
 <li><strong>Docs (PR):</strong> Zensical build when <code>docs/**</code> or <code>mkdocs.yml</code> changes (<code>.github/workflows/docs-pr.yml</code>).</li>
