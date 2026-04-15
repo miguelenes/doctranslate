@@ -50,7 +50,7 @@ npm run deploy:dry-run   # validates wrangler.jsonc and bundles without uploadin
 ### Cloudflare dashboard
 
 1. Create or select a Worker; set **Variables** (production / preview as needed):
-   - `DOCTRANSLATE_UPSTREAM_URL` — base URL of the DocTranslater HTTP API (no `/v1/jobs` suffix), e.g. `https://api.internal`.
+  - `DOCTRANSLATE_UPSTREAM_URL` — base URL of the DocTranslater HTTP API (no `/v1/jobs` suffix), e.g. `https://api.internal`.
 2. Optionally set `UPSTREAM_URL` instead (same semantics as in code).
 3. Use **Secrets** only for operator-held values; clients often send `Authorization` on each request, which the worker forwards upstream unchanged.
 
@@ -73,8 +73,11 @@ Ensure secrets (upstream API keys forwarded from clients, or operator tokens) fo
 
 ## Routes
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET | `/health` | Liveness |
-| GET | `/edge/v1/schema-warmup` | Import `public_api` / `versions` only (Pyodide smoke) |
-| POST | `/edge/v1/jobs` | Validate multipart, proxy to upstream `POST /v1/jobs` |
+
+| Method | Path                     | Purpose                                               |
+| ------ | ------------------------ | ----------------------------------------------------- |
+| GET    | `/health`                | Liveness                                              |
+| GET    | `/edge/v1/schema-warmup` | Import `public_api` / `versions` only (Pyodide smoke) |
+| POST   | `/edge/v1/jobs`          | Validate multipart, proxy to upstream `POST /v1/jobs` |
+
+
